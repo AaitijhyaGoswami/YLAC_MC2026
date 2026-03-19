@@ -327,6 +327,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="center">
   Built with ❤️ for Bengaluru's pedestrians — and for the streets that should belong to them.
-  <br><br>
-  <a href="https://bengawalk.com">Bengawalk</a> · <a href="https://dult.karnataka.gov.in/121/active-mobility-bill/en">YLAC Mobility Champions 2026</a>
 </p>
