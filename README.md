@@ -118,7 +118,7 @@ $$T_{ideal}(\phi) = \frac{D}{v_0(\phi)} = \frac{N \cdot d}{v_0(\phi)}$$
 
 $$\Delta\tau(\phi) = T_{actual}(\phi) - T_{ideal}(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{\,k(\phi)} - N \right)$$
 
-  **Impassability and detour penalty:** When `f_i > f_{max}(\phi)`, the segment is impassable for that persona. The agent is rerouted into the vehicular Right-of-Way (ROW), incurring both a geometric detour of length `δ_i` (the distance to re-enter the footpath after the blockage) and a safety overhead modelled as a velocity penalty multiplier `α = 1.5` for walking in traffic:
+  **Impassability and detour penalty:** When $f_i > f_{max}(\phi)$, the segment is impassable for that persona. The agent is rerouted into the vehicular Right-of-Way (ROW), incurring both a geometric detour of length $δ_i$ (the distance to re-enter the footpath after the blockage) and a safety overhead modelled as a velocity penalty multiplier `α = 1.5` for walking in traffic:
 
 $$\tau_i^{ROW}(\phi) = \frac{(d + \delta_i) \cdot \alpha}{v_0(\phi)}$$
 
