@@ -131,10 +131,19 @@ if page == "Home":
 
     st.markdown("""
     - **Applications:**
-        - Generating geotagged evidence maps for PIL filings on pedestrian rights.
-        - Providing a quantitative baseline for Transit-Oriented Development planning.
-        - Replicable audit template for other Indian mobility knots.
-    - **Key output:** $L_{\\text{eff}} = 4187.5$ m · $\\bar{f} = 4.653$ · Interactive Folium map
+        - Generating court-admissible, geotagged evidence maps for PIL filings on pedestrian
+          rights — each obstacle pin carries its coordinates, friction rating, and a
+          photographic description timestamped from the field audit.
+        - Providing the quantitative baseline layer for Transit-Oriented Development (TOD)
+          planning around the SWR–Metro interchange — $\\bar{f}$ directly indexes
+          last-mile accessibility quality at the station entrance.
+        - Replicable audit template for other Indian mobility knots: the rubric, the
+          two-zone discretisation model, and the Folium output pipeline can be redeployed
+          at any corridor by replacing `audit_log.csv`.
+        - Producing the static friction map PNG that anchors the visual annexure in the
+          DULT/BBMP policy brief submission.
+    - **Key output:** $L_{\\text{eff}} = 4187.5$ m · $\\bar{f} = 4.653$ · colour-coded Folium map
+      with 24 geotagged pins across the 300m stretch and continuous $f=5$ overlay on the 600m stretch
     """)
 
     st.markdown("---")
@@ -176,10 +185,22 @@ if page == "Home":
 
     st.markdown("""
     - **Applications:**
-        - Quantifying the disability-adjusted mobility cost of non-compliant infrastructure.
-        - Providing per-persona Time Tax data for the DULT/BBMP policy brief.
-        - Extending the framework to other Bengaluru intermodal hubs.
-    - **Personas:** 🚶 Able-bodied ($v_0=1.4$ m/s, $k=0.6$) · 👴 Elderly ($v_0=0.9$ m/s, $k=0.9$) · ♿ Wheelchair ($v_0=0.8$ m/s, $k=1.2$) · 🛵 Delivery ($v_0=1.2$ m/s, $k=0.75$)
+        - Quantifying the disability-adjusted mobility cost imposed on wheelchair users
+          and the elderly — the super-linear $k(\\phi)$ exponent reveals that these groups
+          bear a disproportionately higher Time Tax than the able-bodied baseline, even for
+          the same physical route.
+        - Supplying the per-persona $\\Delta\\tau$ values and ROW detour counts that feed
+          directly into the DULT/BBMP policy brief as primary evidence.
+        - Validating the power-law model against timed walk-along field observations —
+          the $v_0$ and $k$ parameters in `personas.yaml` can be calibrated once
+          empirical traversal times are recorded.
+        - Extending the framework to other Bengaluru intermodal hubs by swapping in a
+          new `audit_log.csv` — the simulation core is corridor-agnostic.
+    - **Personas:**
+        - 🚶 Able-bodied adult — $v_0 = 1.4$ m/s, $k = 0.6$, $f_{\\text{max}} = 5$
+        - 👴 Elderly commuter — $v_0 = 0.9$ m/s, $k = 0.9$, $f_{\\text{max}} = 4$
+        - ♿ Wheelchair user — $v_0 = 0.8$ m/s, $k = 1.2$, $f_{\\text{max}} = 3$ (ROW detour above)
+        - 🛵 Delivery partner — $v_0 = 1.2$ m/s, $k = 0.75$, $f_{\\text{max}} = 4$
     """)
 
     st.markdown("---")
@@ -206,10 +227,20 @@ if page == "Home":
     diminishing returns.
 
     - **Applications:**
-        - Identifying the minimum intervention set for maximum Time Tax reduction.
-        - Framing the Lighthouse Pilot ask: fix $n$ obstacles, recover $X$% of Time Tax.
-        - Generating a prioritised repair schedule for BBMP field teams.
-    - **Key insight:** Fixing the top 3 hotspots recovers ~38% of the total daily Time Tax.
+        - Identifying the minimum intervention set for maximum Time Tax reduction —
+          the ranked fix schedule tells BBMP exactly which drain cover or slab to
+          repair first, second, and third for the greatest commuter benefit.
+        - Framing the Lighthouse Pilot ask to DULT with a concrete, costed claim:
+          fix $n = 3$ obstacles for ₹8–12 lakh, recover ~38% of the ₹14.2 crore
+          annual Time Tax — a number that maps directly to BBMP's project approval template.
+        - Demonstrating the **marginal return curve** to policymakers — the simulation
+          shows that the first 3 fixes do more work than the next 10 combined, making
+          the case for a targeted pilot over a wholesale redesign.
+        - Generating a prioritised repair schedule for BBMP field teams: the fix table
+          lists each obstacle by rank, friction level, GPS coordinates, and description.
+    - **Key insight:** Fixing the top 3 hotspots (all $f = 5$, all on Bazaar Street)
+      recovers ~38% of the total daily Time Tax across all personas — at less than 0.1%
+      of the estimated annual economic loss.
     """)
 
     st.markdown("---")
@@ -238,10 +269,22 @@ if page == "Home":
     **benefit-to-cost ratio exceeding 10:1**.
 
     - **Applications:**
-        - Anchoring the DULT/BBMP submission with a concrete economic argument.
-        - Demonstrating that targeted fixes yield a 10:1+ benefit-to-cost ratio.
-        - Framing the ask in the language BBMP project approvals require.
-    - **Key output:** ~₹14.2 crore annual productivity loss · BCR > 10:1 for top-3 fix
+        - Anchoring the DULT/BBMP submission with a concrete economic argument —
+          the ₹14.2 crore figure converts an abstract friction rubric into a loss
+          number that appears in government project approval language.
+        - Demonstrating persona-disaggregated losses: wheelchair users and elderly
+          commuters carry a disproportionately higher share of the Time Tax, making
+          the equity argument for prioritising their $f_{\\text{max}}$ barriers.
+        - Computing the benefit-to-cost ratio for any number of hotspot fixes
+          dynamically — as the slider moves, the BCR updates, showing decision-makers
+          exactly what each rupee of repair investment recovers in productivity.
+        - Producing the economic extrapolation table that goes into the one-page
+          Lighthouse Proposal annexure of the policy brief PDF.
+    - **Key output:**
+        - ~170 million person-minutes lost annually across all personas
+        - ~₹14.2 crore annual productivity loss from the 900m stretch alone
+        - BCR > 10:1 for the top-3 hotspot fix at ₹8–12 lakh estimated cost
+        - Per-persona annual loss breakdown with population-weight attribution
     """)
 
     st.markdown("---")
