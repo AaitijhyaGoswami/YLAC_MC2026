@@ -92,7 +92,7 @@ $$L_{eff} = 3000 + 1187.5 = 4187.5 \text{ m} \qquad \bar{f} = \frac{L_{eff}}{D} 
   - Generating court-admissible, geotagged evidence maps for [PIL](https://en.wikipedia.org/wiki/Public_interest_litigation_in_India) filings on pedestrian rights.
   - Providing a quantitative baseline layer for [Transit-Oriented Development (TOD)](https://en.wikipedia.org/wiki/Transit-oriented_development) planning around station interchange zones.
 
-- **Key Output:** An interactive `Folium` HTML map with colour-coded pins (`f = 1` → green, `f = 5` → black), a route polyline overlay for the surveyed corridor, and a static `Matplotlib` PNG for policy brief annexures.
+- **Key Output:** An interactive `Folium` HTML map with colour-coded pins (`f = 2` → green, `f = 5` → red), a route polyline overlay for the surveyed corridor, and a static `Matplotlib` PNG for policy brief annexures.
 
 ---
 
