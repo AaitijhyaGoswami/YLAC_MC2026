@@ -18,11 +18,11 @@ This interactive dashboard is a **Pedestrian Mobility Audit and Agent-Based Simu
 
 By treating the city as a physical system, where broken drains, encroachments, and missing footpaths act as potential energy barriers Φ(x), the commuter's journey becomes analogous to mechanical work done against a spatially varying friction field. Just as the work required to move an object across a rough surface is:
 
-$$W = \int_0^D F(x) \, dx = \int_0^D \mu(x) \, mg \, dx$$
+$$W = \int_0^D F(x)  dx = \int_0^D \mu(x)  mg  dx$$
 
 we define the **Effective Path Length** as the friction-weighted integral over the surveyed corridor of total length `D`:
 
-$$L_{eff}(\phi) = \int_0^D f(x, \phi) \, dx$$
+$$L_{eff}(\phi) = \int_0^D f(x, \phi)  dx$$
 
 where `f(x, φ) ∈ [1, 5]` is a continuous friction field derived from discrete audit observations, and `φ` is the commuter persona. In the discretised implementation over `N` path segments of equal physical length `d = D/N`:
 
