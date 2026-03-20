@@ -90,7 +90,8 @@ if page == "Home":
     """)
 
     st.markdown(
-        "meaning the corridor imposes nearly **4.65× the energetic cost** of a fully compliant "
+        "meaning the corridor imposes nearly **4.65× the energetic cost** of a fully "
+        "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)-compliant "
         "footpath. The survey covered the 900m Yeshwantpur–Constitution Circle corridor on "
         "March 7–8, 2026: **90.3%** of the stretch fails Active Mobility Bill standards and "
         "**96%** is fully inaccessible for wheelchair users."
@@ -110,8 +111,11 @@ if page == "Home":
     st.markdown("""
     - **Abstract:** Models the surveyed route as a discretised friction field, assigning
       $f \\in \\{1, 2, 3, 4, 5\\}$ to each geotagged obstacle node based on the
-      [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) rubric.
-      The route is split into two structurally distinct zones.
+      [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) rubric,
+      where $f = 1$ is the [Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)
+      gold standard — a continuous, unobstructed 3m+ footpath — and $f = 5$ is a systemic
+      failure where the footpath ends entirely. The route is split into two structurally
+      distinct zones.
 
     The **600m Bazaar Street stretch** is a continuous $f = 5$ failure:
     """)
@@ -134,6 +138,10 @@ if page == "Home":
         - Generating court-admissible, geotagged evidence maps for PIL filings on pedestrian
           rights — each obstacle pin carries its coordinates, friction rating, and a
           photographic description timestamped from the field audit.
+        - Benchmarking each surveyed segment against
+          [Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) design standards —
+          the $f = 1$ rubric is defined directly by S.U.R.E.'s minimum footpath width (3m),
+          continuous surface, and zero overhead obstruction requirements.
         - Providing the quantitative baseline layer for Transit-Oriented Development (TOD)
           planning around the SWR–Metro interchange — $\\bar{f}$ directly indexes
           last-mile accessibility quality at the station entrance.
@@ -141,7 +149,8 @@ if page == "Home":
           two-zone discretisation model, and the Folium output pipeline can be redeployed
           at any corridor by replacing `audit_log.csv`.
         - Producing the static friction map PNG that anchors the visual annexure in the
-          DULT/BBMP policy brief submission.
+          DULT/BBMP policy brief submission arguing for
+          [Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) mandate enforcement.
     - **Key output:** $L_{\\text{eff}} = 4187.5$ m · $\\bar{f} = 4.653$ · colour-coded Folium map
       with 24 geotagged pins across the 300m stretch and continuous $f=5$ overlay on the 600m stretch
     """)
@@ -165,7 +174,10 @@ if page == "Home":
         "The traversal time for segment $i$ of length $d = 12.5$ m is "
         r"$\tau_i = d \cdot f_i^{\,k} / v_0$."
         " Summing over all $N$ segments gives the actual traversal time, "
-        "against which the ideal time $T_{\\text{ideal}} = D / v_0$ is compared. "
+        "against which the ideal time $T_{\\text{ideal}} = D / v_0$ is compared — "
+        "this ideal represents a fully "
+        "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)-compliant "
+        "corridor where $f = 1$ throughout. "
         "The **Time Tax** per trip is:"
     )
 
