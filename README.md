@@ -28,7 +28,7 @@ where `f(x, φ) ∈ [1, 5]` is a continuous friction field derived from discrete
 
 $$L_{eff}(\phi) \approx d \sum_{i=1}^{N} f_i(\phi)$$
 
-The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshwantpur survey, this evaluates to approximately **4.61**, meaning the corridor imposes the equivalent of traversing a path 4.61× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` (the measurable seconds stolen from each commuter per trip) which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
+The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshwantpur survey, this evaluates to approximately **4.625**, meaning the corridor imposes the equivalent of traversing a path 4.625× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` (the measurable seconds stolen from each commuter per trip) which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
 
 ---
 
@@ -63,11 +63,19 @@ f = 1  (Gold Standard)                             Reference
 
 $$\bar{f} = \frac{1}{N} \sum_{i=1}^{N} f_i = \frac{L_{eff}}{D}$$
 
-  For the Yeshwantpur survey (N = 36 geotagged nodes across 900m), the empirical distribution yields:
+  The 900m route is treated as two structurally distinct zones. The **600m Bazaar Street stretch** is a continuous `f = 5` failure — footpath ends entirely, pedestrians enter vehicular ROW — contributing directly to `L_eff`:
 
-$$\bar{f}_{Yeshwantpur} = \frac{1}{36}(2 \times 2 + 1.5 \times 3 + 4 \times 4 + 28.5 \times 5) \approx 4.61$$
+$$L_{eff}^{600} = 600 \times 5 = 3000 \text{ m}$$
 
-  indicating the route imposes nearly 5× the energetic cost of a compliant footpath. Nodes are snapped to the nearest `OSMnx` footpath edge using minimum Haversine distance, and `f`-values are propagated as edge weights in the `NetworkX` graph for downstream routing.
+  The **300m Constitution Circle stretch** has 24 geotagged discrete obstacles: 9 at `f = 5`, 8 at `f = 4`, 4 at `f = 3`, and 3 at `f = 2`. With segment length `d = 300/24 = 12.5 m`:
+
+$$L_{eff}^{300} = 12.5 \times \sum_{i=1}^{24} f_i = 12.5 \times (9{\times}5 + 8{\times}4 + 4{\times}3 + 3{\times}2) = 12.5 \times 95 = 1187.5 \text{ m}$$
+
+  The **total effective path length** and **mean friction index** across the full 900m corridor are therefore:
+
+$$L_{eff} = 3000 + 1187.5 = 4187.5 \text{ m} \qquad \bar{f} = \frac{L_{eff}}{D} = \frac{4187.5}{900} \approx 4.653$$
+
+  indicating the route imposes nearly **4.65× the energetic cost** of a fully compliant footpath. Nodes are snapped to the nearest `OSMnx` footpath edge using minimum Haversine distance, and `f`-values are propagated as edge weights in the `NetworkX` graph for downstream routing.
 
   The friction rubric encodes the following observable-to-value mapping:
 
@@ -128,7 +136,7 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 - **Applications:**
   - Quantifying the [disability-adjusted](https://en.wikipedia.org/wiki/Disability-adjusted_life_year) mobility cost imposed on wheelchair users and the elderly by non-compliant infrastructure.
-  - Modelling how targeted fixes at the top-N friction hotspots reduce the aggregate Time Tax — providing a prioritised, low-cost recommendation for [BBMP](https://bbmp.gov.in/) and [DULT](https://dult.karnataka.gov.in/).
+  - Modelling how targeted fixes at the top-N friction hotspots reduce the aggregate Time Tax — providing a prioritised, low-cost recommendation for [BBMP](https://bbmp.gov.in/) and [DULT](https://dult.karnataka.gov.in/en).
   - Extending the framework to other Indian intermodal hubs (e.g. KSR Bengaluru, Majestic) for city-wide friction benchmarking.
 
 - **Commuter Personas (`φ`):**
@@ -160,30 +168,31 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 ### **4. Speculative Redesign — CAD Model — `cad_viewer/`**
 
-- **Abstract:** This module is the "Streets of Hope" counterpart to the friction audit — the same 900m Yeshwantpur–Constitution Circle corridor, reimagined under full Tender S.U.R.E. and [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) compliance. Authored in **Blender** or **FreeCAD** and exported to **glTF/GLB format**, the model is embedded directly in the Streamlit dashboard using the [`streamlit-model-viewer`](https://github.com/blackary/streamlit-model-viewer) component (wrapping Google's `<model-viewer>` web component). Annotation hotspots are pinned to each design element and linked to the relevant standard, making the model a self-contained, policy-readable exhibit. AR mode on supported mobile devices enables on-ground demonstrations at the actual site.
+- **Abstract:** A static 3D cross-section of the Yeshwantpur corridor redesigned to Tender S.U.R.E. and [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) standards. Rather than modelling the full 900m route, the model covers a single representative 20–30m segment showing what a compliant stretch looks like: a 3m continuous footpath, flush pipe-and-chamber drainage, underground utility duct, and kerb ramps at each end. It is the "Streets of Hope" visual counterpart to the friction audit — concrete enough to hand to a contractor, simple enough to explain to a policymaker. Authored in **[Zoo.dev's KCL](https://zoo.dev/docs/kcl)**, exported to glTF via the KittyCAD API, and rendered as a static embed in the Streamlit dashboard.
 
 - **Applications:**
-  - Providing a tangible, inspectable vision of the post-intervention corridor to shift stakeholder conversations from *"is this a problem?"* to *"what exactly do we build?"*
-  - Serving as speculative design content for Bengawalk's [Instagram](https://www.instagram.com/bengawalk/) and X "Friction Files" series — rendering the engineering argument emotionally legible to a public audience.
-  - Functioning as a reusable design template for Tender S.U.R.E. advocacy at other Bengaluru mobility knots.
+  - Giving DULT and BBMP reviewers a dimensioned picture of exactly what the Lighthouse Pilot intervention involves — not a concept sketch, but a measurable cross-section.
+  - Serving as the "before vs. after" visual for Bengawalk's [Instagram](https://www.instagram.com/bengawalk/) and X "Friction Files" posts.
+  - Anchoring the policy brief's Lighthouse Proposal with a visual that non-engineers can immediately read.
 
-- **Compliance Checklist — Current vs. Redesigned:**
+- **Design specification:**
 
-  | Element | Standard | Current State | Redesigned State |
-  |---------|----------|---------------|-----------------|
-  | Footpath width | Tender S.U.R.E. ≥ 3m | 0–0.5m usable | 3m continuous |
-  | Drain type | IRC 103 — covered/integrated | Open box drain | Pipe & Chamber, flush |
-  | Kerb ramps | Active Mobility Bill — all crossings | Absent | 1:12 grade, tactile |
-  | Tactile paving | IRC 103 — guidance + warning strips | Absent | Full length |
-  | Overhead utilities | BBMP mandate — duct routing | Exposed cables | Underground duct |
-  | Vendor setback | BBMP encroachment rules | On footpath | 1.5m setback zone |
+  | Element | Dimension |
+  |---------|-----------|
+  | Footpath width | 3m clear, per Tender S.U.R.E. |
+  | Drainage | Pipe and chamber, flush with walking surface |
+  | Kerb ramp | 1:12 grade at both ends |
+  | Tactile paving | 0.6m warning strip at ramp head |
+  | Utility duct | 0.5m wide, underground, lid flush |
+  | Vendor setback | 1.5m marked zone behind footpath edge |
 
-- **Streamlit integration:**
-  ```python
-  from model_viewer import model_viewer   # streamlit-model-viewer
-
-  with open("cad_viewer/model/yeshwantpur_redesign.glb", "rb") as f:
-      model_viewer(f.read(), annotations="cad_viewer/annotations.json")
+- **Workflow:**
+  ```
+  yeshwantpur_section.kcl    # KCL cross-section geometry
+        ↓  (Zoo KittyCAD API)
+  yeshwantpur_section.glb    # exported glTF
+        ↓
+  streamlit_app.py           # embedded via streamlit-model-viewer
   ```
 
 ---
@@ -220,7 +229,7 @@ $$\Delta\tau_{saved}(n) = \frac{d}{v_0} \sum_{j=1}^{n} \left( f_j^{\,k} - 1 \rig
 | **Geospatial** | `OSMnx`, `GeoPandas`, `NetworkX`, `Folium`, `GeoPy` — map data, routing, geotagging |
 | **Visualisation** | `Matplotlib`, `Plotly`, `Altair` — charts, friction maps, time-series |
 | **Web App** | `Streamlit` — interactive Digital Twin dashboard |
-| **3D / CAD** | `Blender` or `FreeCAD` (authoring) → glTF/GLB export → `streamlit-model-viewer` (embedded viewer) |
+| **3D / CAD** | `Zoo.dev` / KCL (authoring) → glTF/GLB export via KittyCAD API → `streamlit-model-viewer` (embedded viewer) |
 | **Reporting** | `ReportLab` — policy brief PDF generation |
 | **Data** | `Pandas` — field audit data, interview notes, obstacle logs |
 | **Language** | Python 3.10+ |
@@ -272,12 +281,8 @@ escape-the-knot/
 │   ├── agent_sim.py                        # Agent-based Time Tax model
 │   └── policy_brief.py                     # Economic impact snapshot → PDF
 ├── cad_viewer/
-│   ├── model/
-│   │   ├── yeshwantpur_redesign.glb        # Compiled glTF — S.U.R.E.-compliant corridor
-│   │   └── source/
-│   │       ├── yeshwantpur_redesign.blend  # Blender source file
-│   │       └── assets/                     # Textures, material references
-│   ├── annotations.json                    # Hotspot coordinates → label + standard citation
+│   ├── yeshwantpur_section.kcl             # Zoo.dev KCL source — compliant cross-section
+│   ├── yeshwantpur_section.glb             # Exported glTF via KittyCAD API
 │   └── viewer.py                           # Streamlit component wrapper
 ├── streamlit_app.py                        # Interactive Digital Twin dashboard
 ├── requirements.txt
@@ -291,7 +296,7 @@ escape-the-knot/
 | Phase | Days | Deliverable |
 |-------|------|-------------|
 | **Data Harvest** | 1–4 | Field audit, geotagged obstacle log, Kannada interviews |
-| **Digital Build** | 5–9 | Streamlit app, agent-based sim, CAD model, SWOT slide deck |
+| **Digital Build** | 5–9 | Streamlit app, agent-based sim, KCL model via Zoo.dev, SWOT slide deck |
 | **Synthesis & Advocacy** | 10–14 | Policy brief PDF, Bengawalk 'Friction Files', DULT/BBMP submission |
 
 ---
