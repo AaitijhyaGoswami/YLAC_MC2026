@@ -298,8 +298,8 @@ escape-the-knot/
 
 ## 🤝 Stakeholder Ecosystem
 
-- **Regulatory:** [DULT](https://dult.karnataka.gov.in/en) (Active Mobility Bill), [BBMP](https://bbmp.gov.in/) (infrastructure), BTP (enforcement)
-- **Transit:** [BMRCL](https://english.bmrc.co.in/) (Metro), South Western Railway, [BMTC](https://mybmtc.karnataka.gov.in/) (bus)
+- **Regulatory:** [DULT](https://dult.karnataka.gov.in/en) (Active Mobility Bill), [BBMP](https://bbmp.gov.in/) (infrastructure), [BTP](https://btp.karnataka.gov.in/en) (enforcement)
+- **Transit:** [BMRCL](https://english.bmrc.co.in/) (Metro), [South Western Railway](https://swr.indianrailways.gov.in/?lang=1), [BMTC](https://mybmtc.karnataka.gov.in/) (bus)
 - **Community:** IISc student body, Mathikere RWAs, [Bengawalk](https://bengawalk.com/) collective
 - **Frontline:** Gig-worker unions, delivery platforms (Swiggy, Zomato, Porter)
 - **Missing Voices:** Sanitation workers, elderly pedestrians, persons with disabilities
