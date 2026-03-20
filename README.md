@@ -7,7 +7,7 @@
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![Campaign](https://img.shields.io/badge/YLAC-Mobility_Champions_2026-orange)
 
-> **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) & Prajwal Kagalgomb
+> **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) & [Prajwal Kagalgomb](https://www.linkedin.com/in/prajwalkagalgomb/)
 > **Partner Organisation:** [Bengawalk](https://bengawalk.com/)
 > **Programme:** YLAC Mobility Champions 2026
 
@@ -15,9 +15,9 @@
 
 ## 📖 Overview
 
-This interactive dashboard is a **Pedestrian Mobility Audit and Agent-Based Simulation Suite** developed to quantify the *infrastructural tax* imposed on pedestrians at the Yeshwantpur Mobility Knot in Bengaluru. It combines physics-driven modelling with ground-level advocacy to make a data-backed case for the transformation of Yeshwantpur into a **"Lighthouse Pilot"** for seamless, standards-compliant intermodal pedestrian infrastructure.
+This interactive dashboard is a **Pedestrian Mobility Audit and Agent-Based Simulation Suite** developed to quantify the infrastructural tax imposed on pedestrians at the Yeshwantpur Mobility Knot in Bengaluru. It combines physics-driven modelling with ground-level advocacy to make a data-backed case for the transformation of Yeshwantpur into a **"Lighthouse Pilot"** for seamless, standards-compliant intermodal pedestrian infrastructure.
 
-By treating the city as a physical system — where broken drains, encroachments, and missing footpaths act as **potential energy barriers Φ(x)** — the commuter's journey becomes analogous to mechanical work done against a spatially varying friction field. Just as the work required to move an object across a rough surface is:
+By treating the city as a physical system, where broken drains, encroachments, and missing footpaths act as potential energy barriers Φ(x), the commuter's journey becomes analogous to mechanical work done against a spatially varying friction field. Just as the work required to move an object across a rough surface is:
 
 $$W = \int_0^D F(x) \, dx = \int_0^D \mu(x) \, mg \, dx$$
 
@@ -29,7 +29,7 @@ where `f(x, φ) ∈ [1, 5]` is a continuous friction field derived from discrete
 
 $$L_{eff}(\phi) \approx d \sum_{i=1}^{N} f_i(\phi)$$
 
-The ratio `L_eff / D` is the **mean friction index** of the route — for the Yeshwantpur survey, this evaluates to approximately **4.61**, meaning the corridor imposes the equivalent of traversing a path 4.61× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` — the measurable seconds stolen from each commuter per trip — which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
+The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshwantpur survey, this evaluates to approximately **4.61**, meaning the corridor imposes the equivalent of traversing a path 4.61× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` — the measurable seconds stolen from each commuter per trip — which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
 
 ---
 
@@ -37,7 +37,7 @@ The ratio `L_eff / D` is the **mean friction index** of the route — for the Ye
 
 **Survey Area (March 7–8, 2026):** The 900m stretch connecting Yeshwantpur Railway Station to Constitution Circle, the SWR–Metro interchange corridor, and the 0.45 km² Mathikere road network.
 
-**Policy Target:** Mandate **Tender S.U.R.E.** Design Standards via **[DULT's Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)** — specifically replacing open box drains with integrated "Pipe and Chamber" systems to create a continuous, accessible walking surface.
+**Policy Target:** Mandate **[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)** Design Standards via **[DULT's Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)** — specifically replacing open box drains with integrated "Pipe and Chamber" systems to create a continuous, accessible walking surface.
 
 ```
 Friction Distribution — 900m Yeshwantpur Stretch (Survey Results)
@@ -46,7 +46,7 @@ f = 5  (Systemic Failure)   █████████████████�
 f = 4  (Physical Barrier)   ███                   11.11%
 f = 3  (Obstacle Course)    █                      4.16%
 f = 2  (Distracted Walk)    █                      5.55%
-f = 1  (Gold Standard)                             0.00%
+f = 1  (Gold Standard)                             Reference
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   90.3% of the stretch fails Active Mobility Bill standards
   96.0% is fully inaccessible for individuals in wheelchairs
@@ -173,7 +173,7 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
   | Element | Standard | Current State | Redesigned State |
   |---------|----------|---------------|-----------------|
   | Footpath width | Tender S.U.R.E. ≥ 3m | 0–0.5m usable | 3m continuous |
-  | Drain type | [IRC 103](https://www.irc.gov.in/) — covered/integrated | Open box drain | Pipe & Chamber, flush |
+  | Drain type | IRC 103 — covered/integrated | Open box drain | Pipe & Chamber, flush |
   | Kerb ramps | Active Mobility Bill — all crossings | Absent | 1:12 grade, tactile |
   | Tactile paving | IRC 103 — guidance + warning strips | Absent | Full length |
   | Overhead utilities | BBMP mandate — duct routing | Exposed cables | Underground duct |
