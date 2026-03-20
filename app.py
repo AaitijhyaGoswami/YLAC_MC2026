@@ -1,8 +1,6 @@
 import streamlit as st
 
-# -------------------------------------------------------------------------
 # PAGE CONFIGURATION
-# -------------------------------------------------------------------------
 st.set_page_config(
     page_title="Escape the Knot",
     page_icon="🚶",
@@ -10,9 +8,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# -------------------------------------------------------------------------
+
 # MODULE IMPORTS
-# -------------------------------------------------------------------------
 modules = {}
 
 try:
@@ -39,9 +36,8 @@ try:
 except ImportError:
     pass
 
-# -------------------------------------------------------------------------
+
 # SIDEBAR NAVIGATION
-# -------------------------------------------------------------------------
 st.sidebar.title("Escape the Knot")
 st.sidebar.caption("Yeshwantpur Mobility Audit · YLAC 2026")
 
@@ -55,9 +51,8 @@ st.sidebar.info(
     "**Prajwal Kagalgomb**\n*Data & Advocacy*"
 )
 
-# -------------------------------------------------------------------------
+
 # MAIN ROUTING
-# -------------------------------------------------------------------------
 if page == "Home":
     st.title("Escape the Knot")
     st.markdown("### Physics-Based Pedestrian Audit of the Yeshwantpur Mobility Knot")
@@ -103,9 +98,8 @@ if page == "Home":
     st.markdown("## The Modules")
     st.markdown("---")
 
-    # -----------------------------------------------------------------------
+    
     # MODULE 1 — FRICTION MAPPER
-    # -----------------------------------------------------------------------
     st.markdown("### **1. Friction Mapper**")
 
     st.markdown("""
@@ -157,9 +151,8 @@ if page == "Home":
 
     st.markdown("---")
 
-    # -----------------------------------------------------------------------
+    
     # MODULE 2 — TIME TAX SIMULATOR
-    # -----------------------------------------------------------------------
     st.markdown("### **2. Time Tax Simulator**")
 
     st.markdown("""
@@ -217,9 +210,8 @@ if page == "Home":
 
     st.markdown("---")
 
-    # -----------------------------------------------------------------------
+    
     # MODULE 3 — WHAT-IF: LIGHTHOUSE PILOT
-    # -----------------------------------------------------------------------
     st.markdown("### **3. What-If: Lighthouse Pilot**")
 
     st.markdown("""
@@ -257,9 +249,8 @@ if page == "Home":
 
     st.markdown("---")
 
-    # -----------------------------------------------------------------------
+    
     # MODULE 4 — ECONOMIC IMPACT
-    # -----------------------------------------------------------------------
     st.markdown("### **4. Economic Impact**")
 
     st.markdown("""
