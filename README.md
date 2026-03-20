@@ -5,7 +5,6 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-App-ff4b4b)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-success)
-![Campaign](https://img.shields.io/badge/YLAC-Mobility_Champions_2026-orange)
 
 > **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) & [Prajwal Kagalgomb](https://www.linkedin.com/in/prajwalkagalgomb/)
 > **Partner Organisation:** [Bengawalk](https://bengawalk.com/)
@@ -29,7 +28,7 @@ where `f(x, φ) ∈ [1, 5]` is a continuous friction field derived from discrete
 
 $$L_{eff}(\phi) \approx d \sum_{i=1}^{N} f_i(\phi)$$
 
-The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshwantpur survey, this evaluates to approximately **4.61**, meaning the corridor imposes the equivalent of traversing a path 4.61× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` — the measurable seconds stolen from each commuter per trip — which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
+The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshwantpur survey, this evaluates to approximately **4.61**, meaning the corridor imposes the equivalent of traversing a path 4.61× its physical length on a frictionless surface. The result is a **Time Tax** `Δτ(φ)` (the measurable seconds stolen from each commuter per trip) which, summed across 100,000+ daily users and 250 working days, becomes the headline economic argument for infrastructure intervention.
 
 ---
 
@@ -37,7 +36,7 @@ The ratio `L_eff / D` is the **mean friction index** of the route. For the Yeshw
 
 **Survey Area (March 7–8, 2026):** The 900m stretch connecting Yeshwantpur Railway Station to Constitution Circle, the SWR–Metro interchange corridor, and the 0.45 km² Mathikere road network.
 
-**Policy Target:** Mandate **[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)** Design Standards via **[DULT's Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)** — specifically replacing open box drains with integrated "Pipe and Chamber" systems to create a continuous, accessible walking surface.
+**Policy Target:** Mandate **[Tender S.U.R.E. Design Standards](https://www.janausp.org/portfolio/tender-sure)** via **[DULT's Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)**, specifically replacing open box drains with integrated "Pipe and Chamber" systems to create a continuous, accessible walking surface.
 
 ```
 Friction Distribution — 900m Yeshwantpur Stretch (Survey Results)
@@ -68,7 +67,7 @@ $$\bar{f} = \frac{1}{N} \sum_{i=1}^{N} f_i = \frac{L_{eff}}{D}$$
 
 $$\bar{f}_{Yeshwantpur} = \frac{1}{36}(2 \times 2 + 1.5 \times 3 + 4 \times 4 + 28.5 \times 5) \approx 4.61$$
 
-  indicating the route imposes nearly **5× the energetic cost** of a compliant footpath. Nodes are snapped to the nearest `OSMnx` footpath edge using minimum Haversine distance, and `f`-values are propagated as edge weights in the `NetworkX` graph for downstream routing.
+  indicating the route imposes nearly 5× the energetic cost of a compliant footpath. Nodes are snapped to the nearest `OSMnx` footpath edge using minimum Haversine distance, and `f`-values are propagated as edge weights in the `NetworkX` graph for downstream routing.
 
   The friction rubric encodes the following observable-to-value mapping:
 
@@ -91,7 +90,7 @@ $$\bar{f}_{Yeshwantpur} = \frac{1}{36}(2 \times 2 + 1.5 \times 3 + 4 \times 4 + 
 
 ### **2. Agent-Based Time Tax Simulator — `agent_sim.py`**
 
-- **Abstract:** This module computes the traversal time and **Time Tax** for four commuter personas across the friction-mapped route. The physical model treats each path segment as imposing a velocity penalty governed by the local friction value. Rather than a simple linear reduction — which underestimates the compounding effect of high-friction segments on vulnerable users — we adopt a **power-law friction-velocity relationship**:
+- **Abstract:** This module computes the traversal time and **Time Tax** for four commuter personas across the friction-mapped route. The physical model treats each path segment as imposing a velocity penalty governed by the local friction value. Rather than a simple linear reduction, which underestimates the compounding effect of high-friction segments on vulnerable users, we adopt a **power-law friction-velocity relationship**:
 
 $$v_{eff}(i, \phi) = \frac{v_0(\phi)}{f_i^{\,k(\phi)}}$$
 
