@@ -152,7 +152,7 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 ### **3. Interactive Digital Twin — `streamlit_app.py`**
 
-- **Abstract:** The Streamlit dashboard is the public-facing face of the project. A ive simulation environment that unifies the friction map, agent simulation, and speculative CAD redesign in one place. Users select a commuter persona, slide through "what-if" hotspot-fix scenarios, and watch the Time Tax recalculate in real time. It is designed for two contexts: as a self-explanatory public exhibit on Bengawalk's channels, and as a live demonstration tool in meetings with DULT and BBMP officials.
+- **Abstract:** The Streamlit dashboard is the public-facing face of the project. A live simulation environment that unifies the friction map, agent simulation, and speculative CAD redesign in one place. Users select a commuter persona, slide through "what-if" hotspot-fix scenarios, and watch the Time Tax recalculate in real time. It is designed for two contexts: as a self-explanatory public exhibit on Bengawalk's channels, and as a live demonstration tool in meetings with DULT and BBMP officials.
 
 - **Applications:**
   - Communicating the human cost of infrastructure neglect to non-technical civic audiences and journalists through interactive, persona-driven storytelling.
