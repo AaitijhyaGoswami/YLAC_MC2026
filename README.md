@@ -6,8 +6,8 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-success)
 
-> **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) & [Prajwal Kagalgomb](https://www.linkedin.com/in/prajwalkagalgomb/) \\
-> **Partner Organisation:** [Bengawalk](https://bengawalk.com/) \\
+> **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) & [Prajwal Kagalgomb](https://www.linkedin.com/in/prajwalkagalgomb/) <br>
+> **Partner Organisation:** [Bengawalk](https://bengawalk.com/) <br>
 > **Programme:** YLAC Mobility Champions 2026
 
 ---
