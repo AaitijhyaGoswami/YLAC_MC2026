@@ -63,7 +63,7 @@ f = 1  (Gold Standard)                             Reference
 
 $$\bar{f} = \frac{1}{N} \sum_{i=1}^{N} f_i = \frac{L_{eff}}{D}$$
 
-  The 900m route is treated as two structurally distinct zones. The **600m Bazaar Street stretch** is a continuous `f = 5` failure — footpath ends entirely, pedestrians enter vehicular ROW — contributing directly to `L_eff`:
+  The 900m route is treated as two structurally distinct zones. The **600m Bazaar Street stretch** is a continuous `f = 5` failure (footpath ends entirely, pedestrians enter vehicular ROW) contributing directly to `L_eff`:
 
 $$L_{eff}^{600} = 600 \times 5 = 3000 \text{ m}$$
 
@@ -136,7 +136,7 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 - **Applications:**
   - Quantifying the [disability-adjusted](https://en.wikipedia.org/wiki/Disability-adjusted_life_year) mobility cost imposed on wheelchair users and the elderly by non-compliant infrastructure.
-  - Modelling how targeted fixes at the top-N friction hotspots reduce the aggregate Time Tax — providing a prioritised, low-cost recommendation for [BBMP](https://bbmp.gov.in/) and [DULT](https://dult.karnataka.gov.in/en).
+  - Modelling how targeted fixes at the top-N friction hotspots reduce the aggregate Time Tax, providing a prioritised, low-cost recommendation for [BBMP](https://bbmp.gov.in/) and [DULT](https://dult.karnataka.gov.in/en).
   - Extending the framework to other Indian intermodal hubs (e.g. KSR Bengaluru, Majestic) for city-wide friction benchmarking.
 
 - **Commuter Personas (`φ`):**
@@ -152,11 +152,11 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 ### **3. Interactive Digital Twin — `streamlit_app.py`**
 
-- **Abstract:** The Streamlit dashboard is the public-facing face of the project — a live simulation environment that unifies the friction map, agent simulation, and speculative CAD redesign in one place. Users select a commuter persona, slide through "what-if" hotspot-fix scenarios, and watch the Time Tax recalculate in real time. It is designed for two contexts: as a self-explanatory public exhibit on Bengawalk's channels, and as a live demonstration tool in meetings with DULT and BBMP officials.
+- **Abstract:** The Streamlit dashboard is the public-facing face of the project. A ive simulation environment that unifies the friction map, agent simulation, and speculative CAD redesign in one place. Users select a commuter persona, slide through "what-if" hotspot-fix scenarios, and watch the Time Tax recalculate in real time. It is designed for two contexts: as a self-explanatory public exhibit on Bengawalk's channels, and as a live demonstration tool in meetings with DULT and BBMP officials.
 
 - **Applications:**
   - Communicating the human cost of infrastructure neglect to non-technical civic audiences and journalists through interactive, persona-driven storytelling.
-  - Demonstrating the marginal return of fixing specific obstacles — e.g. *"Fixing just these 3 drains on Bazaar Street saves 38% of the total daily Time Tax"* — to make the policy ask concrete and costed.
+  - Demonstrating the marginal return of fixing specific obstacles (e.g. *"Fixing just these 3 drains on Bazaar Street saves 38% of the total daily Time Tax"*) to make the policy ask concrete and costed.
   - Hosting the speculative CAD redesign as an embedded 3D viewer, allowing stakeholders to orbit, inspect, and annotate the proposed Tender S.U.R.E.-compliant corridor.
 
 - **Dashboard Panels:**
@@ -168,7 +168,7 @@ $$\Delta\tau_{saved}(n, \phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left( f_j^{\
 
 ### **4. Speculative Redesign — CAD Model — `cad_viewer/`**
 
-- **Abstract:** A static 3D cross-section of the Yeshwantpur corridor redesigned to Tender S.U.R.E. and [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) standards. Rather than modelling the full 900m route, the model covers a single representative 20–30m segment showing what a compliant stretch looks like: a 3m continuous footpath, flush pipe-and-chamber drainage, underground utility duct, and kerb ramps at each end. It is the "Streets of Hope" visual counterpart to the friction audit — concrete enough to hand to a contractor, simple enough to explain to a policymaker. Authored in **[Zoo.dev's KCL](https://zoo.dev/docs/kcl)**, exported to glTF via the KittyCAD API, and rendered as a static embed in the Streamlit dashboard.
+- **Abstract:** A static 3D cross-section of the Yeshwantpur corridor redesigned to Tender S.U.R.E. and [Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en) standards. Rather than modelling the full 900m route, the model covers a single representative 20–30m segment showing what a compliant stretch looks like: a 3m continuous footpath, flush pipe-and-chamber drainage, underground utility duct, and kerb ramps at each end. It is the "Streets of Hope" visual counterpart to the friction audit; concrete enough to hand to a contractor, simple enough to explain to a policymaker. Authored in **[Zoo.dev's KCL](https://zoo.dev/docs/kcl)**, exported to glTF via the KittyCAD API, and rendered as a static embed in the Streamlit dashboard.
 
 - **Applications:**
   - Giving DULT and BBMP reviewers a dimensioned picture of exactly what the Lighthouse Pilot intervention involves — not a concept sketch, but a measurable cross-section.
