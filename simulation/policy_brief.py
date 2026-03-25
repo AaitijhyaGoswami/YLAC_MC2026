@@ -300,9 +300,10 @@ def generate_pdf(
     plt.close(fig_pie); plt.close(fig_bars)
 
     # --- Document setup ---
-    doc = SimpleDocTemplate(output_path, pagesize=A4, 
-                            leftMargin=2.5*cm, rightMargin=2.5*cm,
-                            topMargin=2*cm, bottomMargin=2*cm)
+    doc = SimpleDocTemplate(
+        output_path, pagesize=A4,
+        leftMargin=2.5*cm, rightMargin=2.5*cm,
+        topMargin=2*cm, bottomMargin=2*cm,
     )
     styles = getSampleStyleSheet()
     H1  = ParagraphStyle("H1",  parent=styles["Heading1"], fontSize=14,
