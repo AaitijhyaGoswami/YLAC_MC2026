@@ -770,7 +770,7 @@ def app():
         | $W = 250$ | Working days per year |
         """)
 
-        st.markdown("##### Step 1 — Effective Path Length")
+        st.markdown("##### Effective Path Length")
         st.markdown(
             "The friction field $f(x, \\phi)$ is treated as a continuous "
             "potential energy barrier. The **Effective Path Length** is its "
@@ -795,7 +795,7 @@ def app():
             r"\bar{f} = \frac{L_{\text{eff}}}{D} = \frac{4187.5}{900} \approx 4.653"
         )
 
-        st.markdown("##### Step 2 — Power-Law Velocity Model")
+        st.markdown("##### Power-Law Velocity Model")
         st.markdown(
             "A linear speed reduction underestimates the compounding impact on "
             "vulnerable users. Instead, effective speed decays as a power law "
@@ -813,7 +813,7 @@ def app():
             "$v_{\\text{eff}} = 1.4 / 5^{0.6} = 0.490$ m/s."
         )
 
-        st.markdown("##### Step 3 — Per-Segment Traversal Time")
+        st.markdown("##### Per-Segment Traversal Time")
         st.markdown(
             "For **passable** segments ($f_i \\leq f_{\\text{max}}$):"
         )
@@ -832,7 +832,7 @@ def app():
             r"= \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)}"
         )
 
-        st.markdown("##### Step 4 — Time Tax per Trip")
+        st.markdown("##### Time Tax per Trip")
         st.markdown(
             "Summing over all $N = 72$ segments gives the actual traversal time. "
             "The ideal time assumes $f=1$ throughout "
@@ -850,7 +850,7 @@ def app():
             r"= \frac{d}{v_0(\phi)} \left(\sum_{i=1}^{N} f_i^{\,k(\phi)} - N\right)"
         )
 
-        st.markdown("##### Step 5 — Economic Aggregation")
+        st.markdown("##### Economic Aggregation")
         st.markdown(
             "The persona-weighted mean Time Tax, aggregated across all $M$ commuters "
             "and $W$ working days, then converted to economic value:"
@@ -875,7 +875,7 @@ def app():
             f"Annual loss = ₹{econ['annual_loss_cr0']:.2f} Cr"
         )
 
-        st.markdown("##### Step 6 — What-If Delta (Lighthouse Proposal)")
+        st.markdown("##### What-If Delta (Lighthouse Proposal)")
         st.markdown(
             "Fixing the top $n$ hotspots to $f=1$ (S.U.R.E. standard), "
             "where nodes are ranked by $f_j^{k(\\phi)}$ descending:"
