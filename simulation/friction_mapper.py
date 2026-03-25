@@ -223,7 +223,7 @@ def app():
         "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) "
         "remediation scenarios."
     )
-    st.markdown("---")
+    
 
     # Load data
     try:
