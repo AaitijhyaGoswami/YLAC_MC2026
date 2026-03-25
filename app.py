@@ -13,25 +13,25 @@ st.set_page_config(
 modules = {}
 
 try:
-    from simulations import friction_mapper
+    from simulation import friction_mapper
     modules["Friction Mapper"] = friction_mapper
 except ImportError:
     pass
 
 try:
-    from simulations import agent_sim
+    from simulation import agent_sim
     modules["Time Tax Simulator"] = agent_sim
 except ImportError:
     pass
 
 try:
-    from simulations import what_if
+    from simulation import what_if
     modules["What-If: Lighthouse Pilot"] = what_if
 except ImportError:
     pass
 
 try:
-    from simulations import economic_impact
+    from simulation import economic_impact
     modules["Economic Impact"] = economic_impact
 except ImportError:
     pass
