@@ -21,8 +21,8 @@ except ImportError:
 try:
     from simulation import agent_sim
     modules["Time Tax Simulator"] = agent_sim
-except ImportError:
-    pass
+except Exception as e:
+    st.sidebar.error(f"agent_sim failed: {e}")
 
 try:
     from simulation import what_if
