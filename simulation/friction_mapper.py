@@ -401,12 +401,12 @@ def app():
             "79% of obstacles rated f=5 — footpath ends entirely, "
             "pedestrians forced into vehicular traffic."
         )
-                dist = (
-            df["f_value"]
-            .value_counts()
-            .sort_index(ascending=False)
-            .reset_index()
-            .rename(columns={"f_value": "f", "count": "Count"})
+        dist = (
+        df["f_value"]
+        .value_counts()
+        .sort_index(ascending=False)
+        .reset_index()
+        .rename(columns={"f_value": "f", "count": "Count"})
         )
         dist["Level"] = dist["f"].map(
             {v: l.split(" · ")[1] for v, l in F_LABELS.items()}
