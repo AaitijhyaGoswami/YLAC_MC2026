@@ -401,25 +401,10 @@ def app():
             "79% of obstacles rated f=5 — footpath ends entirely, "
             "pedestrians forced into vehicular traffic."
         )
-        dist = (
-            df["f_value"]
-            .value_counts()
-            .sort_index(ascending=False)
-            .reset_index()
-            .rename(columns={"f_value": "f", "count": "Count"})
-        )
-        dist["Level"] = dist["f"].map(
-            {v: l.split(" · ")[1] for v, l in F_LABELS.items()}
-        )
-        dist["Share of route"] = (dist["Count"] / len(df) * 100).round(1).astype(str) + "%"
-        dist["S.U.R.E. compliant?"] = dist["f"].map(
-            {1: "✅ Yes", 2: "⚠️ Marginal", 3: "❌ No", 4: "❌ No", 5: "❌ No"}
-        )
-        st.dataframe(
-            dist[["f", "Level", "Count", "Share of route", "S.U.R.E. compliant?"]],
-            hide_index=True,
-            use_container_width=True,
-        )
+        fig_pie = plot_friction_distribution(df, dark=True)
+        st.pyplot(fig_pie, use_container_width=True)
+        plt.close(fig_pie)
+
 
     with col2:
         st.markdown("#### Effective Path Length — Before vs After")
