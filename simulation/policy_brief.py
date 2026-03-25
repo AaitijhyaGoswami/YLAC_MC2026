@@ -261,7 +261,7 @@ def generate_pdf(
     personas: dict,
     n_fixes: int,
     bazaar_f: int,
-    output_stream: str,
+    output_path: str,
 ) -> None:
     """
     Render a 2-page A4 policy brief PDF using ReportLab.
@@ -300,7 +300,7 @@ def generate_pdf(
     plt.close(fig_pie); plt.close(fig_bars)
 
     # --- Document setup ---
-    doc = SimpleDocTemplate(output_stream, pagesize=A4, 
+    doc = SimpleDocTemplate(output_path, pagesize=A4, 
                             leftMargin=2.5*cm, rightMargin=2.5*cm,
                             topMargin=2*cm, bottomMargin=2*cm)
     )
