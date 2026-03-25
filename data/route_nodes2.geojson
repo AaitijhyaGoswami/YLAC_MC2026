@@ -1,0 +1,30 @@
+{
+"type": "FeatureCollection",
+"name": "Untitled layer",
+"features": [
+{ "type": "Feature", "properties": { "Name": "13.019042°, 77.557376°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.557376, 13.019042, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.01905°, 77.557347°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.557347, 13.01905, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019078°, 77.557289°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.557289, 13.019078, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019092°, 77.557192°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.557192, 13.019092, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019238°, 77.556928°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556928, 13.019238, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.0193°, 77.556869°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556869, 13.0193, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019372°, 77.556685°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556685, 13.019372, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019413°, 77.556575°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556575, 13.019413, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019577°, 77.556274°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556274, 13.019577, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019563°, 77.556262°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556262, 13.019563, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019596°, 77.556136°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556136, 13.019596, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019684°, 77.555987°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.555987, 13.019684, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019698°, 77.555949°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.555949, 13.019698, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019714°, 77.555937°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.555937, 13.019714, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019959°, 77.555467°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.555467, 13.019959, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.020136°, 77.555323°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.555323, 13.020136, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019865°, 77.555914°", "gx_media_links": "https://mymaps.usercontent.google.com/hostedimage/m/*/3AL_Y2X7-RG7LGfg4693XX3hNfGVPd6XbZVMerukwY8UMTLbFfistK1GN2V212lUGx57em9uHhk6fTefIMDQfT5GVYymHoLXxLSghY21dVyWFLYSvOKobhmWKOagui8beBcld43QpS-Q95LwtUCPW1bbdJzyzgNAEGbrB4t1Lb0P4Ty7MvY1djkOKdYOwOtgpMU3crTS0IqYbcnebZQDvCPQCvBrLTy-z3qgVeq7E2awtNMogzf_ExpVYNXWmm1c?authuser=0&fife=s16383" }, "geometry": { "type": "Point", "coordinates": [ 77.555914, 13.019865, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019701°, 77.556233°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556233, 13.019701, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019377°, 77.556675°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556675, 13.019377, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019323°, 77.556718°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556718, 13.019323, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019298°, 77.556835°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556835, 13.019298, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.01928°, 77.55691°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.55691, 13.01928, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019039°, 77.557297°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.557297, 13.019039, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "13.019537°, 77.556389°", "gx_media_links": null }, "geometry": { "type": "Point", "coordinates": [ 77.556389, 13.019537, 0.0 ] } }
+]
+}

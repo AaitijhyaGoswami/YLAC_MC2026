@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "Directions from Shop No 27 6 Sharif Building Subedarchatram Rd opp RTO Model Colony DrAmbedkar Nagar Yeswanthpur Bengaluru Karnataka 560022 India to Yeshwanthpur Junction",
+"features": [
+{ "type": "Feature", "properties": { "Name": "Directions from Shop No. 27/6, Sharif Building, Subedarchatram Rd, opp. R.T.O, Model Colony, Dr.Ambedkar Nagar, Yeswanthpur, Bengaluru, Karnataka 560022, India to Yeshwanthpur Junction" }, "geometry": { "type": "LineString", "coordinates": [ [ 77.55546, 13.02007, 0.0 ], [ 77.55547, 13.0201, 0.0 ], [ 77.55546, 13.02011, 0.0 ], [ 77.55475, 13.02053, 0.0 ], [ 77.55458, 13.02063, 0.0 ], [ 77.55398, 13.02102, 0.0 ], [ 77.5537, 13.02117, 0.0 ], [ 77.55367, 13.02121, 0.0 ], [ 77.55365, 13.02124, 0.0 ], [ 77.55359, 13.0212, 0.0 ], [ 77.55335, 13.02162, 0.0 ], [ 77.55335, 13.02164, 0.0 ], [ 77.55333, 13.02171, 0.0 ], [ 77.55316, 13.022, 0.0 ], [ 77.55307, 13.02196, 0.0 ], [ 77.553, 13.02194, 0.0 ], [ 77.55294, 13.0219, 0.0 ], [ 77.55292, 13.02194, 0.0 ], [ 77.55268, 13.02238, 0.0 ], [ 77.55257, 13.02257, 0.0 ], [ 77.55205, 13.02349, 0.0 ], [ 77.55187, 13.02383, 0.0 ] ] } },
+{ "type": "Feature", "properties": { "Name": "Shop No. 27/6, Sharif Building, Subedarchatram Rd, opp. R.T.O, Model Colony, Dr.Ambedkar Nagar, Yeswanthpur, Bengaluru, Karnataka 560022, India" }, "geometry": { "type": "Point", "coordinates": [ 77.5554612, 13.0200654, 0.0 ] } },
+{ "type": "Feature", "properties": { "Name": "Yeshwanthpur Junction" }, "geometry": { "type": "Point", "coordinates": [ 77.5518714, 13.0238315, 0.0 ] } }
+]
+}
