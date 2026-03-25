@@ -1,0 +1,39 @@
+able_bodied:
+  label: "🚶 Able-bodied adult"
+  v0: 1.4        # free-walking speed (m/s)
+  k: 0.6         # friction sensitivity exponent
+  f_max: 5       # impassability threshold — no node is impassable
+  alpha: 1.5     # ROW velocity penalty multiplier
+  delta: 8.0     # mean detour length per impassable node (m)
+  weight: 0.45   # population share weight for aggregate calculations
+  color: "#2196F3"
+
+elderly:
+  label: "👴 Elderly commuter"
+  v0: 0.9
+  k: 0.9
+  f_max: 4       # f=5 nodes force ROW detour
+  alpha: 1.5
+  delta: 10.0
+  weight: 0.20
+  color: "#FF9800"
+
+wheelchair:
+  label: "♿ Wheelchair user"
+  v0: 0.8
+  k: 1.2
+  f_max: 3       # f=4 and f=5 nodes force ROW detour
+  alpha: 1.5
+  delta: 15.0    # longer detour — wheelchair needs more space to re-enter footpath
+  weight: 0.10
+  color: "#9C27B0"
+
+delivery:
+  label: "🛵 Delivery partner"
+  v0: 1.2
+  k: 0.75
+  f_max: 4       # f=5 nodes force ROW detour
+  alpha: 1.5
+  delta: 8.0
+  weight: 0.25
+  color: "#F44336"
