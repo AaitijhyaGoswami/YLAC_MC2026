@@ -13,31 +13,43 @@ import os
 # CONSTANTS
 # -------------------------------------------------------------------------
 
+# Colour scheme:
+# f=1 — reference point (grey, rarely plotted)
+# f=2 — green
+# f=3 — blue
+# f=4 — orange
+# f=5 — red
 F_COLORS = {
-    1: "#4CAF50",  # green
-    2: "#FFEB3B",  # yellow
-    3: "#FF9800",  # orange
-    4: "#F44336",  # red
-    5: "#212121",  # near-black
+    1: "#9E9E9E",  # grey  — reference / Tender S.U.R.E. standard
+    2: "#4CAF50",  # green
+    3: "#2196F3",  # blue
+    4: "#FF9800",  # orange
+    5: "#F44336",  # red
 }
 
 F_LABELS = {
-    1: "f=1 · Gold Standard",
+    1: "f=1 · Gold Standard (reference)",
     2: "f=2 · Distracted Walk",
     3: "f=3 · Obstacle Course",
     4: "f=4 · Physical Barrier",
     5: "f=5 · Systemic Failure",
 }
 
-# 600m Bazaar Street stretch bounding box (approximate)
-# SW corner, NE corner — used for the rectangle overlay
-BAZAAR_ST_BOUNDS = [
-    [13.0195, 77.5530],  # SW
-    [13.0240, 77.5560],  # NE
+# 600m Bazaar Street route — [lat, lon] ordered from south end to Yeshwantpur Jn
+# Source: route_nodes1.geojson exported from Google My Maps
+ROUTE_600M = [
+    [13.02007, 77.55546], [13.0201,  77.55547], [13.02011, 77.55546],
+    [13.02053, 77.55475], [13.02063, 77.55458], [13.02102, 77.55398],
+    [13.02117, 77.5537],  [13.02121, 77.55367], [13.02124, 77.55365],
+    [13.0212,  77.55359], [13.02162, 77.55335], [13.02164, 77.55335],
+    [13.02171, 77.55333], [13.022,   77.55316], [13.02196, 77.55307],
+    [13.02194, 77.553],   [13.0219,  77.55294], [13.02194, 77.55292],
+    [13.02238, 77.55268], [13.02257, 77.55257], [13.02349, 77.55205],
+    [13.02383, 77.55187],
 ]
 
-# Map centre — midpoint of the full survey area
-MAP_CENTRE = [13.0195, 77.5560]
+# Map centre — midpoint of full survey area
+MAP_CENTRE = [13.0215, 77.5555]
 
 # -------------------------------------------------------------------------
 # DATA LOADER
@@ -45,7 +57,6 @@ MAP_CENTRE = [13.0195, 77.5560]
 
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
-    """Load and validate audit_log.csv."""
     path = os.path.join("data", "audit_log.csv")
     df = pd.read_csv(path)
     assert {"id", "lat", "lon", "f_value"}.issubset(df.columns), \
@@ -59,39 +70,47 @@ def load_audit_data() -> pd.DataFrame:
 
 def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
     """
-    Build the Folium map with:
-    - Circle markers for each of the 24 geotagged obstacle nodes
-    - Shaded rectangle for the continuous 600m f=5 Bazaar Street stretch
-    - Fixes shown in green when n_fixes > 0
+    Folium map with:
+    - 24 circle markers for the 300m stretch obstacle nodes
+    - Polyline for the 600m Bazaar Street stretch (red, f=5)
+    - Fixed nodes shown in grey (f=1 reference colour)
     """
     m = folium.Map(
         location=MAP_CENTRE,
-        zoom_start=16,
+        zoom_start=15,
         tiles="CartoDB dark_matter",
     )
 
-    # --- 600m Bazaar Street stretch — shaded rectangle ---
-    folium.Rectangle(
-        bounds=BAZAAR_ST_BOUNDS,
-        color="#F44336",
+    # --- 600m Bazaar Street stretch — polyline ---
+    folium.PolyLine(
+        locations=ROUTE_600M,
+        color=F_COLORS[5],
+        weight=5,
+        opacity=0.85,
+        tooltip="600m Bazaar Street — continuous f=5 · Systemic Failure",
+    ).add_to(m)
+
+    # Start/end markers for the 600m stretch
+    folium.CircleMarker(
+        location=ROUTE_600M[0],
+        radius=5,
+        color="white",
         fill=True,
-        fill_color="#F44336",
-        fill_opacity=0.15,
-        weight=2,
-        tooltip="600m Bazaar Street — continuous f=5 (Systemic Failure)",
+        fill_color=F_COLORS[5],
+        fill_opacity=1.0,
+        tooltip="600m stretch — south end",
+    ).add_to(m)
+    folium.CircleMarker(
+        location=ROUTE_600M[-1],
+        radius=5,
+        color="white",
+        fill=True,
+        fill_color=F_COLORS[5],
+        fill_opacity=1.0,
+        tooltip="Yeshwantpur Junction",
     ).add_to(m)
 
-    folium.Marker(
-        location=[13.0218, 77.5545],
-        icon=folium.DivIcon(
-            html='<div style="font-size:10px;color:#F44336;font-weight:bold;'
-                 'white-space:nowrap">600m · f=5 · Bazaar Street</div>',
-            icon_size=(180, 20),
-        ),
-    ).add_to(m)
-
-    # --- 300m stretch obstacle pins ---
-    # Determine which nodes are fixed (sorted descending by f_value)
+    # --- 300m stretch — obstacle pins ---
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(
         df.index[np.argsort(f_values)[::-1][:n_fixes]]
@@ -100,7 +119,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
     for idx, row in df.iterrows():
         is_fixed = idx in fix_indices
         f = int(row["f_value"])
-        color = "#4CAF50" if is_fixed else F_COLORS.get(f, "#212121")
+        color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
         label = "FIXED → f=1" if is_fixed else F_LABELS.get(f, f"f={f}")
 
         folium.CircleMarker(
@@ -120,13 +139,13 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
          background:#1a1a1a;padding:10px 14px;border-radius:8px;
          border:1px solid #444;font-size:12px;color:white;font-family:monospace">
       <b>Friction Level</b><br>
-      <span style="color:#4CAF50">●</span> f=1 · Gold Standard / Fixed<br>
-      <span style="color:#FFEB3B">●</span> f=2 · Distracted Walk<br>
-      <span style="color:#FF9800">●</span> f=3 · Obstacle Course<br>
-      <span style="color:#F44336">●</span> f=4 · Physical Barrier<br>
-      <span style="color:#555;background:#212121;padding:0 3px">●</span> f=5 · Systemic Failure<br>
+      <span style="color:#9E9E9E">●</span> f=1 · Gold Standard / Fixed<br>
+      <span style="color:#4CAF50">●</span> f=2 · Distracted Walk<br>
+      <span style="color:#2196F3">●</span> f=3 · Obstacle Course<br>
+      <span style="color:#FF9800">●</span> f=4 · Physical Barrier<br>
+      <span style="color:#F44336">●</span> f=5 · Systemic Failure<br>
       <hr style="border-color:#444;margin:5px 0">
-      <span style="color:#F44336">▬▬</span> 600m Bazaar St (continuous f=5)
+      <span style="color:#F44336">━━</span> 600m Bazaar St route (f=5)
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))
@@ -140,30 +159,27 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     """
-    Colour-coded bar chart showing f-value per segment across the full 900m.
+    Colour-coded bar chart across the full 900m.
     Left 24 bars = 300m discrete nodes. Right 48 bars = 600m Bazaar St (f=5).
-    Fixed nodes shown in green.
     """
     f_300 = df["f_value"].values.astype(float)
 
     if n_fixes > 0:
-        fix_idx = np.argsort(f_300)[::-1][:n_fixes]
-        f_300_display = f_300.copy()
-        f_300_display[fix_idx] = 1.0
+        f_display = f_300.copy()
+        f_display[np.argsort(f_display)[::-1][:n_fixes]] = 1.0
     else:
-        f_300_display = f_300.copy()
+        f_display = f_300.copy()
 
     f_600 = np.full(48, 5.0)
-    f_all = np.concatenate([f_300_display, f_600])
+    f_all = np.concatenate([f_display, f_600])
 
     d = 12.5
     x = np.arange(len(f_all)) * d
-    colors = [F_COLORS.get(int(min(v, 5)), "#212121") for v in f_all]
+    colors = [F_COLORS.get(int(min(v, 5)), F_COLORS[5]) for v in f_all]
 
     fig, ax = plt.subplots(figsize=(11, 2.5))
     ax.bar(x, f_all, width=d * 0.88, color=colors, align="edge", linewidth=0)
 
-    # Zone divider
     ax.axvline(300, color="#aaaaaa", linewidth=1.2, linestyle="--", alpha=0.6)
     ax.text(150, 5.35, "300m · discrete nodes",
             ha="center", fontsize=7.5, color="#aaaaaa")
@@ -201,11 +217,11 @@ def app():
     st.markdown(
         "Interactive map of the 900m Yeshwantpur–Constitution Circle corridor. "
         "Circle markers show the 24 geotagged obstacle nodes from the March 2026 "
-        "field audit. The shaded rectangle covers the 600m Bazaar Street stretch — "
-        "a continuous $f = 5$ failure with no discrete nodes. "
-        "Use the slider below to simulate "
-        "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) remediation "
-        "of the top-ranked hotspots."
+        "field audit. The red polyline traces the 600m Bazaar Street stretch — "
+        "a continuous $f = 5$ failure. "
+        "Use the slider to simulate "
+        "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) "
+        "remediation of the top-ranked hotspots."
     )
     st.markdown("---")
 
@@ -221,9 +237,8 @@ def app():
 
     # Hotspot fix slider
     n_fixes = st.slider(
-        "Hotspots fixed (top-N by f-value):",
+        "Hotspots fixed to Tender S.U.R.E. standard (top-N by f-value):",
         min_value=0, max_value=len(df), value=0, step=1,
-        help="Sets the top-N highest-friction nodes to f=1 (Tender S.U.R.E. standard)"
     )
 
     st.markdown("---")
@@ -238,9 +253,9 @@ def app():
     st.markdown("#### Friction Gradient — Full 900m Route")
     st.caption(
         "Each bar = one 12.5m segment · "
-        "Left 24 bars = 300m discrete nodes · "
-        "Right 48 bars = 600m Bazaar Street · "
-        "Green = fixed to f=1"
+        "Left 24 = 300m discrete nodes · "
+        "Right 48 = 600m Bazaar Street · "
+        "Grey = fixed to f=1"
     )
     fig = plot_friction_bar(df, n_fixes)
     st.pyplot(fig, use_container_width=True)
@@ -248,7 +263,6 @@ def app():
 
     st.markdown("---")
 
-    # Summary stats
     col1, col2 = st.columns(2)
 
     with col1:
@@ -260,7 +274,9 @@ def app():
             .reset_index()
             .rename(columns={"f_value": "f", "count": "Count"})
         )
-        dist["Level"] = dist["f"].map({v: l.split(" · ")[1] for v, l in F_LABELS.items()})
+        dist["Level"] = dist["f"].map(
+            {v: l.split(" · ")[1] for v, l in F_LABELS.items()}
+        )
         dist["Share"] = (dist["Count"] / len(df) * 100).round(1).astype(str) + "%"
         st.dataframe(
             dist[["f", "Level", "Count", "Share"]],
@@ -269,16 +285,8 @@ def app():
         )
 
     with col2:
-        st.markdown("#### Zone Summary")
-        st.markdown(f"""
-        | Zone | Length | Nodes | Treatment |
-        |------|--------|-------|-----------|
-        | Constitution Circle stretch | 300m | 24 discrete | Per-node $f$ from audit |
-        | Bazaar Street stretch | 600m | — | Continuous $f = 5$ |
-        | **Full corridor** | **900m** | **24** | **$\\bar{{f}} = 4.653$** |
-        """)
+        st.markdown("#### Live Friction Index")
 
-        # Mean friction index
         f_300 = df["f_value"].values.astype(float)
         if n_fixes > 0:
             f_fixed = f_300.copy()
@@ -287,16 +295,24 @@ def app():
             f_fixed = f_300
 
         L_eff_300 = 12.5 * f_fixed.sum()
-        L_eff_600 = 600 * 5
+        L_eff_600 = 600 * 5.0
         L_eff_total = L_eff_300 + L_eff_600
         f_bar = L_eff_total / 900
 
         st.metric(
-            "Mean friction index after fixes",
+            "Mean friction index f̄",
             f"{f_bar:.3f}",
             delta=f"{f_bar - 4.653:.3f}" if n_fixes > 0 else None,
             delta_color="normal",
         )
+        st.markdown(f"""
+        | | Current | Baseline |
+        |--|---------|---------|
+        | $L_{{\\text{{eff}}}}$ (300m) | {L_eff_300:.1f} m | 1187.5 m |
+        | $L_{{\\text{{eff}}}}$ (600m) | 3000.0 m | 3000.0 m |
+        | $L_{{\\text{{eff}}}}$ total | {L_eff_total:.1f} m | 4187.5 m |
+        | $\\bar{{f}}$ | {f_bar:.3f} | 4.653 |
+        """)
 
     st.markdown("---")
 
