@@ -9,9 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
 
-# -------------------------------------------------------------------------
+
 # CONSTANTS
-# -------------------------------------------------------------------------
 
 # Colour scheme:
 # f=1 — reference point (grey, rarely plotted)
@@ -51,9 +50,7 @@ ROUTE_600M = [
 # Map centre — midpoint of full survey area
 MAP_CENTRE = [13.0215, 77.5555]
 
-# -------------------------------------------------------------------------
 # DATA LOADER
-# -------------------------------------------------------------------------
 
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
@@ -64,10 +61,8 @@ def load_audit_data() -> pd.DataFrame:
     return df
 
 
-# -------------------------------------------------------------------------
-# MAP BUILDER
-# -------------------------------------------------------------------------
 
+# MAP BUILDER
 def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
     """
     Folium map with:
@@ -81,7 +76,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
         tiles="CartoDB dark_matter",
     )
 
-    # --- 600m Bazaar Street stretch — polyline ---
+    # 600m Bazaar Street stretch — polyline
     folium.PolyLine(
         locations=ROUTE_600M,
         color=F_COLORS[5],
@@ -133,7 +128,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
             tooltip=f"Node {int(row['id'])} · {label}",
         ).add_to(m)
 
-    # --- Legend ---
+    # Legend 
     legend_html = """
     <div style="position:fixed;bottom:20px;left:20px;z-index:9999;
          background:#1a1a1a;padding:10px 14px;border-radius:8px;
@@ -153,9 +148,8 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0) -> folium.Map:
     return m
 
 
-# -------------------------------------------------------------------------
+
 # FRICTION GRADIENT BAR CHART
-# -------------------------------------------------------------------------
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     """
@@ -208,10 +202,8 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     return fig
 
 
-# -------------------------------------------------------------------------
-# MAIN APP ENTRY POINT
-# -------------------------------------------------------------------------
 
+# MAIN APP ENTRY POINT
 def app():
     st.title("Friction Mapper")
     st.markdown(
