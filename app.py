@@ -31,8 +31,8 @@ except ImportError:
     pass
 
 try:
-    from simulation import economic_impact
-    modules["Economic Impact"] = economic_impact
+    from simulation import policy_brief
+    modules["Economic Impact"] = policy_brief
 except ImportError:
     pass
 
