@@ -680,8 +680,7 @@ def app():
     # -----------------------------------------------------------------------
     # CHARTS
     # -----------------------------------------------------------------------
-    col_l = st.columns(1)
-    with col_l:
+
     st.markdown("---")
     st.markdown("#### Benefit-Cost Ratio vs Number of Fixes")
     st.caption(
