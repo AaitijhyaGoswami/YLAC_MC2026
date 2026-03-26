@@ -1,16 +1,3 @@
-"""
-policy_brief.py
-===============
-Dual-mode module:
-
-    Streamlit  : called via app() from streamlit_app.py
-    Headless   : python simulations/policy_brief.py --fixes 3 --output brief.pdf
-
-Computes the aggregate Time Tax, annual economic loss, and benefit-to-cost
-ratio for the Yeshwantpur corridor, and generates a submission-ready 2-page
-PDF policy brief for DULT/BBMP.
-"""
-
 import argparse
 import io
 import os
@@ -693,19 +680,8 @@ def app():
     # -----------------------------------------------------------------------
     # CHARTS
     # -----------------------------------------------------------------------
-    col_l, col_r = st.columns(2)
+    col_l = st.columns(1)
     with col_l:
-        st.markdown("#### Friction Distribution — 300m Stretch")
-        fig_pie = plot_friction_distribution(df, dark=True)
-        st.pyplot(fig_pie, use_container_width=True)
-        plt.close(fig_pie)
-
-    with col_r:
-        st.markdown("#### Time Tax per Persona")
-        fig_bars = plot_time_tax_bars(econ["results"], personas, dark=True)
-        st.pyplot(fig_bars, use_container_width=True)
-        plt.close(fig_bars)
-
     st.markdown("---")
     st.markdown("#### Benefit-Cost Ratio vs Number of Fixes")
     st.caption(
@@ -718,8 +694,7 @@ def app():
     plt.close(fig_bcr)
 
     st.markdown("---")
-
-    # -----------------------------------------------------------------------
+ -----------------------------------------------------------------------
     # PER-PERSONA TABLE
     # -----------------------------------------------------------------------
     st.markdown("#### Per-Persona Breakdown")
