@@ -519,12 +519,12 @@ def app():
     # -----------------------------------------------------------------------
     st.markdown("#### Corridor Analysis")
 
-    col_donut, col_right = st.columns([1.5, 1.4])
+    col_donut, col_right = st.columns([1.4, 1.4])
 
     with col_donut:
         st.caption("Obstacle severity breakdown — 300m stretch")
-        fig_donut = plot_severity_donut(df, n_fixes)
-        st.pyplot(fig_donut)
+        fig_donut = plot_severity_donut(n_fixes)
+        st.pyplot(fig_donut, use_container_width=True)
         plt.close(fig_donut)
 
     with col_right:
