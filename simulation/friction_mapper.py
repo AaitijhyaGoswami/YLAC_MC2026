@@ -523,7 +523,7 @@ def app():
 
     with col_donut:
         st.caption("Obstacle severity breakdown — 300m stretch")
-        fig_donut = plot_severity_donut(df)
+        fig_donut = plot_piechart(df, n_fixes)
         st.pyplot(fig_donut, use_container_width=True)
         plt.close(fig_donut)
 
