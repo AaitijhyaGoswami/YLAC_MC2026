@@ -519,7 +519,7 @@ def app():
     # -----------------------------------------------------------------------
     st.markdown("#### Corridor Analysis")
 
-    col_donut, col_right = st.columns([1, 1.4])
+    col_donut, col_right = st.columns([1.5, 1.4])
 
     with col_donut:
         st.caption("Obstacle severity breakdown — 300m stretch")
