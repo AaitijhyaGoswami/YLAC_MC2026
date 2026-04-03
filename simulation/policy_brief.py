@@ -1,3 +1,16 @@
+"""
+policy_brief.py
+===============
+Dual-mode module:
+
+    Streamlit  : called via app() from streamlit_app.py
+    Headless   : python simulations/policy_brief.py --fixes 3 --output brief.pdf
+
+Computes the aggregate Time Tax, annual economic loss, and benefit-to-cost
+ratio for the Yeshwantpur corridor, and generates a submission-ready 2-page
+PDF policy brief for DULT/BBMP.
+"""
+
 import argparse
 import io
 import os
@@ -118,8 +131,17 @@ def compute_economics(
     )
 
     recovered_lakh = (annual_loss_cr0 - annual_loss_cr) * 100  # cr → lakh
-    bcr_low  = recovered_lakh / FIX_COST_HIGH_LAKH if n_fixes > 0 else 0.0
-    bcr_high = recovered_lakh / FIX_COST_LOW_LAKH  if n_fixes > 0 else 0.0
+    # Repair cost scales with number of fixes — each fix costs approx equal share
+    # of the total pilot cost (₹8–12 lakh for the full top-3 Lighthouse Pilot)
+    # For arbitrary n, we scale linearly: cost_per_fix ≈ total_cost / 3
+    if n_fixes > 0:
+        cost_low  = FIX_COST_LOW_LAKH  * n_fixes / 3
+        cost_high = FIX_COST_HIGH_LAKH * n_fixes / 3
+        bcr_low  = recovered_lakh / cost_high if cost_high > 0 else 0.0
+        bcr_high = recovered_lakh / cost_low  if cost_low  > 0 else 0.0
+    else:
+        bcr_low  = 0.0
+        bcr_high = 0.0
 
     return {
         "results":         results,
@@ -236,12 +258,12 @@ def plot_bcr_curve(df: pd.DataFrame, personas: dict,
 # TABLE STYLE HELPER  (avoids repeating setStyle boilerplate)
 # -------------------------------------------------------------------------
 
-def _table_style(colors_mod, header_rows=1):
+def _table_style(colors_mod, header_rows=1, n_data_rows=50):
     """Return a TableStyle for ReportLab tables."""
     from reportlab.platypus import TableStyle as TS
+    from reportlab.lib import colors as C
 
     style = [
-        # Header row(s)
         ("BACKGROUND",   (0, 0), (-1, header_rows - 1),
          colors_mod.HexColor("#2c2c2c")),
         ("TEXTCOLOR",    (0, 0), (-1, header_rows - 1), colors_mod.white),
@@ -255,9 +277,8 @@ def _table_style(colors_mod, header_rows=1):
         ("BOTTOMPADDING",(0, 0), (-1, -1), 4),
         ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
     ]
-    # Alternating row backgrounds (data rows only)
-    from reportlab.lib import colors as C
-    for i in range(header_rows, 99, 2):
+    # Alternating row backgrounds — only up to n_data_rows to avoid index errors
+    for i in range(header_rows, header_rows + n_data_rows, 2):
         style.append(("BACKGROUND", (0, i), (-1, i),
                        C.HexColor("#f5f5f5")))
     return TS(style)
@@ -378,7 +399,7 @@ def generate_pdf(
         ["Nodes at f=2 (Distracted Walk)", "3 / 24  (12.5%)"],
     ]
     t = Table(stats, colWidths=[9*cm, 8*cm])
-    t.setStyle(_table_style(colors))
+    t.setStyle(_table_style(colors, n_data_rows=len(stats) - 1))
     story.append(t)
     story.append(Spacer(1, 0.4*cm))
 
@@ -441,7 +462,7 @@ def generate_pdf(
         ])
     tp = Table(persona_rows,
                colWidths=[4.5*cm, 2*cm, 1.5*cm, 1.5*cm, 1.5*cm, 2*cm, 4*cm])
-    tp.setStyle(_table_style(colors))
+    tp.setStyle(_table_style(colors, n_data_rows=len(persona_rows) - 1))
     story.append(tp)
     story.append(Spacer(1, 0.4*cm))
 
@@ -495,7 +516,7 @@ def generate_pdf(
             f"\u0394\u03c4={r['delta_tau']:.0f}s  \u20b9{l:.2f}Cr",
         ])
     te = Table(econ_data, colWidths=[7*cm, 5*cm, 5*cm])
-    te.setStyle(_table_style(colors))
+    te.setStyle(_table_style(colors, n_data_rows=len(econ_data) - 1))
     story.append(te)
     story.append(Spacer(1, 0.4*cm))
 
@@ -507,6 +528,7 @@ def generate_pdf(
         f"covers and slab repair &mdash; yields the following return:", BODY))
 
     lh_data = [
+        ["Parameter", "Value"],
         ["Repair cost estimate",
          f"\u20b9{FIX_COST_LOW_LAKH}\u2013{FIX_COST_HIGH_LAKH} lakh"],
         ["Annual productivity recovered",
@@ -517,7 +539,7 @@ def generate_pdf(
          f"{econ['bcr_low']:.1f}:1 \u2013 {econ['bcr_high']:.1f}:1"],
     ]
     tl = Table(lh_data, colWidths=[10*cm, 7*cm])
-    tl.setStyle(_table_style(colors))
+    tl.setStyle(_table_style(colors, n_data_rows=len(lh_data) - 1))
     story.append(tl)
     story.append(Spacer(1, 0.4*cm))
 
@@ -677,9 +699,21 @@ def app():
 
     st.markdown("---")
 
-  # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # CHARTS
     # -----------------------------------------------------------------------
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.markdown("#### Friction Distribution — 300m Stretch")
+        fig_pie = plot_friction_distribution(df, dark=True)
+        st.pyplot(fig_pie, use_container_width=True)
+        plt.close(fig_pie)
+
+    with col_r:
+        st.markdown("#### Time Tax per Persona")
+        fig_bars = plot_time_tax_bars(econ["results"], personas, dark=True)
+        st.pyplot(fig_bars, use_container_width=True)
+        plt.close(fig_bars)
 
     st.markdown("---")
     st.markdown("#### Benefit-Cost Ratio vs Number of Fixes")
@@ -694,7 +728,7 @@ def app():
 
     st.markdown("---")
 
-# -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # PER-PERSONA TABLE
     # -----------------------------------------------------------------------
     st.markdown("#### Per-Persona Breakdown")
@@ -745,7 +779,7 @@ def app():
         | $W = 250$ | Working days per year |
         """)
 
-        st.markdown("##### Effective Path Length")
+        st.markdown("##### Step 1 — Effective Path Length")
         st.markdown(
             "The friction field $f(x, \\phi)$ is treated as a continuous "
             "potential energy barrier. The **Effective Path Length** is its "
@@ -770,7 +804,7 @@ def app():
             r"\bar{f} = \frac{L_{\text{eff}}}{D} = \frac{4187.5}{900} \approx 4.653"
         )
 
-        st.markdown("##### Power-Law Velocity Model")
+        st.markdown("##### Step 2 — Power-Law Velocity Model")
         st.markdown(
             "A linear speed reduction underestimates the compounding impact on "
             "vulnerable users. Instead, effective speed decays as a power law "
@@ -788,7 +822,7 @@ def app():
             "$v_{\\text{eff}} = 1.4 / 5^{0.6} = 0.490$ m/s."
         )
 
-        st.markdown("##### Per-Segment Traversal Time")
+        st.markdown("##### Step 3 — Per-Segment Traversal Time")
         st.markdown(
             "For **passable** segments ($f_i \\leq f_{\\text{max}}$):"
         )
@@ -807,7 +841,7 @@ def app():
             r"= \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)}"
         )
 
-        st.markdown("##### Time Tax per Trip")
+        st.markdown("##### Step 4 — Time Tax per Trip")
         st.markdown(
             "Summing over all $N = 72$ segments gives the actual traversal time. "
             "The ideal time assumes $f=1$ throughout "
@@ -825,7 +859,7 @@ def app():
             r"= \frac{d}{v_0(\phi)} \left(\sum_{i=1}^{N} f_i^{\,k(\phi)} - N\right)"
         )
 
-        st.markdown("##### Economic Aggregation")
+        st.markdown("##### Step 5 — Economic Aggregation")
         st.markdown(
             "The persona-weighted mean Time Tax, aggregated across all $M$ commuters "
             "and $W$ working days, then converted to economic value:"
@@ -850,7 +884,7 @@ def app():
             f"Annual loss = ₹{econ['annual_loss_cr0']:.2f} Cr"
         )
 
-        st.markdown("##### What-If Delta (Lighthouse Proposal)")
+        st.markdown("##### Step 6 — What-If Delta (Lighthouse Proposal)")
         st.markdown(
             "Fixing the top $n$ hotspots to $f=1$ (S.U.R.E. standard), "
             "where nodes are ranked by $f_j^{k(\\phi)}$ descending:"
