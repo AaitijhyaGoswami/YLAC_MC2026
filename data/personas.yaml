@@ -2,7 +2,7 @@ able_bodied:
   label: "Able-bodied adult"
   v0: 1.4        # free-walking speed (m/s)
   k: 0.6         # friction sensitivity exponent
-  f_max: 5       # impassability threshold — no node is impassable
+  f_max: 4       # impassability threshold — no node is impassable
   alpha: 1.5     # ROW velocity penalty multiplier
   delta: 8.0     # mean detour length per impassable node (m)
   weight: 0.45   # population share weight for aggregate calculations
@@ -12,7 +12,7 @@ elderly:
   label: "Elderly commuter"
   v0: 0.9
   k: 0.9
-  f_max: 4       # f=5 nodes force ROW detour
+  f_max: 3       # f=5 nodes force ROW detour
   alpha: 1.5
   delta: 10.0
   weight: 0.20
