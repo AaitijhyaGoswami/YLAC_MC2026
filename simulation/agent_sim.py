@@ -130,7 +130,7 @@ def plot_traversal_comparison(
 ) -> plt.Figure:
     """
     Bar chart: T_ideal vs T_actual for the selected persona.
-    Also shows T_ideal as a reference bar.
+    Handles the fully-compliant edge case (Δτ = 0) gracefully.
     """
     p   = personas[selected_key]
     res = results[selected_key]
@@ -147,23 +147,29 @@ def plot_traversal_comparison(
     for bar, val in zip(bars, values):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            val + 0.05,
+            val + max(values) * 0.02,
             f"{val:.1f} min",
             ha="center", va="bottom",
             fontsize=10, color="white", fontweight="bold",
         )
 
-    # Annotate Time Tax delta
-    ax.annotate(
-        f"Time Tax\n+{res['delta_tau'] / 60:.1f} min",
-        xy=(1, res["T_actual"] / 60),
-        xytext=(1.3, (res["T_ideal"] + res["T_actual"]) / 2 / 60),
-        fontsize=8, color="#FF9800",
-        arrowprops=dict(arrowstyle="->", color="#FF9800", lw=1.2),
-    )
+    # Only annotate Time Tax if it is non-trivial
+    delta_min = res["delta_tau"] / 60
+    if delta_min > 0.05:
+        ax.annotate(
+            f"Time Tax\n+{delta_min:.1f} min",
+            xy=(1, res["T_actual"] / 60),
+            xytext=(1.3, (res["T_ideal"] + res["T_actual"]) / 2 / 60),
+            fontsize=8, color="#FF9800",
+            arrowprops=dict(arrowstyle="->", color="#FF9800", lw=1.2),
+        )
+    else:
+        ax.text(0.5, 0.92, "✅ Corridor fully S.U.R.E.-compliant",
+                ha="center", va="top", transform=ax.transAxes,
+                fontsize=8, color="#4CAF50")
 
     ax.set_ylabel("Traversal time (min)", fontsize=9, color="white")
-    ax.set_ylim(0, max(values) * 1.25)
+    ax.set_ylim(0, max(values) * 1.30 if max(values) > 0 else 1.0)
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
     ax.tick_params(colors="white", labelsize=9)
@@ -219,6 +225,10 @@ def plot_segment_breakdown(
 
     ax2.set_ylabel("τᵢ (s)", fontsize=9, color="white")
     ax2.set_xlabel("Distance along route (m)", fontsize=9, color="white")
+    # Guard against collapsed y-axis when all segments are identical
+    tau_range = result["tau_i"].max() - result["tau_i"].min()
+    if tau_range < 0.1:
+        ax2.set_ylim(0, result["tau_i"].max() * 1.5 if result["tau_i"].max() > 0 else 1.0)
     ax2.set_facecolor("#1a1a1a")
     ax2.tick_params(colors="white", labelsize=8)
     ax2.spines[:].set_visible(False)
@@ -241,19 +251,30 @@ def plot_segment_breakdown(
 def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
     """
     Horizontal bar chart of Time Tax per persona (minutes).
+    Handles the fully-compliant edge case (all Δτ = 0) gracefully.
     """
     labels = [p["label"] for p in personas.values()]
     taxes  = [results[k]["delta_tau"] / 60 for k in personas]
     colors = [p["color"] for p in personas.values()]
 
+    max_tax = max(taxes) if max(taxes) > 0 else 1.0   # floor at 1 min
+
     fig, ax = plt.subplots(figsize=(7, 3.2))
     bars = ax.barh(labels, taxes, color=colors, height=0.5, linewidth=0)
     for bar, val in zip(bars, taxes):
+        label_x = val + max_tax * 0.02
         ax.text(
-            val + 0.05, bar.get_y() + bar.get_height() / 2,
+            label_x, bar.get_y() + bar.get_height() / 2,
             f"{val:.1f} min",
             va="center", fontsize=8.5, color="white",
         )
+
+    if max(taxes) == 0:
+        ax.text(0.5, 0.5, "✅ Full S.U.R.E. compliance — Time Tax = 0",
+                ha="center", va="center", transform=ax.transAxes,
+                fontsize=10, color="#4CAF50")
+
+    ax.set_xlim(0, max_tax * 1.25)
     ax.set_xlabel("Time Tax per trip (min)", fontsize=9, color="white")
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
