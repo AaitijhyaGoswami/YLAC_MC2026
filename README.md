@@ -330,5 +330,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <p align="center">
-  Built with ❤️ for Bengaluru's pedestrians — and for the streets that should belong to them.
+  Built with ❤️ for Bengaluru's pedestrians...and for the streets that should belong to them.
 </p>
