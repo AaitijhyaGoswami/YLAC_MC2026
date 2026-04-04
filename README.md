@@ -1,4 +1,4 @@
-# 🚶 Escape the Knot: Yeshwantpur–Mathikere Mobility Nexus
+# 🚶 Escape the Knot: The Yeshwantpur–Mathikere Mobility Nexus
 ### A Physics-Based Pedestrian Accessibility Audit & Simulation Suite
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
