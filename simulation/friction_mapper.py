@@ -261,7 +261,7 @@ def app():
                 help="96% of the route has $f > f_{max}$ for wheelchair users ($f_{max} = 3$).")
     col3.metric("Impassable Nodes ($f ≥ 4$)", f"{int((f_fixed > 3).sum())} / 24",
                help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way.")
-    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x"
+    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x",
                help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
     st.markdown("---")
 
