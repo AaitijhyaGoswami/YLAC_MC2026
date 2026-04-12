@@ -259,9 +259,10 @@ def app():
                 help="90.3% of the 900m stretch does not meet minimum pedestrian standards.")
     col2.metric("Wheelchair inaccessible", "96.0%",
                 help="96% of the route has $f > f_{max}$ for wheelchair users ($f_{max} = 3$).")
-    col3.metric("Impassable Nodes ($f ≥ 4$)", f"{int((f_fixed > 3).sum())} / 24")
-    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x")
-
+    col3.metric("Impassable Nodes ($f ≥ 4$)", f"{int((f_fixed > 3).sum())} / 24",
+               help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way.")
+    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x"
+               help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
     st.markdown("---")
 
     # --- MAP & GRADIENT ---
