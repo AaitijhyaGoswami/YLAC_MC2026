@@ -318,6 +318,7 @@ def app():
             "❌ No",
         ],
     })
+    st.dataframe(rubric, hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
     app()
