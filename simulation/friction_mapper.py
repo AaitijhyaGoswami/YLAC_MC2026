@@ -277,7 +277,7 @@ def app():
     st.header("Mapper Functionality")
     st.write("1. **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based $(\text{lat, lon})$ database.")
     st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the **Active Mobility Bill** and **DULT** rubrics. By assigning a Friction Value $f \in \{1, \dots, 5\}$, the mapper provides an objective diagnostic of which segments are compliant and which represent a total systemic failure.")
-    st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool for urban planners. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index $\bar{f}$, quantifying the exact benefit of an infrastructure intervention.")
+    st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool for urban planners. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index, quantifying the exact benefit of an infrastructure intervention.")
     st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary evidentiary data for policy briefs to the BBMP and DULT, justifying the fiscal investment needed for the proposed Lighthouse Pilot repairs.")
 
     st.markdown("---")
