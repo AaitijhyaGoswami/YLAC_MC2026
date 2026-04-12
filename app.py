@@ -81,7 +81,7 @@ if page == "Home":
 
     st.markdown("---")
 
-    # --- THE MATHEMATICAL FRAMEWORK (Textbook Style) ---
+    # --- THE MATHEMATICAL FRAMEWORK (Textbook Prose) ---
     with st.expander("📖 View Technical Methodology and Equation Definitions"):
         st.markdown("#### 1. The Friction Field and Effective Path Length")
         st.markdown("""
@@ -91,7 +91,7 @@ if page == "Home":
         """)
         st.latex(r"L_{\text{eff}}(\phi) = \int_0^D f(x, \phi)\, dx \approx d\sum_{i=1}^{N} f_i(\phi)")
         st.markdown("""
-        In this formulation, $L_{\text{eff}}$ is the effective length felt by the commuter and $D$ is the physical distance 
+        In this formulation, $L_{\text{eff}}$ is the effective length felt by the commuter and $D$ is the physical map distance 
         of 900 meters. The term $f(x, \phi)$ represents the local friction index—ranging from 1 for ideal paths to 5 for 
         complete failures—for a specific commuter persona $\phi$, while $d$ denotes the segment length of 12.5 meters 
         used during our discretized field audit.
@@ -104,9 +104,10 @@ if page == "Home":
         """)
         st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
         st.markdown("""
-        Here, $v_{\text{eff}}$ is the actual velocity achieved across a segment and $v_0$ is the natural walking speed of the 
-        persona. The exponent $k$ represents the friction sensitivity, which is higher for vulnerable groups like wheelchair 
-        users, and $\Delta\tau$ is the resulting Time Tax, or the cumulative seconds lost per trip.
+        Within this velocity model, $v_{\text{eff}}$ is the actual velocity achieved across a specific segment and $v_0$ 
+        represents the natural walking speed of the persona. The exponent $k$ quantifies the friction sensitivity of the 
+        commuter—which scales exponentially for vulnerable groups—and $\Delta\tau$ is the resulting Time Tax, or the 
+        cumulative seconds lost per trip.
         """)
 
         st.markdown("#### 3. Macro-Economic Aggregation")
@@ -117,13 +118,13 @@ if page == "Home":
         st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi}")
         st.markdown("""
         In this expression, $\mathcal{T}_{\text{year}}$ represents the annual economic loss, $M$ is the daily commuter 
-        volume of 100,000, $W$ represents 250 working days, and $w_\phi$ is the weight assigned to each persona 
-        based on population demographics.
+        volume of 100,000, and $W$ represents the 250 working days in a year. The weighting factor $w_\phi$ accounts 
+        for the demographic distribution and population weighting of each distinct persona.
         """)
 
     st.markdown("---")
 
-    # --- MODULE OVERVIEW (Pointwise) ---
+    # --- MODULE OVERVIEW (Numbered Pointwise) ---
     st.header("🛠️ Audit Modules")
     st.markdown("Select a module from the sidebar to explore the data in detail:")
 
