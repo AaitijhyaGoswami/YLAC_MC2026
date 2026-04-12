@@ -255,8 +255,10 @@ def app():
     # --- HEADLINE METRICS ---
     st.markdown("#### The State of the Corridor")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Compliance Rate", "9.7%")
-    col2.metric("Wheelchair Inaccessible", "96.0%")
+    col1.metric("Fails Active Mobility Bill", "90.3%",
+                help="90.3% of the 900m stretch does not meet minimum pedestrian standards.")
+    col2.metric("Wheelchair inaccessible", "96.0%",
+                help="96% of the route has $f > f_max$ for wheelchair users ($f_max = 3$).")
     col3.metric("Impassable Nodes", f"{int((f_fixed > 3).sum())} / 24")
     col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x")
 
