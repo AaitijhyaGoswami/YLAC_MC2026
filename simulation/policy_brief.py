@@ -558,8 +558,6 @@ def app():
     @st.cache_data
     def _load_personas():
         return load_personas()
-
-    st.title("Economic Impact & Policy Brief")
     st.markdown(
         "Aggregates the persona-weighted Time Tax across $M = 100{,}000$ daily "
         "commuters and $W = 250$ working days, converts to economic value at the "
