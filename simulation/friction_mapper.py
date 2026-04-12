@@ -11,7 +11,7 @@ import matplotlib.patheffects as pe
 import os
 
 # -------------------------------------------------------------------------
-# CONSTANTS (Logic Intact)
+# CONSTANTS
 # -------------------------------------------------------------------------
 
 F_COLORS = {
@@ -63,21 +63,66 @@ def load_audit_data() -> pd.DataFrame:
         "audit_log.csv must contain: id, lat, lon, f_value"
     return df
 
+
 # -------------------------------------------------------------------------
-# CHART BUILDERS (Logic Intact)
+# MAP BUILDER
 # -------------------------------------------------------------------------
 
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
-    folium.PolyLine(locations=ROUTE_600M, color=F_COLORS.get(bazaar_f, F_COLORS[5]), weight=5, opacity=0.85).add_to(m)
+
+    folium.PolyLine(
+        locations=ROUTE_600M,
+        color=F_COLORS.get(bazaar_f, F_COLORS[5]),
+        weight=5, opacity=0.85,
+        tooltip=f"600m Bazaar Street — {F_LABELS.get(bazaar_f, f'f={bazaar_f}')}",
+    ).add_to(m)
+    folium.CircleMarker(
+        location=ROUTE_600M[0], radius=5, color="white", fill=True,
+        fill_color=F_COLORS.get(bazaar_f, F_COLORS[5]), fill_opacity=1.0,
+        tooltip="600m stretch — south end",
+    ).add_to(m)
+    folium.CircleMarker(
+        location=ROUTE_600M[-1], radius=5, color="white", fill=True,
+        fill_color=F_COLORS.get(bazaar_f, F_COLORS[5]), fill_opacity=1.0,
+        tooltip="Yeshwantpur Junction",
+    ).add_to(m)
+
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
+
     for idx, row in df.iterrows():
         is_fixed = idx in fix_indices
         f = int(row["f_value"])
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
-        folium.CircleMarker(location=(row["lat"], row["lon"]), radius=8, color="white", weight=0.8, fill=True, fill_color=color, fill_opacity=0.9).add_to(m)
+        label = "FIXED → f=1" if is_fixed else F_LABELS.get(f, f"f={f}")
+        folium.CircleMarker(
+            location=(row["lat"], row["lon"]), radius=8,
+            color="white", weight=0.8, fill=True,
+            fill_color=color, fill_opacity=0.9,
+            tooltip=f"Node {int(row['id'])} · {label}",
+        ).add_to(m)
+
+    legend_html = """
+    <div style="position:fixed;bottom:20px;left:20px;z-index:9999;
+         background:#1a1a1a;padding:10px 14px;border-radius:8px;
+         border:1px solid #444;font-size:12px;color:white;font-family:monospace">
+      <b>Friction Level</b><br>
+      <span style="color:#9E9E9E">●</span> f=1 · Gold Standard / Fixed<br>
+      <span style="color:#4CAF50">●</span> f=2 · Distracted Walk<br>
+      <span style="color:#2196F3">●</span> f=3 · Obstacle Course<br>
+      <span style="color:#FF9800">●</span> f=4 · Physical Barrier<br>
+      <span style="color:#F44336">●</span> f=5 · Systemic Failure<br>
+      <hr style="border-color:#444;margin:5px 0">
+      <span style="color:#F44336">━━</span> 600m Bazaar St route (f=5)
+    </div>"""
+    m.get_root().html.add_child(folium.Element(legend_html))
     return m
+
+
+# -------------------------------------------------------------------------
+# FRICTION GRADIENT BAR
+# -------------------------------------------------------------------------
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
     f_300 = df["f_value"].values.astype(float)
@@ -86,53 +131,230 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> 
         f_display[np.argsort(f_display)[::-1][:n_fixes]] = 1.0
     else:
         f_display = f_300.copy()
+
     f_600 = np.full(48, float(bazaar_f))
     f_all = np.concatenate([f_display, f_600])
     d = 12.5
     x = np.arange(len(f_all)) * d
     colors = [F_COLORS.get(int(min(v, 5)), F_COLORS[5]) for v in f_all]
+
     fig, ax = plt.subplots(figsize=(11, 2.5))
-    ax.bar(x, f_all, width=d * 0.88, color=colors, align="edge")
+    ax.bar(x, f_all, width=d * 0.88, color=colors, align="edge", linewidth=0)
+    ax.axvline(300, color="#aaaaaa", linewidth=1.2, linestyle="--", alpha=0.6)
+    ax.text(150, 5.35, "300m · discrete nodes", ha="center", fontsize=7.5, color="#aaaaaa")
+    ax.text(600, 5.35, f"600m · Bazaar Street (f={bazaar_f})", ha="center", fontsize=7.5, color="#aaaaaa")
     ax.set_xlim(0, 900)
+    ax.set_ylim(0, 5.7)
+    ax.set_xlabel("Distance along route (m)", fontsize=9, color="white")
+    ax.set_ylabel("f", fontsize=9, color="white")
+    ax.set_yticks([1, 2, 3, 4, 5])
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
-    ax.tick_params(colors="white")
+    ax.tick_params(colors="white", labelsize=8)
+    ax.spines[:].set_visible(False)
+    patches = [mpatches.Patch(color=F_COLORS[f], label=F_LABELS[f]) for f in sorted(F_COLORS)]
+    ax.legend(handles=patches, loc="upper left", fontsize=7,
+              facecolor="#2a2a2a", labelcolor="white", framealpha=0.85, ncol=5)
     fig.tight_layout()
     return fig
 
+
+# -------------------------------------------------------------------------
+# INFOGRAPHIC CHARTS
+# -------------------------------------------------------------------------
+
 def plot_severity_donut(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
+    """
+    Donut chart of friction distribution with callout annotations.
+    Fixed nodes shown as f=1 slices.
+    """
     f_vals = df["f_value"].values.astype(float).copy()
     if n_fixes > 0:
         f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
-    counts = {f: int((f_vals == f).sum()) for f in [1, 2, 3, 4, 5]}
-    sizes = [c for c in counts.values() if c > 0]
-    colors = [F_COLORS[f] for f, c in counts.items() if c > 0]
+
+    counts = {}
+    for f in [1, 2, 3, 4, 5]:
+        counts[f] = int((f_vals == f).sum())
+
+    # Only include levels that have nodes
+    present = {f: c for f, c in counts.items() if c > 0}
+    sizes   = list(present.values())
+    labels  = list(present.keys())
+    colors  = [F_COLORS[f] for f in labels]
+    total   = sum(sizes)
+
     fig, ax = plt.subplots(figsize=(6, 6))
     fig.patch.set_facecolor("#1a1a1a")
-    ax.pie(sizes, colors=colors, startangle=90, wedgeprops=dict(width=0.5, edgecolor="#1a1a1a"))
-    ax.axis("off")
-    return fig
-
-def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float, f_bar_now: float, n_fixes: int, bazaar_f: int) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(8, 2.8))
-    fig.patch.set_facecolor("#1a1a1a")
-    ax.barh(0, L_eff_base, color="#F44336")
-    ax.barh(1, L_eff_now, color="#FF9800")
-    ax.barh(2, 900, color="#4CAF50")
     ax.set_facecolor("#1a1a1a")
-    ax.tick_params(colors="white")
+
+    wedges, _ = ax.pie(
+        sizes,
+        colors=colors,
+        startangle=90,
+        wedgeprops=dict(width=0.52, edgecolor="#1a1a1a", linewidth=2),
+        counterclock=False,
+    )
+
+    # Centre text — headline stat
+    ax.text(0, 0.12, f"{counts.get(5, 0) + counts.get(4, 0)}",
+            ha="center", va="center", fontsize=34, fontweight="bold",
+            color="white")
+    ax.text(0, -0.18, "of 24 nodes", ha="center", va="center",
+            fontsize=10, color="#aaaaaa")
+    ax.text(0, -0.38, "f ≥ 4 · impassable", ha="center", va="center",
+            fontsize=9, color="#FF9800")
+
+    # Callout annotations for each wedge
+    for wedge, f_level, count in zip(wedges, labels, sizes):
+        pct = count / total * 100
+        angle = (wedge.theta2 + wedge.theta1) / 2
+        rad   = np.deg2rad(angle)
+        r_mid = 0.82   # just outside the donut
+        r_tip = 1.12
+        r_txt = 1.22
+
+        x_mid = r_mid * np.cos(rad)
+        y_mid = r_mid * np.sin(rad)
+        x_tip = r_tip * np.cos(rad)
+        y_tip = r_tip * np.sin(rad)
+        x_txt = r_txt * np.cos(rad)
+        y_txt = r_txt * np.sin(rad)
+
+        ax.annotate(
+            "",
+            xy=(x_tip, y_tip),
+            xytext=(x_mid, y_mid),
+            arrowprops=dict(arrowstyle="-", color=F_COLORS[f_level],
+                            lw=1.2, alpha=0.7),
+        )
+
+        ha = "left" if x_txt > 0.05 else ("right" if x_txt < -0.05 else "center")
+        ax.text(x_txt, y_txt,
+                f"f={f_level}  {count} nodes\n{pct:.0f}%  {F_SHORT[f_level]}",
+                ha=ha, va="center", fontsize=7.5,
+                color=F_COLORS[f_level],
+                linespacing=1.5)
+
+    ax.set_xlim(-1.65, 1.65)
+    ax.set_ylim(-1.65, 1.65)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("Obstacle Severity\n300m stretch · 24 nodes",
+                 color="white", fontsize=10, pad=8)
     fig.tight_layout()
     return fig
 
+
+def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
+                         f_bar_base: float, f_bar_now: float,
+                         n_fixes: int, bazaar_f: int) -> plt.Figure:
+    """
+    Horizontal stacked bar comparing current vs scenario vs S.U.R.E. target.
+    The bar encodes how much 'excess friction' remains.
+    """
+    scenarios = [
+        ("Surveyed\n(baseline)",    L_eff_base, f_bar_base),
+        (f"After {n_fixes} fix(es)\n+ Bazaar f={bazaar_f}", L_eff_now,  f_bar_now),
+        ("Full S.U.R.E.\n(target)", 900.0,       1.0),
+    ]
+
+    fig, ax = plt.subplots(figsize=(8, 2.8))
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+
+    bar_h = 0.38
+    max_leff = max(s[1] for s in scenarios)
+
+    for i, (label, leff, fbar) in enumerate(scenarios):
+        y = i
+        # Compliance portion (900m)
+        ax.barh(y, 900, height=bar_h, color="#4CAF50", alpha=0.85,
+                left=0, linewidth=0)
+        # Excess portion
+        excess = leff - 900
+        if excess > 0:
+            ax.barh(y, excess, height=bar_h, color="#F44336", alpha=0.85,
+                    left=900, linewidth=0)
+
+        # f-bar badge
+        badge_x = leff + 60
+        ax.text(badge_x, y, f"f̄ = {fbar:.3f}",
+                va="center", ha="left", fontsize=8.5,
+                color=F_COLORS[5] if fbar > 2 else (F_COLORS[4] if fbar > 1.5 else "#4CAF50"),
+                fontweight="bold")
+
+        # L_eff value inside bar
+        ax.text(leff / 2, y, f"L_eff = {leff:.0f}m",
+                va="center", ha="center", fontsize=8,
+                color="white", fontweight="bold")
+
+    # S.U.R.E. target line
+    ax.axvline(900, color="#4CAF50", linewidth=1.5, linestyle="--", alpha=0.7,
+               label="S.U.R.E. target (900m)")
+
+    ax.set_yticks([0, 1, 2])
+    ax.set_yticklabels([s[0] for s in scenarios], fontsize=8, color="white")
+    ax.set_xlabel("Effective path length (m)", fontsize=9, color="white")
+    ax.set_xlim(0, max_leff * 1.3)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.xaxis.label.set_color("white")
+    ax.spines[:].set_visible(False)
+
+    # Legend patches
+    ax.legend(handles=[
+        mpatches.Patch(color="#4CAF50", label="Compliant 900m"),
+        mpatches.Patch(color="#F44336", label="Excess friction"),
+    ], loc="lower right", fontsize=7.5,
+       facecolor="#2a2a2a", labelcolor="white", framealpha=0.85)
+
+    ax.set_title("Effective Path Length vs S.U.R.E. Target",
+                 color="white", fontsize=10, pad=6)
+    fig.tight_layout()
+    return fig
+
+
 def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
+    """
+    Single horizontal progress bar showing how close the corridor
+    is to full S.U.R.E. compliance (f̄ = 1.0).
+    """
     fig, ax = plt.subplots(figsize=(7, 1.2))
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
-    ax.barh(0, 4, left=1, color="#2a2a2a")
-    ax.axvline(f_bar_now, color="white")
+
+    # Background track
+    ax.barh(0, 5.0, height=0.45, color="#2a2a2a", linewidth=0, left=1.0)
+    # Current f̄ fill — colour interpolated red→orange→green
+    fill_color = (
+        "#4CAF50" if f_bar_now < 1.5 else
+        "#FF9800" if f_bar_now < 3.0 else
+        "#F44336"
+    )
+    ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color,
+            linewidth=0, left=1.0, alpha=0.9)
+
+    # Tick marks at each f level
+    for f in [1, 2, 3, 4, 5]:
+        ax.axvline(f, color="#555", linewidth=0.8, ymin=0.1, ymax=0.9)
+        ax.text(f, -0.38, str(f), ha="center", fontsize=7.5, color="#aaaaaa")
+
+    # Current f̄ marker
+    ax.axvline(f_bar_now, color="white", linewidth=2.0)
+    ax.text(f_bar_now, 0.32,
+            f" f̄ = {f_bar_now:.3f}",
+            va="bottom", ha="left" if f_bar_now < 4 else "right",
+            fontsize=9, color="white", fontweight="bold")
+
+    # Target label
+    ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left",
+            fontsize=7, color="#4CAF50")
+
     ax.set_xlim(0.8, 5.4)
+    ax.set_ylim(-0.5, 0.6)
     ax.axis("off")
+    fig.tight_layout(pad=0.3)
     return fig
+
 
 # -------------------------------------------------------------------------
 # MAIN APP ENTRY POINT
@@ -140,12 +362,12 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.title("📍 Friction Mapper")
-    st.markdown("### Mapping the Invisible Struggle of Yeshwantpur")
+    st.markdown("### Mapping the Resistive Forces of the Yeshwantpur Corridor")
     
     st.markdown("""
     This module visualizes the pedestrian environment as a spatially varying friction field. By geotagging 
     individual obstacles and modeling systemic failures, we create a technical baseline for last-mile 
-    accessibility.
+    accessibility at the Yeshwantpur hub.
     """)
     
     st.markdown("---")
@@ -154,76 +376,122 @@ def app():
     col1, col2, col3 = st.columns(3)
     with col1:
         st.subheader("📊 The Scale")
-        st.write("- **Area:** 900m Transit Corridor")
-        st.write("- **Audit:** 24 Discrete Nodes")
-        st.write("- **Zone:** Bazaar St + Constitution Circle")
+        st.write("The audit covers a 900m transit corridor serving 100,000+ daily commuters. The route is discretized into 72 segments, including 24 specifically geotagged nodes of failure.")
 
     with col2:
         st.subheader("📉 The Impact")
-        st.write("- **Baseline f̄:** 4.65 (High Friction)")
-        st.write("- **Access:** 96% Wheelchair Failure")
-        st.error("- **Distance:** 900m feels like 4.2km")
+        st.write("Infrastructure friction creates a 'Difficulty Multiplier' of 4.65x compared to standard sidewalks. This results in a 96% failure rate for wheelchair accessibility and 170 million lost minutes annually.")
 
     with col3:
         st.subheader("💡 The Solution")
-        st.write("- **Pilot:** Fix Top 3 Hotspots")
-        st.write("- **Target:** f=1 (S.U.R.E. Standard)")
-        st.success("- **Impact:** 38% Friction Recovery")
+        st.write("By applying the S.U.R.E. standard to the top 3 high-friction hotspots, we can recover 38% of the excess struggle. This targeted remediation offers the highest return on municipal effort.")
 
     st.markdown("---")
 
     # --- MOTIVATION PARAGRAPH ---
-    st.header("🧠 The Mechanics of Resistance")
+    st.header("🧠 Why are we mapping Friction?")
     st.markdown("""
-    Why do we treat a sidewalk like a physics experiment? Because a "bad road" is more than a visual 
-    nuisance—it is a physical barrier that demands mechanical work from the human body. In this audit, 
-    every geotagged point represents a 'potential energy barrier' that a commuter must navigate. By 
-    mapping these points as friction values, we move beyond subjective complaints and provide the city 
-    with a measurable, objective map of where time and energy are being lost.
+    We treat the sidewalk like a physical force field because 'bad infrastructure' is not just a visual issue—it 
+    is a physical resistance that drains energy and steals time. In this model, every broken slab or open drain 
+    is a potential energy barrier that a commuter must overcome. By mapping these friction points, we move 
+    beyond anecdotal evidence and provide an objective, data-driven blueprint for urban intervention.
     """)
 
-    # --- TECHNICAL MATH SECTION (Prose + Latex) ---
-    with st.expander("🔬 View Technical Methodology and Variables"):
+    # --- MATHEMATICAL FRAMEWORK ---
+    with st.expander("🔬 View Technical Methodology and Mathematical Definitions"):
         st.markdown("""
-        The quality of the corridor is indexed by the **Mean Friction Index**, which represents the 
-        average struggle factor across the total surveyed distance. It is calculated by aggregating 
-        the discrete obstacles and the continuous failure zones.
+        The overall quality of the corridor is indexed by the **Mean Friction Index**, representing the 
+        average struggle factor across the total surveyed distance. We calculate this by aggregating 
+        discrete point failures and continuous failure zones.
         """)
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (1 = Gold Standard)} \\
-            D &: \text{The total physical corridor distance surveyed (900 meters)} \\
-            d &: \text{The length of each audited segment block (12.5 meters)} \\
-            i &: \text{The index of each discrete segment audited within the 300m stretch} \\
-            N &: \text{The total number of discrete segments (24 blocks)} \\
-            f_i &: \text{The specific Friction Value recorded at the } i\text{-th segment} \\
-            L_{B} &: \text{The length of the Bazaar Street continuous failure zone (600 meters)} \\
-            f_{B} &: \text{The modelled Friction Value for the Bazaar Street stretch} \\
-            dx &: \text{The infinitesimal position element along the Bazaar Street route}
+            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
+            D &: \text{Total surveyed physical distance (900 meters)} \\
+            d &: \text{Length of each audited block segment (12.5 meters)} \\
+            i &: \text{Index representing each specific segment in the 300m discrete zone} \\
+            N &: \text{Total number of discrete segments audited (24 nodes)} \\
+            f_i &: \text{Specific Friction Value recorded for the } i\text{-th segment} \\
+            L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
+            f_{B} &: \text{Modelled Friction Value for the Bazaar Street stretch} \\
+            dx &: \text{Infinitesimal position element along the Bazaar Street route}
             \end{aligned}
         """)
 
     try:
         df = load_audit_data()
-    except Exception as e:
-        st.error(f"Error: {e}")
+    except FileNotFoundError:
+        st.error("data/audit_log.csv not found. Please add the file and restart.")
+        return
+    except AssertionError as e:
+        st.error(f"audit_log.csv schema error: {e}")
         return
 
     # -----------------------------------------------------------------------
-    # SIDEBAR CONTROLS (Mapping Code Logic Restored)
+    # SIDEBAR CONTROLS
     # -----------------------------------------------------------------------
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🗺️ Friction Mapper Controls")
-    n_fixes = st.sidebar.slider("Nodes brought to S.U.R.E. standard (f=1):", 0, len(df), 0)
-    
+    st.sidebar.markdown("**300m stretch — hotspot fixes**")
+
+    n_fixes = st.sidebar.slider(
+        "Nodes brought to Tender S.U.R.E. standard (f=1):",
+        min_value=0, max_value=len(df), value=0, step=1,
+        help=(
+            "Nodes are ranked by f-value descending — highest friction first. "
+            "Setting n=1 fixes the single worst obstacle. "
+            "n=3 is the Lighthouse Pilot ask. "
+            "n=24 models a fully remediated 300m stretch."
+        )
+    )
+
+    if n_fixes == 0:
+        st.sidebar.caption("📍 Showing surveyed conditions — no fixes applied.")
+    elif n_fixes <= 3:
+        st.sidebar.caption(
+            f"🔧 **Lighthouse Pilot scenario** — {n_fixes} node(s) fixed. "
+            "Minimum viable intervention argued in the DULT brief."
+        )
+    elif n_fixes <= 9:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — all f=5 obstacles on the 300m stretch remediated."
+        )
+    elif n_fixes <= 17:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — all f=4 and f=5 obstacles cleared. "
+            "Stretch would be wheelchair-navigable for the first time."
+        )
+    else:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — full 300m stretch approaching S.U.R.E. compliance."
+        )
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
         "Current — f=5 (Systemic Failure)": 5,
+        "Partial repair — f=4 (Physical Barrier)": 4,
         "Moderate repair — f=3 (Obstacle Course)": 3,
-        "Full S.U.R.E. compliance — f=1": 1,
+        "Near compliant — f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance — f=1 (Gold Standard)": 1,
     }
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()))
+    bazaar_label = st.sidebar.selectbox(
+        "Model Bazaar Street as:",
+        options=list(sure_standards.keys()),
+        index=0,
+        help=(
+            "f=1 models full pipe-and-chamber drain replacement and continuous 3m footpath. "
+            "f=2 models surface levelled but utilities still overhead."
+        )
+    )
     bazaar_f = sure_standards[bazaar_label]
+
+    if bazaar_f < 5:
+        st.sidebar.caption(
+            f"Bazaar Street modelled at $f={bazaar_f}$ — speculative scenario under "
+            "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) intervention."
+        )
 
     # -----------------------------------------------------------------------
     # COMPUTE METRICS
@@ -234,51 +502,146 @@ def app():
         f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
 
     L_eff_300_base = 12.5 * f_300.sum()
-    L_eff_300_now = 12.5 * f_fixed.sum()
-    L_eff_base = L_eff_300_base + 3000
-    L_eff_now = L_eff_300_now + (600 * bazaar_f)
-    f_bar_base = L_eff_base / 900
-    f_bar_now = L_eff_now / 900
+    L_eff_300_now  = 12.5 * f_fixed.sum()
+    L_eff_600_base = 600 * 5.0
+    L_eff_600_now  = 600 * float(bazaar_f)
+    L_eff_base     = L_eff_300_base + L_eff_600_base
+    L_eff_now      = L_eff_300_now  + L_eff_600_now
+    f_bar_base     = L_eff_base / 900
+    f_bar_now      = L_eff_now  / 900
+    n_impassable   = int((f_300 > 3).sum())
 
     st.markdown("---")
 
     # -----------------------------------------------------------------------
     # HEADLINE METRICS
     # -----------------------------------------------------------------------
-    m_col1, m_col2, m_col3 = st.columns(3)
-    m_col1.metric("Current f̄", f"{f_bar_now:.2f}", delta=f"{f_bar_now - f_bar_base:.2f}" if f_bar_now != f_bar_base else None, delta_color="normal")
-    m_col2.metric("Impassable (f≥4)", f"{int((f_fixed > 3).sum())} / 24")
-    m_col3.metric("Effective Length", f"{L_eff_now:.0f}m")
+    st.markdown("#### The State of the Corridor")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Fails Active Mobility Bill", "90.3%",
+                help="90.3% of the 900m stretch does not meet minimum pedestrian standards.")
+    col2.metric("Wheelchair inaccessible", "96.0%",
+                help="96% of the route has f > f_max for wheelchair users (f_max = 3).")
+    col3.metric(
+        "Impassable nodes (f ≥ 4)", f"{n_impassable} / 24",
+        delta=f"−{n_impassable - int((f_fixed > 3).sum())} after fixes" if n_fixes > 0 else None,
+        delta_color="normal",
+        help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way."
+    )
+    col4.metric(
+        "Effective path multiplier", f"{f_bar_now:.2f}×",
+        delta=f"{f_bar_now - f_bar_base:.3f}" if (n_fixes > 0 or bazaar_f < 5) else None,
+        delta_color="normal",
+        help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance."
+    )
 
-    # -----------------------------------------------------------------------
-    # MAP & VISUALS (Logic Same to Same)
-    # -----------------------------------------------------------------------
-    st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=500)
-    
-    st.markdown("#### Friction Gradient — Full 900m Route")
-    st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        st.caption("Obstacle Severity (300m)")
-        st.pyplot(plot_severity_donut(df, n_fixes), use_container_width=True)
-    with c2:
-        st.caption("S.U.R.E. Target Gauge")
-        st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
-        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), use_container_width=True)
-
-    # -----------------------------------------------------------------------
-    # POINTWISE DESCRIPTIONS
-    # -----------------------------------------------------------------------
     st.markdown("---")
-    st.header("🛠️ Mapper Functionality")
-    st.write("1. **Live Geotagging:** Every circle marker on the map corresponds to a physical obstacle audited on-site.")
-    st.write("2. **Rubric Alignment:** Colors strictly follow the Active Mobility Bill rubric, where Red (f=5) denotes a total failure of infrastructure.")
-    # 
-    st.write("3. **Intervention Simulation:** The slider allows planners to 'repair' hotspots and see the real-time drop in total corridor friction.")
-    st.write("4. **Evidence Generation:** This module provides the geotagged baseline used in policy briefs for the BBMP and DULT.")
 
-    st.caption("Developed for Bengawalk · YLAC Mobility Champions 2026")
+    # -----------------------------------------------------------------------
+    # MAP
+    # -----------------------------------------------------------------------
+    m = build_map(df, n_fixes, bazaar_f)
+    st_folium(m, width=None, height=520, returned_objects=[])
+
+    st.markdown("---")
+
+    # -----------------------------------------------------------------------
+    # FRICTION GRADIENT BAR
+    # -----------------------------------------------------------------------
+    st.markdown("#### Friction Gradient — Full 900m Route")
+    st.caption(
+        "Each bar = one 12.5m segment · "
+        "Left 24 = 300m discrete nodes · "
+        "Right 48 = 600m Bazaar Street · "
+        "Grey = brought to f=1"
+    )
+    fig_bar = plot_friction_bar(df, n_fixes, bazaar_f)
+    st.pyplot(fig_bar, use_container_width=True)
+    plt.close(fig_bar)
+
+    st.markdown("---")
+
+    # -----------------------------------------------------------------------
+    # INFOGRAPHIC STATS SECTION
+    # -----------------------------------------------------------------------
+    st.markdown("#### Corridor Analysis")
+
+    col_donut, col_right = st.columns([1.4, 1.4])
+
+    with col_donut:
+        st.caption("Obstacle severity breakdown — 300m stretch")
+        fig_donut = plot_severity_donut(df, n_fixes)
+        st.pyplot(fig_donut, use_container_width=True)
+        plt.close(fig_donut)
+
+    with col_right:
+        st.caption("S.U.R.E. compliance gauge — mean friction index f̄")
+        fig_gauge = plot_sure_compliance_bar(f_bar_now)
+        st.pyplot(fig_gauge, use_container_width=True)
+        plt.close(fig_gauge)
+
+        st.markdown("")
+        st.caption("Effective path length — current vs scenario vs target")
+        fig_leff = plot_leff_comparison(
+            L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f
+        )
+        st.pyplot(fig_leff, use_container_width=True)
+        plt.close(fig_leff)
+
+        pct_recovered = (L_eff_base - L_eff_now) / (L_eff_base - 900) * 100 \
+            if (n_fixes > 0 or bazaar_f < 5) and (L_eff_base - 900) > 0 else 0
+        if pct_recovered > 0:
+            st.success(
+                f"This scenario recovers **{pct_recovered:.1f}%** of the excess "
+                "effective path length above the S.U.R.E. target."
+            )
+
+    st.markdown("---")
+
+    # -----------------------------------------------------------------------
+    # MODULE FUNCTIONALITY (Pointwise)
+    # -----------------------------------------------------------------------
+    st.header("🛠️ Mapper Functionality")
+    st.write("1. **Live Geotagging:** Every circle marker on the map corresponds to a physical obstacle audited and geotagged on-site.")
+    st.write("2. **Rubric Alignment:** Colors follow the Active Mobility Bill rubric, where Red (f=5) represents a total infrastructure failure.")
+    st.write("3. **Intervention Simulation:** The sidebar allow planners to 'repair' specific hotspots and observe the real-time impact on corridor efficiency.")
+    st.write("4. **Evidence Base:** Generates the technical baseline used in policy briefs to argue for immediate Lighthouse Pilot interventions.")
+
+    # 
+
+    st.markdown("---")
+
+    # -----------------------------------------------------------------------
+    # FRICTION RUBRIC
+    # -----------------------------------------------------------------------
+    st.markdown("#### Friction Rubric")
+    rubric = pd.DataFrame({
+        "f": [1, 2, 3, 4, 5],
+        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
+                  "Physical Barrier", "Systemic Failure"],
+        "Infrastructure State": [
+            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
+            "Minor cracks, unlevelled slabs, low-hanging cables",
+            "Broken slabs, rubble, utility excavation",
+            "Missing drain cover, high kerb, partial blockage",
+            "Footpath ends — transformer, encroachment, construction",
+        ],
+        "Wheelchair Access": [
+            "Full",
+            "Partial — discomfort",
+            "Severely restricted",
+            "Effectively impassable",
+            "Fully impassable",
+        ],
+        "S.U.R.E. compliant?": [
+            "✅ Yes — reference standard",
+            "⚠️ Marginal",
+            "❌ No",
+            "❌ No",
+            "❌ No",
+        ],
+    })
+    st.dataframe(rubric, hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
     app()
