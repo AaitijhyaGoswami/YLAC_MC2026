@@ -362,60 +362,45 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.title("📍 Friction Mapper")
-    st.markdown("### Mapping the Resistive Forces of the Yeshwantpur Corridor")
+    st.markdown("### Technical Audit of the Yeshwantpur Mobility Corridor")
     
     st.markdown("""
-    This module visualizes the pedestrian environment as a spatially varying friction field. By geotagging 
-    individual obstacles and modeling systemic failures, we create a technical baseline for last-mile 
-    accessibility at the Yeshwantpur hub.
+    This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
+    By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
+    infrastructure repairs directly reduce the effort required for urban navigation.
     """)
     
-    st.markdown("---")
-
-    # --- UPFRONT: SCALE, IMPACT, SOLUTION ---
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.subheader("📊 The Scale")
-        st.write("The audit covers a 900m transit corridor serving 100,000+ daily commuters. The route is discretized into 72 segments, including 24 specifically geotagged nodes of failure.")
-
-    with col2:
-        st.subheader("📉 The Impact")
-        st.write("Infrastructure friction creates a 'Difficulty Multiplier' of 4.65x compared to standard sidewalks. This results in a 96% failure rate for wheelchair accessibility and 170 million lost minutes annually.")
-
-    with col3:
-        st.subheader("💡 The Solution")
-        st.write("By applying the S.U.R.E. standard to the top 3 high-friction hotspots, we can recover 38% of the excess struggle. This targeted remediation offers the highest return on municipal effort.")
-
     st.markdown("---")
 
     # --- MOTIVATION PARAGRAPH ---
     st.header("🧠 Why are we mapping Friction?")
     st.markdown("""
-    We treat the sidewalk like a physical force field because 'bad infrastructure' is not just a visual issue—it 
-    is a physical resistance that drains energy and steals time. In this model, every broken slab or open drain 
-    is a potential energy barrier that a commuter must overcome. By mapping these friction points, we move 
-    beyond anecdotal evidence and provide an objective, data-driven blueprint for urban intervention.
+    In this audit, the sidewalk is modeled as a system of physical resistance. Every broken drain, encroachment, 
+    or missing footpath segment acts as a friction point that increases the energy required to traverse the path. 
+    By calculating the Mean Friction Index, we translate these physical barriers into an objective metric of street 
+    quality. This allows us to move beyond subjective complaints and provide a data-driven blueprint for 
+    targeted municipal intervention.
     """)
 
-    # --- MATHEMATICAL FRAMEWORK ---
-    with st.expander("🔬 View Technical Methodology and Mathematical Definitions"):
+    # --- TECHNICAL MATH SECTION ---
+    with st.expander("🔬 View Technical Methodology and Variables"):
         st.markdown("""
-        The overall quality of the corridor is indexed by the **Mean Friction Index**, representing the 
-        average struggle factor across the total surveyed distance. We calculate this by aggregating 
-        discrete point failures and continuous failure zones.
+        Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor 
+        across the total surveyed distance. We calculate this by aggregating the friction of discrete obstacles 
+        and continuous failure zones.
         """)
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
-            D &: \text{Total surveyed physical distance (900 meters)} \\
-            d &: \text{Length of each audited block segment (12.5 meters)} \\
-            i &: \text{Index representing each specific segment in the 300m discrete zone} \\
-            N &: \text{Total number of discrete segments audited (24 nodes)} \\
-            f_i &: \text{Specific Friction Value recorded for the } i\text{-th segment} \\
+            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Standard = 1.0)} \\
+            D &: \text{Total physical distance of the surveyed route (900 meters)} \\
+            d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
+            i &: \text{Summation index for segments within the 300m discrete node zone} \\
+            N &: \text{Total number of discrete segments surveyed (24 nodes)} \\
+            f_i &: \text{The recorded friction value for the } i\text{-th segment} \\
             L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
-            f_{B} &: \text{Modelled Friction Value for the Bazaar Street stretch} \\
-            dx &: \text{Infinitesimal position element along the Bazaar Street route}
+            f_{B} &: \text{The modelled friction value for the Bazaar Street stretch} \\
+            dx &: \text{Infinitesimal position element for integration across the continuous zone}
             \end{aligned}
         """)
 
@@ -599,15 +584,13 @@ def app():
     st.markdown("---")
 
     # -----------------------------------------------------------------------
-    # MODULE FUNCTIONALITY (Pointwise)
+    # MODULE FUNCTIONALITY
     # -----------------------------------------------------------------------
     st.header("🛠️ Mapper Functionality")
     st.write("1. **Live Geotagging:** Every circle marker on the map corresponds to a physical obstacle audited and geotagged on-site.")
     st.write("2. **Rubric Alignment:** Colors follow the Active Mobility Bill rubric, where Red (f=5) represents a total infrastructure failure.")
-    st.write("3. **Intervention Simulation:** The sidebar allow planners to 'repair' specific hotspots and observe the real-time impact on corridor efficiency.")
+    st.write("3. **Intervention Simulation:** The sidebar allows planners to 'repair' specific hotspots and observe the real-time impact on corridor efficiency.")
     st.write("4. **Evidence Base:** Generates the technical baseline used in policy briefs to argue for immediate Lighthouse Pilot interventions.")
-
-    # 
 
     st.markdown("---")
 
