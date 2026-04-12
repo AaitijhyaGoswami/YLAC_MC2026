@@ -159,12 +159,12 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> 
 
 
 # -------------------------------------------------------------------------
-# PIE CHART (REPLACED DONUT)
+# PIE CHART
 # -------------------------------------------------------------------------
 
 def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     """
-    Simple pie chart of friction distribution for the 300m stretch.
+    Standard pie chart of friction distribution for the 300m stretch.
     """
     f_vals = df["f_value"].values.astype(float).copy()
     if n_fixes > 0:
@@ -200,11 +200,11 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
                          f_bar_base: float, f_bar_now: float,
                          n_fixes: int, bazaar_f: int) -> plt.Figure:
     """
-    Horizontal bar comparing current vs scenario vs S.U.R.E. target.
+    Horizontal bar comparing baseline vs modified vs target.
     """
     scenarios = [
         ("Surveyed Baseline", L_eff_base, f_bar_base),
-        ("Modified Scenario", L_eff_now,  f_bar_now),
+        (f"Modified Scenario", L_eff_now,  f_bar_now),
         ("S.U.R.E. Target", 900.0,       1.0),
     ]
 
@@ -232,9 +232,6 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
 
 
 def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
-    """
-    Compliance progress bar.
-    """
     fig, ax = plt.subplots(figsize=(7, 1.2))
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
@@ -252,23 +249,15 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 # -------------------------------------------------------------------------
 
 def app():
+    st.title("Friction Mapper")
+    
     st.markdown("""
-    This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
+    This module maps the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
     infrastructure repairs directly reduce the effort required for urban navigation.
     """)
     
     st.markdown("---")
-
-    # --- MOTIVATION ---
-    st.header("The Mechanics of Resistance")
-    st.markdown("""
-    In this audit, the sidewalk is modeled as a system of physical resistance. Every broken drain, encroachment, 
-    or missing footpath segment acts as a friction point that increases the energy required to traverse the path. 
-    By calculating the Mean Friction Index, we translate these physical barriers into an objective metric of street 
-    quality. This allows us to move beyond subjective complaints and provide a data-driven blueprint for 
-    targeted municipal intervention.
-    """)
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
@@ -280,7 +269,7 @@ def app():
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
+            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Standard = 1.0)} \\
             D &: \text{Total physical distance of the surveyed route (900 meters)} \\
             d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
             i &: \text{Summation index for segments within the 300m discrete node zone} \\
@@ -298,18 +287,68 @@ def app():
         st.error(f"Error loading data: {e}")
         return
 
-    # --- SIDEBAR ---
+    # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Friction Mapper Controls")
-    n_fixes = st.sidebar.slider("Nodes brought to S.U.R.E. standard (f=1):", 0, len(df), 0)
-    
+    st.sidebar.markdown("**300m stretch — hotspot fixes**")
+
+    n_fixes = st.sidebar.slider(
+        "Nodes brought to Tender S.U.R.E. standard (f=1):",
+        min_value=0, max_value=len(df), value=0, step=1,
+        help=(
+            "Nodes are ranked by f-value descending — highest friction first. "
+            "Setting n=1 fixes the single worst obstacle. "
+            "n=3 is the Lighthouse Pilot ask. "
+            "n=24 models a fully remediated 300m stretch."
+        )
+    )
+
+    if n_fixes == 0:
+        st.sidebar.caption("📍 Showing surveyed conditions — no fixes applied.")
+    elif n_fixes <= 3:
+        st.sidebar.caption(
+            f"🔧 **Lighthouse Pilot scenario** — {n_fixes} node(s) fixed. "
+            "Minimum viable intervention argued in the DULT brief."
+        )
+    elif n_fixes <= 9:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — all f=5 obstacles on the 300m stretch remediated."
+        )
+    elif n_fixes <= 17:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — all f=4 and f=5 obstacles cleared. "
+            "Stretch would be wheelchair-navigable for the first time."
+        )
+    else:
+        st.sidebar.caption(
+            f"🔧 {n_fixes} nodes fixed — full 300m stretch approaching S.U.R.E. compliance."
+        )
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
         "Current — f=5 (Systemic Failure)": 5,
+        "Partial repair — f=4 (Physical Barrier)": 4,
         "Moderate repair — f=3 (Obstacle Course)": 3,
-        "Full S.U.R.E. compliance — f=1": 1,
+        "Near compliant — f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance — f=1 (Gold Standard)": 1,
     }
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()))
+    bazaar_label = st.sidebar.selectbox(
+        "Model Bazaar Street as:",
+        options=list(sure_standards.keys()),
+        index=0,
+        help=(
+            "f=1 models full pipe-and-chamber drain replacement and continuous 3m footpath. "
+            "f=2 models surface levelled but utilities still overhead."
+        )
+    )
     bazaar_f = sure_standards[bazaar_label]
+
+    if bazaar_f < 5:
+        st.sidebar.caption(
+            f"Bazaar Street modelled at $f={bazaar_f}$ — speculative scenario under "
+            "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) intervention."
+        )
 
     # --- COMPUTATION ---
     f_300 = df["f_value"].values.astype(float)
@@ -323,6 +362,7 @@ def app():
     L_eff_now      = L_eff_300_now  + (600 * bazaar_f)
     f_bar_base     = L_eff_base / 900
     f_bar_now      = L_eff_now  / 900
+    n_impassable   = int((f_300 > 3).sum())
 
     # --- HEADLINE METRICS ---
     st.markdown("#### The State of the Corridor")
@@ -367,37 +407,23 @@ def app():
     st.markdown("---")
     st.header("Mapper Functionality")
     st.write("1. **Live Geotagging:** Every marker on the map corresponds to a physical obstacle audited on-site.")
-    st.write("2. **Rubric Alignment:** Colors strictly follow the Active Mobility Bill standards, where Red represents a total failure.")
-    st.write("3. **Intervention Modeling:** The sidebar allows planners to 'repair' hotspots and see the real-time drop in total friction.")
-    st.write("4. **Policy Data:** This module provides the technical baseline required for government project approval.")
+    st.write("2. **Rubric Alignment:** Colors follow the Active Mobility Bill standards, where Red represents a total failure.")
+    st.write("3. **Intervention Simulation:** The slider allows planners to 'repair' hotspots and see the real-time drop in total friction.")
+    st.write("4. **Policy Data:** Provides the technical baseline required for government project approval.")
 
     st.markdown("---")
     st.markdown("#### Friction Rubric")
     rubric = pd.DataFrame({
         "f": [1, 2, 3, 4, 5],
-        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
-                  "Physical Barrier", "Systemic Failure"],
+        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course", "Physical Barrier", "Systemic Failure"],
         "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
-            "Minor cracks, unlevelled slabs, low-hanging cables",
+            "Continuous, unobstructed 3m+ footpath",
+            "Minor cracks, unlevelled slabs",
             "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, high kerb, partial blockage",
-            "Footpath ends — transformer, encroachment, construction",
+            "Missing drain cover, partial blockage",
+            "Footpath ends entirely",
         ],
-        "Wheelchair Access": [
-            "Full",
-            "Partial — discomfort",
-            "Severely restricted",
-            "Effectively impassable",
-            "Fully impassable",
-        ],
-        "S.U.R.E. compliant?": [
-            "✅ Yes — reference standard",
-            "⚠️ Marginal",
-            "❌ No",
-            "❌ No",
-            "❌ No",
-        ],
+        "Wheelchair Access": ["Full", "Partial", "Restricted", "Impassable", "Fully Impassable"],
     })
     st.dataframe(rubric, hide_index=True, use_container_width=True)
 
