@@ -172,7 +172,6 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 # -------------------------------------------------------------------------
 
 def app():
-    st.title("Friction Mapper")
     st.markdown("""
     This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
