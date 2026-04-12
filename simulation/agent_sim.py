@@ -290,7 +290,6 @@ def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
 # -------------------------------------------------------------------------
 
 def app():
-    st.title("Time Tax Simulator")
     st.markdown(
         "Computes the **Time Tax** $\\Delta\\tau(\\phi)$ for each commuter persona "
         "across the 900m corridor using a power-law friction-velocity model. "
