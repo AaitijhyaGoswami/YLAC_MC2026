@@ -76,17 +76,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         weight=5, opacity=0.85,
         tooltip=f"600m Bazaar Street — {F_LABELS.get(bazaar_f, f'f={bazaar_f}')}",
     ).add_to(m)
-    folium.CircleMarker(
-        location=ROUTE_600M[0], radius=5, color="white", fill=True,
-        fill_color=F_COLORS.get(bazaar_f, F_COLORS[5]), fill_opacity=1.0,
-        tooltip="600m stretch — south end",
-    ).add_to(m)
-    folium.CircleMarker(
-        location=ROUTE_600M[-1], radius=5, color="white", fill=True,
-        fill_color=F_COLORS.get(bazaar_f, F_COLORS[5]), fill_opacity=1.0,
-        tooltip="Yeshwantpur Junction",
-    ).add_to(m)
-
+    
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
 
@@ -94,7 +84,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         is_fixed = idx in fix_indices
         f = int(row["f_value"])
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
-        label = "FIXED → f=1" if is_fixed else F_LABELS.get(f, f"f={f}")
+        label = "FIXED" if is_fixed else F_SHORT.get(f, f"f={f}")
         folium.CircleMarker(
             location=(row["lat"], row["lon"]), radius=8,
             color="white", weight=0.8, fill=True,
@@ -102,25 +92,11 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
             tooltip=f"Node {int(row['id'])} · {label}",
         ).add_to(m)
 
-    legend_html = """
-    <div style="position:fixed;bottom:20px;left:20px;z-index:9999;
-         background:#1a1a1a;padding:10px 14px;border-radius:8px;
-         border:1px solid #444;font-size:12px;color:white;font-family:monospace">
-      <b>Friction Level</b><br>
-      <span style="color:#9E9E9E">●</span> f=1 · Gold Standard / Fixed<br>
-      <span style="color:#4CAF50">●</span> f=2 · Distracted Walk<br>
-      <span style="color:#2196F3">●</span> f=3 · Obstacle Course<br>
-      <span style="color:#FF9800">●</span> f=4 · Physical Barrier<br>
-      <span style="color:#F44336">●</span> f=5 · Systemic Failure<br>
-      <hr style="border-color:#444;margin:5px 0">
-      <span style="color:#F44336">━━</span> 600m Bazaar St route (f=5)
-    </div>"""
-    m.get_root().html.add_child(folium.Element(legend_html))
     return m
 
 
 # -------------------------------------------------------------------------
-# FRICTION GRADIENT BAR
+# VISUALIZATION FUNCTIONS
 # -------------------------------------------------------------------------
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
@@ -141,99 +117,47 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> 
     ax.bar(x, f_all, width=d * 0.88, color=colors, align="edge", linewidth=0)
     ax.axvline(300, color="#aaaaaa", linewidth=1.2, linestyle="--", alpha=0.6)
     ax.text(150, 5.35, "300m · discrete nodes", ha="center", fontsize=7.5, color="#aaaaaa")
-    ax.text(600, 5.35, f"600m · Bazaar Street (f={bazaar_f})", ha="center", fontsize=7.5, color="#aaaaaa")
+    ax.text(600, 5.35, "600m · Bazaar Street", ha="center", fontsize=7.5, color="#aaaaaa")
     ax.set_xlim(0, 900)
     ax.set_ylim(0, 5.7)
-    ax.set_xlabel("Distance along route (m)", fontsize=9, color="white")
-    ax.set_ylabel("f", fontsize=9, color="white")
     ax.set_yticks([1, 2, 3, 4, 5])
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
     ax.tick_params(colors="white", labelsize=8)
     ax.spines[:].set_visible(False)
     patches = [mpatches.Patch(color=F_COLORS[f], label=F_LABELS[f]) for f in sorted(F_COLORS)]
-    ax.legend(handles=patches, loc="upper left", fontsize=7,
-              facecolor="#2a2a2a", labelcolor="white", framealpha=0.85, ncol=5)
+    ax.legend(handles=patches, loc="upper left", fontsize=7, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85, ncol=5)
     fig.tight_layout()
     return fig
-
-
-# -------------------------------------------------------------------------
-# PIE CHART
-# -------------------------------------------------------------------------
 
 def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     f_vals = df["f_value"].values.astype(float).copy()
     if n_fixes > 0:
         f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
-
     counts = {f: int((f_vals == f).sum()) for f in [1, 2, 3, 4, 5]}
     present = {f: c for f, c in counts.items() if c > 0}
-    
-    sizes = list(present.values())
-    labels = [F_SHORT[f] for f in present.keys()]
-    colors = [F_COLORS[f] for f in present.keys()]
-
+    sizes, labels, colors = list(present.values()), [F_SHORT[f] for f in present.keys()], [F_COLORS[f] for f in present.keys()]
     fig, ax = plt.subplots(figsize=(5, 5))
     fig.patch.set_facecolor("#1a1a1a")
-    ax.set_facecolor("#1a1a1a")
-
-    ax.pie(
-        sizes,
-        labels=labels,
-        colors=colors,
-        autopct='%1.0f%%',
-        startangle=90,
-        textprops={'color':"white", 'fontsize': 8},
-        counterclock=False,
-    )
-
+    ax.pie(sizes, labels=labels, colors=colors, autopct='%1.0f%%', startangle=90, textprops={'color':"white", 'fontsize': 8}, counterclock=False)
     ax.set_title("Obstacle Severity Breakdown (300m)", color="white", fontsize=10)
     fig.tight_layout()
     return fig
 
-
-def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
-                         f_bar_base: float, f_bar_now: float,
-                         n_fixes: int, bazaar_f: int) -> plt.Figure:
-    """
-    Horizontal stacked bar comparing current vs scenario vs S.U.R.E. target.
-    Green portion = compliant 900m; Red portion = excess friction.
-    """
-    scenarios = [
-        ("Surveyed Baseline", L_eff_base, f_bar_base),
-        ("Modified Scenario", L_eff_now,  f_bar_now),
-        ("S.U.R.E. Target", 900.0,       1.0),
-    ]
-
+def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float, f_bar_now: float, n_fixes: int, bazaar_f: int) -> plt.Figure:
+    scenarios = [("Surveyed Baseline", L_eff_base, f_bar_base), ("Modified Scenario", L_eff_now,  f_bar_now), ("S.U.R.E. Target", 900.0, 1.0)]
     fig, ax = plt.subplots(figsize=(8, 2.8))
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
-
     bar_h = 0.38
     max_leff = max(L_eff_base, L_eff_now)
-
     for i, (label, leff, fbar) in enumerate(scenarios):
-        # Baseline portion (compliant 900m)
-        ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.85, left=0, linewidth=0)
-        
-        # Excess friction portion
+        ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.85, left=0)
         excess = leff - 900
         if excess > 0:
-            ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900, linewidth=0)
-
-        # f-bar badge
-        badge_x = leff + (max_leff * 0.05)
-        ax.text(badge_x, i, f"f̄ = {fbar:.3f}",
-                va="center", ha="left", fontsize=8.5,
-                color=F_COLORS[5] if fbar > 2 else (F_COLORS[4] if fbar > 1.5 else "#4CAF50"),
-                fontweight="bold")
-
-        # L_eff value inside bar
-        ax.text(leff / 2, i, f"L_eff = {leff:.0f}m",
-                va="center", ha="center", fontsize=8,
-                color="white", fontweight="bold")
-
+            ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900)
+        ax.text(leff + (max_leff * 0.05), i, f"f̄ = {fbar:.3f}", va="center", ha="left", fontsize=8.5, color="white", fontweight="bold")
+        ax.text(leff / 2, i, f"L_eff = {leff:.0f}m", va="center", ha="center", fontsize=8, color="white", fontweight="bold")
     ax.axvline(900, color="#4CAF50", linewidth=1.5, linestyle="--", alpha=0.7)
     ax.set_yticks([0, 1, 2])
     ax.set_yticklabels([s[0] for s in scenarios], fontsize=8.5, color="white")
@@ -244,25 +168,18 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
     fig.tight_layout()
     return fig
 
-
 def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
     fig, ax = plt.subplots(figsize=(7, 1.2))
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
-
-    ax.barh(0, 4.0, height=0.45, color="#2a2a2a", linewidth=0, left=1.0)
+    ax.barh(0, 4.0, height=0.45, color="#2a2a2a", left=1.0)
     fill_color = "#4CAF50" if f_bar_now < 1.5 else ("#FF9800" if f_bar_now < 3.0 else "#F44336")
     ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color, left=1.0, alpha=0.9)
-
     for f in [1, 2, 3, 4, 5]:
         ax.axvline(f, color="#555", linewidth=0.8, ymin=0.1, ymax=0.9)
         ax.text(f, -0.38, str(f), ha="center", fontsize=7.5, color="#aaaaaa")
-
     ax.axvline(f_bar_now, color="white", linewidth=2.0)
-    ax.text(f_bar_now, 0.32, f" f̄ = {f_bar_now:.3f}",
-            va="bottom", ha="left" if f_bar_now < 4 else "right",
-            fontsize=9, color="white", fontweight="bold")
-
+    ax.text(f_bar_now, 0.32, f" f̄ = {f_bar_now:.3f}", va="bottom", ha="left" if f_bar_now < 4 else "right", fontsize=9, color="white", fontweight="bold")
     ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left", fontsize=7, color="#4CAF50")
     ax.set_xlim(0.8, 5.4)
     ax.set_ylim(-0.5, 0.6)
@@ -277,28 +194,23 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.title("Friction Mapper")
-    
     st.markdown("""
     This module maps the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
     infrastructure repairs directly reduce the effort required for urban navigation.
     """)
-    
     st.markdown("---")
 
+    # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("""
-        Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor 
-        across the total surveyed distance. We calculate this by aggregating the friction of discrete obstacles 
-        and continuous failure zones.
-        """)
+        st.markdown("Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor across the total surveyed distance.")
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Standard = 1.0)} \\
+            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
             D &: \text{Total physical distance of the surveyed route (900 meters)} \\
             d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
-            i &: \text{Summation index for segments within the 300m discrete zone} \\
+            i &: \text{Summation index for segments within the 300m discrete node zone} \\
             N &: \text{Total number of discrete segments surveyed (24 nodes)} \\
             f_i &: \text{The recorded friction value for the } i\text{-th segment} \\
             L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
@@ -316,25 +228,15 @@ def app():
     # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Friction Mapper Controls")
-    st.sidebar.markdown("**300m stretch — hotspot fixes**")
-
-    n_fixes = st.sidebar.slider(
-        "Nodes brought to Tender S.U.R.E. standard (f=1):",
-        min_value=0, max_value=len(df), value=0, step=1
-    )
-
-    if n_fixes == 0:
-        st.sidebar.caption("📍 Showing surveyed conditions.")
-    elif n_fixes <= 3:
-        st.sidebar.caption(f"🔧 Lighthouse Pilot scenario — {n_fixes} nodes fixed.")
-    else:
-        st.sidebar.caption(f"🔧 {n_fixes} nodes remediated.")
-
+    n_fixes = st.sidebar.slider("Nodes brought to S.U.R.E. standard (f=1):", 0, len(df), 0)
+    
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
         "Current — f=5 (Systemic Failure)": 5,
+        "Serious barrier — f=4 (Physical Barrier)": 4,
         "Moderate repair — f=3 (Obstacle Course)": 3,
+        "Minor repair — f=2 (Distracted Walk)": 2,
         "Full S.U.R.E. compliance — f=1": 1,
     }
     bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()))
@@ -343,15 +245,12 @@ def app():
     # --- COMPUTATION ---
     f_300 = df["f_value"].values.astype(float)
     f_fixed = f_300.copy()
-    if n_fixes > 0:
-        f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
+    if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
 
     L_eff_300_base = 12.5 * f_300.sum()
-    L_eff_300_now  = 12.5 * f_fixed.sum()
-    L_eff_base     = L_eff_300_base + (600 * 5)
-    L_eff_now      = L_eff_300_now  + (600 * bazaar_f)
-    f_bar_base     = L_eff_base / 900
-    f_bar_now      = L_eff_now  / 900
+    L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
+    L_eff_base = L_eff_300_base + (600 * 5)
+    f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
     # --- HEADLINE METRICS ---
     st.markdown("#### The State of the Corridor")
@@ -363,29 +262,18 @@ def app():
 
     st.markdown("---")
 
-    # --- MAP ---
-    m = build_map(df, n_fixes, bazaar_f)
-    st_folium(m, width=None, height=520, returned_objects=[])
-
+    # --- MAP & GRADIENT ---
+    st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
     st.markdown("---")
-
-    # --- GRADIENT BAR ---
     st.markdown("#### Friction Gradient — Full 900m Route")
-    fig_bar = plot_friction_bar(df, n_fixes, bazaar_f)
-    st.pyplot(fig_bar, use_container_width=True)
-    plt.close(fig_bar)
-
+    st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
     st.markdown("---")
 
     # --- CORRIDOR ANALYSIS ---
     st.markdown("#### Corridor Analysis")
     col_left, col_right = st.columns(2)
-
     with col_left:
-        fig_pie = plot_severity_pie(df, n_fixes)
-        st.pyplot(fig_pie, use_container_width=True)
-        plt.close(fig_pie)
-
+        st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
     with col_right:
         st.caption("S.U.R.E. Compliance Gauge")
         st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
@@ -404,13 +292,7 @@ def app():
     rubric = pd.DataFrame({
         "f": [1, 2, 3, 4, 5],
         "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course", "Physical Barrier", "Systemic Failure"],
-        "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath",
-            "Minor cracks, unlevelled slabs",
-            "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, partial blockage",
-            "Footpath ends entirely",
-        ],
+        "Infrastructure State": ["Continuous, unobstructed 3m+ footpath", "Minor cracks, unlevelled slabs", "Broken slabs, rubble, utility excavation", "Missing drain cover, partial blockage", "Footpath ends entirely"],
         "Wheelchair Access": ["Full", "Partial", "Restricted", "Impassable", "Fully Impassable"],
     })
     st.dataframe(rubric, hide_index=True, use_container_width=True)
