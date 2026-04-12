@@ -375,15 +375,29 @@ def app():
     st.markdown("#### Friction Rubric")
     rubric = pd.DataFrame({
         "f": [1, 2, 3, 4, 5],
-        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course", "Physical Barrier", "Systemic Failure"],
+        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
+                  "Physical Barrier", "Systemic Failure"],
         "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath",
-            "Minor cracks, unlevelled slabs",
+            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
+            "Minor cracks, unlevelled slabs, low-hanging cables",
             "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, partial blockage",
-            "Footpath ends entirely",
+            "Missing drain cover, high kerb, partial blockage",
+            "Footpath ends — transformer, encroachment, construction",
         ],
-        "Wheelchair Access": ["Full", "Partial", "Restricted", "Impassable", "Fully Impassable"],
+        "Wheelchair Access": [
+            "Full",
+            "Partial — discomfort",
+            "Severely restricted",
+            "Effectively impassable",
+            "Fully impassable",
+        ],
+        "S.U.R.E. compliant?": [
+            "✅ Yes — reference standard",
+            "⚠️ Marginal",
+            "❌ No",
+            "❌ No",
+            "❌ No",
+        ],
     })
     st.dataframe(rubric, hide_index=True, use_container_width=True)
 
