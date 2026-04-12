@@ -203,10 +203,8 @@ def app():
         st.markdown("**Step A: The 300m Constitution Circle Zone**")
         st.latex(r"\sum f_i = (9 \times f_5) + (8 \times f_4) + (4 \times f_3) + (3 \times f_2) = 95")
         st.latex(r"L_{\text{eff}}^{300} = 95 \times 12.5\text{m} = 1187.5\text{m}")
-
         st.markdown("**Step B: The 600m Bazaar Street Zone**")
         st.latex(r"L_{\text{eff}}^{600} = 600\text{m} \times 5 = 3000\text{m}")
-
         st.markdown("**Step C: Final Aggregation**")
         st.latex(r"L_{\text{eff}}^{Total} = 1187.5\text{m} + 3000\text{m} = 4187.5\text{m}")
         st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
@@ -240,15 +238,19 @@ def app():
     f_fixed = f_300.copy()
     if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
 
-    # Dynamic Percentage Calculations
+    # DYNAMIC CALCULATIONS INCORPORATING BAZAAR ST
+    # 1. Compliance Rate: Percentage of total 900m that is f=1
     len_compliant = ((f_fixed == 1).sum() * 12.5) + (600 if bazaar_f == 1 else 0)
-    len_failing = ((f_fixed >= 4).sum() * 12.5) + (600 if bazaar_f >= 4 else 0)
-    len_inaccessible = ((f_fixed >= 3).sum() * 12.5) + (600 if bazaar_f >= 3 else 0)
-    
     compliance_rate = (len_compliant / 900) * 100
-    failure_rate = (len_failing / 900) * 100
+
+    # 2. Wheelchair Inaccessibility: Percentage of total 900m that is f >= 4 (Impassable)
+    len_inaccessible = ((f_fixed >= 4).sum() * 12.5) + (600 if bazaar_f >= 4 else 0)
     wheelchair_inaccessibility = (len_inaccessible / 900) * 100
 
+    # 3. Impassable Nodes: Count of f >= 4 nodes in the 300m stretch
+    n_impassable_nodes = int((f_fixed >= 4).sum())
+
+    # 4. Difficulty Multiplier (Mean Friction)
     L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
     L_eff_base = (12.5 * f_300.sum()) + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
@@ -258,7 +260,7 @@ def app():
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Compliance Rate", f"{compliance_rate:.1f}%")
     col2.metric("Wheelchair Inaccessible", f"{wheelchair_inaccessibility:.1f}%")
-    col3.metric("Impassable Nodes", f"{int((f_fixed > 3).sum())} / 24")
+    col3.metric("Impassable Nodes", f"{n_impassable_nodes} / 24")
     col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x")
 
     st.markdown("---")
