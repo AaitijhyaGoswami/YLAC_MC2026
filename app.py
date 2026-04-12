@@ -58,8 +58,8 @@ if page == "Home":
     
     st.markdown("""
     This project quantifies the **infrastructural tax** imposed on pedestrians at the Yeshwantpur intermodal hub. 
-    By treating the urban environment as a physical system—where obstacles like broken drains and 
-    encroachments act as potential energy barriers—we can measure the 'Time Tax' stolen from every commuter.
+    By treating the urban environment as a physical system, we measure the 'Time Tax' stolen from every commuter by 
+    systemic design failures.
     """)
     
     st.markdown("---")
@@ -69,91 +69,103 @@ if page == "Home":
     
     with col1:
         st.subheader("📊 The Scale")
-        st.write("The audit covered the 900m corridor between Yeshwantpur and Constitution Circle, an area serving over 100,000 daily commuters. We found that 90.3% of this stretch fails to meet Active Mobility standards.")
+        st.write("The audit covered a 900m high-traffic corridor serving over 100,000 daily commuters. Our data shows that 90.3% of the route fails to meet basic mobility standards, creating a massive bottleneck at one of Bengaluru's most critical transit interchanges.")
 
     with col2:
         st.subheader("📉 The Impact")
-        st.write("Due to severe infrastructure friction, the corridor imposes 4.65x the effort of a standard path. This results in 170 million minutes lost annually, costing the city ₹14.2 Crore in productivity.")
+        st.write("Poor infrastructure acts as a resistive force, making the corridor 4.65x harder to navigate than a standard path. This results in 170 million minutes lost annually, translating to a ₹14.2 Crore productivity loss for the city.")
 
     with col3:
         st.subheader("💡 The Solution")
-        st.write("Our 'Lighthouse' proposal targets the top 3 hotspots. Repairing these specific points recovers 38% of the total lost time with a Benefit-to-Cost ratio exceeding 10:1.")
+        st.write("Our 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Repairing these specific nodes recovers 38% of the total lost time, offering a Benefit-to-Cost ratio of 10:1 for municipal investment.")
 
     st.markdown("---")
 
-    # --- THE MATHEMATICAL FRAMEWORK (Textbook Prose) ---
-    with st.expander("📖 View Technical Methodology and Equation Definitions"):
+    # --- MOTIVATION PARAGRAPH ---
+    st.header("🧠 Why Physics?")
+    st.markdown("""
+    Traditional urban audits often rely on subjective complaints which are easily dismissed in policy discussions. 
+    By applying the principles of classical mechanics, we transform a 'bad sidewalk' into a quantifiable **resistive field**. 
+    In this model, a pedestrian is an agent moving through a potential landscape. Broken slabs, encroachments, and 
+    open drains are not just inconveniences; they are energy barriers that require physical work to overcome. 
+    By treating time as a finite resource being 'taxed' by these barriers, we bridge the gap between human 
+    frustration and economic data, providing the government with a mathematically rigorous justification for 
+    immediate infrastructure repair.
+    """)
+
+    # --- THE MATHEMATICAL FRAMEWORK ---
+    with st.expander("📖 View Technical Methodology and Variables"):
         st.markdown("#### 1. The Friction Field and Effective Path Length")
         st.markdown("""
-        To quantify the difficulty of a journey, we define the **Effective Path Length**, which represents the total 
-        energetic work performed by a pedestrian. This is calculated by integrating the spatially varying friction 
-        field along the total distance of the corridor.
+        The difficulty of a journey is defined by the **Effective Path Length**, representing the total 
+        energetic work performed. We integrate the local friction index along the corridor's physical distance.
         """)
         st.latex(r"L_{\text{eff}}(\phi) = \int_0^D f(x, \phi)\, dx \approx d\sum_{i=1}^{N} f_i(\phi)")
         st.markdown("""
-        In this formulation, $L_{\text{eff}}$ is the effective length felt by the commuter and $D$ is the physical map distance 
-        of 900 meters. The term $f(x, \phi)$ represents the local friction index—ranging from 1 for ideal paths to 5 for 
-        complete failures—for a specific commuter persona $\phi$, while $d$ denotes the segment length of 12.5 meters 
-        used during our discretized field audit.
+        **L_eff** is the effective length or 'felt distance' of the journey.  
+        **D** represents the physical map distance of 900 meters.  
+        **f(x, phi)** is the local friction index, ranging from 1 for ideal paths to 5 for complete failures, adjusted for the commuter persona.  
+        **d** is the segment length of 12.5 meters used for the discretized field audit.
         """)
 
         st.markdown("#### 2. Power-Law Velocity and the Time Tax")
         st.markdown("""
-        Pedestrian speed is not linearly affected by obstacles; rather, it follows a decay model where the 
-        **Time Tax** is the difference between the actual traversal time and the ideal time on a compliant footpath.
+        Pedestrian speed decays exponentially as friction increases. The **Time Tax** is the difference 
+        between the actual time forced by the terrain and the ideal time on a standard footpath.
         """)
         st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
         st.markdown("""
-        Within this velocity model, $v_{\text{eff}}$ is the actual velocity achieved across a specific segment and $v_0$ 
-        represents the natural walking speed of the persona. The exponent $k$ quantifies the friction sensitivity of the 
-        commuter—which scales exponentially for vulnerable groups—and $\Delta\tau$ is the resulting Time Tax, or the 
-        cumulative seconds lost per trip.
+        **v_eff** is the actual velocity achieved across a specific segment.  
+        **v_0** represents the natural walking speed of the persona on an unobstructed surface.  
+        **k** is the friction sensitivity exponent, which increases for vulnerable groups like wheelchair users.  
+        **Δτ** is the resulting Time Tax, representing the cumulative seconds stolen per trip.
         """)
 
         st.markdown("#### 3. Macro-Economic Aggregation")
         st.markdown("""
-        The total economic impact is derived by aggregating the persona-weighted mean Time Tax across the entire 
-        commuter population for a standard working year.
+        The total economic impact is calculated by aggregating the weighted mean Time Tax across the 
+        entire commuter population for a standard working year.
         """)
         st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi}")
         st.markdown("""
-        In this expression, $\mathcal{T}_{\text{year}}$ represents the annual economic loss, $M$ is the daily commuter 
-        volume of 100,000, and $W$ represents the 250 working days in a year. The weighting factor $w_\phi$ accounts 
-        for the demographic distribution and population weighting of each distinct persona.
+        **T_year** is the total annual economic productivity loss for the city.  
+        **M** is the daily commuter volume of 100,000 individuals.  
+        **W** represents the 250 working days in a year.  
+        **w_phi** is the population weighting for each specific commuter persona.
         """)
 
     st.markdown("---")
 
-    # --- MODULE OVERVIEW (Numbered Pointwise) ---
+    # --- MODULE OVERVIEW ---
     st.header("🛠️ Audit Modules")
-    st.markdown("Select a module from the sidebar to explore the data in detail:")
+    st.markdown("Use the sidebar to explore the individual data layers of the Yeshwantpur Audit:")
 
     m_col1, m_col2 = st.columns(2)
 
     with m_col1:
         st.markdown("#### 📍 1. Friction Mapper")
-        st.write("1. **Geotagged Database:** Provides a map of 24 specific infrastructure failures with GPS coordinates.")
-        st.write("2. **Zonal Distinction:** Identifies the 600m Bazaar Street failure zone vs. the staccato obstacles of Constitution Circle.")
-        st.write("3. **Evidence Export:** Generates photographic and technical logs suitable for policy submissions.")
+        st.write("1. **Geotagged Database:** An interactive map of 24 specific failures with precise coordinates.")
+        st.write("2. **Zonal Analysis:** Differentiates the Bazaar Street zone from the Constitution Circle stretch.")
+        st.write("3. **Field Evidence:** Links technical friction ratings to photographic timestamps from the audit.")
 
         st.markdown("#### ⏳ 2. Time Tax Simulator")
-        st.write("1. **Agent Simulation:** Models the movement of four distinct personas through the friction field.")
-        st.write("2. **Equity Analysis:** Highlights the disproportionate time burden carried by wheelchair users and the elderly.")
-        st.write("3. **Detour Mapping:** Tracks when users are forced to leave the footpath and enter the vehicular right-of-way.")
+        st.write("1. **Agent Simulation:** Runs persona-specific journeys through the audited friction field.")
+        st.write("2. **Equity Gap:** Quantifies the disproportionate burden placed on the elderly and disabled.")
+        st.write("3. **Detour Metrics:** Calculates the safety risk when pedestrians are forced into vehicular lanes.")
 
     with m_col2:
         st.markdown("#### 💡 3. What-If: Lighthouse Pilot")
-        st.write("1. **Fix Prioritization:** Ranks every obstacle by how much total time it would recover if repaired.")
-        st.write("2. **Impact Curve:** Visualizes the diminishing returns of repairs to help planners find the 'sweet spot' for intervention.")
-        st.write("3. **Pilot Strategy:** Proves that fixing just 3 major hotspots can solve nearly 40% of the bottleneck.")
+        st.write("1. **Prioritization Engine:** Identifies which obstacles provide the most 'time recovery' per rupee.")
+        st.write("2. **Scenario Planning:** Allows users to simulate how different levels of repair impact the city.")
+        st.write("3. **Targeted Fixes:** Proves that repairing the top 3 hotspots solves 38% of the entire bottleneck.")
 
         st.markdown("#### 💰 4. Economic Impact")
-        st.write("1. **Productivity Valuation:** Converts time loss into monetary figures using RBI-benchmarked wage rates.")
-        st.write("2. **CBA Tool:** Calculates the Benefit-to-Cost ratio for different infrastructure investment scenarios.")
-        st.write("3. **Policy Briefing:** Synthesizes all data into a one-page summary for government stakeholders.")
+        st.write("1. **Monetary Valuation:** Converts lost seconds into Crore-value figures based on RBI wage rates.")
+        st.write("2. **CBA Analysis:** Demonstrates the massive return on investment for small municipal repairs.")
+        st.write("3. **Policy Brief:** Synthesizes the data into the specific language required for government approval.")
 
     st.markdown("---")
-    st.info("👈 **Please select a module from the sidebar to begin the data exploration.**")
+    st.info("👈 **Please select a module from the sidebar to begin exploring the data.**")
 
     st.caption(
         "Developed for [Bengawalk](https://bengawalk.com) · YLAC Mobility Champions 2026 · "
