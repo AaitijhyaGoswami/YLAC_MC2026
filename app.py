@@ -97,41 +97,50 @@ if page == "Home":
     with st.expander("📖 View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. The Friction Field and Effective Path Length")
         st.markdown("""
-        We quantify the journey's difficulty through the **Effective Path Length**, representing the total 
+        To quantify the journey's difficulty, we define the **Effective Path Length**, representing the total 
         energetic work required by a pedestrian. This is the integral of the local friction index across 
         the physical distance of the corridor.
         """)
         st.latex(r"L_{\text{eff}}(\phi) = \int_0^D f(x, \phi)\, dx \;\approx\; d\sum_{i=1}^{N} f_i(\phi)")
-        
-        st.latex(r"L_{\text{eff}} : \text{Effective Path Length (The 'perceived' distance in terms of effort)}")
-        st.latex(r"D : \text{The physical surveyed distance (900 meters)}")
-        st.latex(r"f(x, \phi) : \text{The Local Friction Index (Ranging from 1 to 5 based on mobility standards)}")
-        st.latex(r"d : \text{The discrete segment length used in the field audit (12.5 meters)}")
+        st.latex(r"""
+            \begin{aligned}
+            L_{\text{eff}} &: \text{Effective Path Length (The 'perceived' distance in terms of effort)} \\
+            D &: \text{The physical surveyed distance (900 meters)} \\
+            f(x, \phi) &: \text{Local Friction Index (1 = Gold Standard, 5 = Systemic Failure)} \\
+            d &: \text{Discrete segment length used in field audit (12.5 meters)}
+            \end{aligned}
+        """)
 
         st.markdown("#### 2. Power-Law Velocity and the Time Tax")
         st.markdown("""
         Pedestrian velocity does not decrease linearly with infrastructure failure; it follows a power-law decay. 
-        The **Time Tax** is defined as the deviation between actual traversal time and the ideal time required 
-        on an unobstructed, compliant corridor.
+        The **Time Tax** is the deviation between actual traversal time and the ideal time required on a 
+        compliant corridor where the friction index is unity throughout.
         """)
         st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
-        
-        st.latex(r"v_{\text{eff}} : \text{Real-world velocity across a specific physical segment}")
-        st.latex(r"v_0 : \text{Natural walking speed of the persona on an ideal surface}")
-        st.latex(r"k : \text{The friction sensitivity exponent (Determines persona-specific difficulty)}")
-        st.latex(r"\Delta\tau : \text{The Time Tax (Cumulative seconds lost per trip)}")
+        st.latex(r"""
+            \begin{aligned}
+            v_{\text{eff}} &: \text{Real-world velocity across a specific physical segment } i \\
+            v_0 &: \text{Natural walking speed of persona } \phi \text{ on an ideal surface} \\
+            k &: \text{Friction sensitivity exponent (Scales with mobility vulnerability)} \\
+            \Delta\tau &: \text{The Time Tax (Cumulative seconds lost per trip)}
+            \end{aligned}
+        """)
 
         st.markdown("#### 3. Macro-Economic Aggregation")
         st.markdown("""
         The total economic impact is calculated by aggregating the persona-weighted mean Time Tax across the 
-        entire commuter population for a standard working year.
+        entire commuter population for a standard working year, converted to monetary value using wage benchmarks.
         """)
         st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi}")
-        
-        st.latex(r"\mathcal{T}_{\text{year}} : \text{Total annual economic productivity loss for the city}")
-        st.latex(r"M : \text{Total daily commuter volume (100,000 individuals)}")
-        st.latex(r"W : \text{Standardized working days per annum (250 days)}")
-        st.latex(r"w_\phi : \text{Population weighting factor for each specific commuter persona}")
+        st.latex(r"""
+            \begin{aligned}
+            \mathcal{T}_{\text{year}} &: \text{Total annual economic productivity loss for the city} \\
+            M &: \text{Total daily commuter volume (100,000 individuals)} \\
+            W &: \text{Standardized working days per annum (250 days)} \\
+            w_\phi &: \text{Population weighting factor for each specific commuter persona}
+            \end{aligned}
+        """)
 
     st.markdown("---")
 
