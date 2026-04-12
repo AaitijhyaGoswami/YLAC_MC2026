@@ -54,105 +54,127 @@ st.sidebar.info(
 # MAIN ROUTING
 if page == "Home":
     st.title("Escape the Knot")
-    st.subheader("A Physics-Based Audit of the Yeshwantpur Mobility Knot")
-    
+    st.markdown("### Quantifying the Infrastructural Tax on Pedestrian Mobility")
     st.markdown("""
-    This dashboard quantifies the **infrastructural tax** imposed on pedestrians in Bengaluru. 
-    By treating the city as a physical system, we can measure exactly how much energy and time is 
-    stolen from citizens by poor infrastructure.
+    This audit treats the urban environment as a physical system where infrastructure failures act as 
+    resistive forces. By measuring these forces, we quantify the 'Time Tax' imposed on the citizens 
+    of Yeshwantpur.
     """)
+    
     st.markdown("---")
 
-    # --- THE METRICS SECTION ---
+    # --- UPFRONT: SCALE, IMPACT, SOLUTION ---
     col1, col2, col3 = st.columns(3)
+    
     with col1:
-        st.metric(label="Surveyed Corridor", value="900 Meters")
-        st.caption("Yeshwantpur – Constitution Circle")
+        st.subheader("The Scale")
+        st.write("**Corridor:** 900m (Yeshwantpur–Constitution Circle)")
+        st.write("**Traffic:** 100,000+ Daily Commuters")
+        st.write("**Condition:** 90.3% fails Active Mobility standards")
+
     with col2:
-        st.metric(label="Average Struggle Factor", value="4.65x", delta="Friction Index")
-        st.caption("Effort compared to a standard sidewalk")
+        st.subheader("The Impact")
+        st.write("**Effort:** 4.65x higher than standard paths")
+        st.write("**Time Lost:** 170 Million minutes annually")
+        st.error("**Economic Loss:** ₹14.2 Crore per year")
+
     with col3:
-        st.metric(label="Annual Economic Loss", value="₹14.2 Cr", delta="Productivity Cost")
-        st.caption("Estimated for 100k daily users")
+        st.subheader("The Solution")
+        st.write("**Target:** Top 3 Friction Hotspots")
+        st.write("**Recovery:** 38% of total lost time")
+        st.success("**ROI:** 10:1 Benefit-to-Cost Ratio")
 
     st.markdown("---")
 
-    # --- CORE CONCEPTS ---
-    st.header("The Methodology")
-    
-    c1, c2 = st.columns([1, 1])
-    
-    with c1:
-        st.markdown("#### 1. The Friction Field ($f$)")
-        st.write("""
-        We don't just count potholes; we assign a **Struggle Factor** ($f$) to every meter of the road. 
-        - **$f = 1$:** Gold standard (Tender S.U.R.E) footpath. 
-        - **$f = 5$:** Complete system failure (walking in traffic).
-        """)
-        
-        st.markdown("#### 2. The Ghost Kilometers ($L_{\\text{eff}}$)")
-        st.write("""
-        Because of the high friction, a 900m walk *feels* much longer. This is the **Effective Path Length**:
-        """)
-        st.latex(r"L_{\text{eff}} \approx d\sum_{i=1}^{N} f_i(\phi)")
-        st.info("**Result:** In Yeshwantpur, your body does the work of a **4.2km walk** just to cover **900m**.")
-
-    with c2:
-        st.markdown("#### 3. The Time Tax ($\\Delta\\tau$)")
-        st.write("""
-        Bad roads slow you down. We calculate the seconds lost per person based on their 'Sensitivity' to friction ($k$).
-        """)
-        st.latex(r"\Delta\tau(\phi) = T_{\text{actual}} - T_{\text{ideal}}")
-        st.write("""
-        A wheelchair user faces a much higher **Time Tax** than an able-bodied adult because their 
-        sensitivity to a broken slab is exponentially higher.
-        """)
-
-    st.markdown("---")
-
-    # --- THE MODULES BREAKDOWN ---
-    st.header("What’s inside the Audit?")
-    
-    tab1, tab2, tab3 = st.tabs(["The Route Audit", "The Human Cost", "The Solution"])
-
-    with tab1:
-        st.markdown("### 📍 Module 1: Friction Mapper")
+    # --- THE MATHEMATICAL FRAMEWORK (Detailed Dropdown) ---
+    with st.expander("Detailed Technical Framework & Variable Itinerary"):
+        st.markdown("#### 1. The Friction Field and Effective Path Length")
         st.markdown("""
-        The 900m corridor is split into two distinct failure zones:
-        * **Bazaar Street (600m):** A total failure zone ($f=5$). No usable footpath exists.
-        * **Constitution Circle (300m):** A 'staccato' zone with 24 specific obstacles (open drains, encroachments).
+        We model the corridor as a spatially varying friction field $f(x, \phi)$. The 'Effective Path Length' 
+        represents the actual energetic and mechanical work done by a pedestrian to overcome obstacles.
         """)
-        st.latex(r"L_{\text{eff}}^{Total} = 3000\text{m} (\text{Bazaar}) + 1187.5\text{m} (\text{Circle}) = 4187.5\text{m}")
-        st.write("👉 **Use this module to view the interactive map of all 24 geotagged obstacles.**")
+        st.latex(r"L_{\text{eff}}(\phi) = \int_0^D f(x, \phi)\, dx \approx d\sum_{i=1}^{N} f_i(\phi)")
+        st.markdown("""
+        **Variables:**
+        * $L_{\text{eff}}$: Effective Path Length (The 'perceived' distance in terms of effort).
+        * $D$: Physical distance of the corridor (900m).
+        * $f(x, \phi)$: Local friction index (1 to 5) at position $x$ for persona $\phi$.
+        * $d$: Segment length for discretization (12.5m).
+        """)
 
-    with tab2:
-        st.markdown("### ⏳ Module 2 & 4: Human & Economic Impact")
-        st.write("""
-        We simulated 100,000 daily commuters across four personas:
-        - 🚶 **Adults:** 1.4 m/s speed.
-        - ♿ **Wheelchair Users:** Faces 'Geometric Penalties'—must detour into traffic.
-        - 👴 **Elderly:** Slower speeds, higher sensitivity to broken ground.
+        st.markdown("#### 2. Power-Law Velocity Model & Time Tax")
+        st.markdown("""
+        Walking speed is not linearly reduced by obstacles; it follows a power-law decay based on 
+        the commuter's sensitivity ($k$) to the environment.
         """)
-        st.write("**Economic Bottom Line:** The wasted time on this 900m stretch costs Bengaluru **₹14.2 Crore** in lost productivity every year.")
+        st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
+        st.markdown("""
+        **Variables:**
+        * $v_{\text{eff}}$: Real-world velocity across a specific segment.
+        * $v_0(\phi)$: Natural walking speed of the persona on a perfect footpath.
+        * $k(\phi)$: Friction sensitivity exponent (e.g., $k=1.2$ for wheelchairs, $k=0.6$ for adults).
+        * $\Delta\tau(\phi)$: Time Tax (Seconds stolen per trip compared to a standard path).
+        """)
 
-    with tab3:
-        st.markdown("### 💡 Module 3: What-If (The Lighthouse Pilot)")
-        st.write("""
-        This is our proposal to the government. Using a **Marginal Return Curve**, we found that:
-        - Fixing **just the top 3 hotspots** (at a cost of ~₹10 Lakh) recovers **38% of all lost time**.
+        st.markdown("#### 3. Aggregated Economic Loss")
+        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi}")
+        st.markdown("""
+        **Variables:**
+        * $\mathcal{T}_{\text{year}}$: Total annual productivity loss.
+        * $M$: Total daily commuter volume (100,000).
+        * $W$: Annual working days (250).
+        * $w_\phi$: Population weighting for each persona.
         """)
-        st.success("By focusing on the 'worst first,' we get a Benefit-to-Cost ratio exceeding **10:1**.")
 
     st.markdown("---")
-    st.info("👈 **Select a module from the sidebar to dive into the data.**")
-    
+
+    # --- MODULE OVERVIEW ---
+    st.header("Audit Modules")
+    st.markdown("""
+    Navigate through the sidebar to explore the specific data layers of this audit:
+    """)
+
+    m_col1, m_col2 = st.columns(2)
+
+    with m_col1:
+        st.markdown("#### 📍 Friction Mapper")
+        st.write("""
+        An interactive, geotagged map of the 900m route. 
+        - **Bazaar Street (600m):** Discretized as a continuous $f=5$ failure.
+        - **Constitution Circle (300m):** 24 specific nodes including open drains and illegal encroachments.
+        """)
+
+        st.markdown("#### ⏳ Time Tax Simulator")
+        st.write("""
+        Persona-based simulations showing how the 'tax' is disproportionately levied on 
+        vulnerable groups. Reveals that wheelchair users bear 3x the time loss of able-bodied adults.
+        """)
+
+    with m_col2:
+        st.markdown("#### 💡 What-If: Lighthouse Pilot")
+        st.write("""
+        A prioritization tool for urban planners. It ranks every obstacle by its impact on the 
+        total time tax, allowing for a 'High Impact, Low Cost' repair schedule.
+        """)
+
+        st.markdown("#### 💰 Economic Impact")
+        st.write("""
+        Translates time loss into INR using RBI wage benchmarks. This module provides the 
+        fiscal justification for the 'Lighthouse' infrastructure intervention.
+        """)
+
+    st.markdown("---")
+    st.info("👈 **Select a module from the sidebar to begin the deep dive.**")
+
     st.caption(
-        "Built for [Bengawalk](https://bengawalk.com) · YLAC Mobility Champions 2026 · "
-        "Audit conducted March 7–8, 2026"
+        "Developed for [Bengawalk](https://bengawalk.com) · YLAC Mobility Champions 2026 · "
+        "Audit Dates: March 7–8, 2026"
     )
 
 else:
     if page in modules:
+        # Ensure the sub-module title is displayed
+        st.title(page)
         modules[page].app()
     else:
         st.title(page)
