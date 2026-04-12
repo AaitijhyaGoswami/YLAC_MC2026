@@ -163,9 +163,6 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> 
 # -------------------------------------------------------------------------
 
 def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
-    """
-    Standard pie chart of friction distribution for the 300m stretch.
-    """
     f_vals = df["f_value"].values.astype(float).copy()
     if n_fixes > 0:
         f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
@@ -200,7 +197,8 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
                          f_bar_base: float, f_bar_now: float,
                          n_fixes: int, bazaar_f: int) -> plt.Figure:
     """
-    Horizontal bar comparing baseline vs modified vs target.
+    Horizontal stacked bar comparing current vs scenario vs S.U.R.E. target.
+    Green portion = compliant 900m; Red portion = excess friction.
     """
     scenarios = [
         ("Surveyed Baseline", L_eff_base, f_bar_base),
@@ -212,18 +210,34 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
 
-    bar_h = 0.4
+    bar_h = 0.38
+    max_leff = max(L_eff_base, L_eff_now)
+
     for i, (label, leff, fbar) in enumerate(scenarios):
-        ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.8)
+        # Baseline portion (compliant 900m)
+        ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.85, left=0, linewidth=0)
+        
+        # Excess friction portion
         excess = leff - 900
         if excess > 0:
-            ax.barh(i, excess, height=bar_h, color="#F44336", left=900, alpha=0.8)
-        
-        ax.text(leff + 20, i, f"{leff:.0f}m (f̄={fbar:.2f})", va="center", color="white", fontsize=8.5)
+            ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900, linewidth=0)
 
+        # f-bar badge
+        badge_x = leff + (max_leff * 0.05)
+        ax.text(badge_x, i, f"f̄ = {fbar:.3f}",
+                va="center", ha="left", fontsize=8.5,
+                color=F_COLORS[5] if fbar > 2 else (F_COLORS[4] if fbar > 1.5 else "#4CAF50"),
+                fontweight="bold")
+
+        # L_eff value inside bar
+        ax.text(leff / 2, i, f"L_eff = {leff:.0f}m",
+                va="center", ha="center", fontsize=8,
+                color="white", fontweight="bold")
+
+    ax.axvline(900, color="#4CAF50", linewidth=1.5, linestyle="--", alpha=0.7)
     ax.set_yticks([0, 1, 2])
     ax.set_yticklabels([s[0] for s in scenarios], fontsize=8.5, color="white")
-    ax.set_xlim(0, max(L_eff_base, L_eff_now) * 1.2)
+    ax.set_xlim(0, max_leff * 1.3)
     ax.tick_params(colors="white", labelsize=8)
     ax.spines[:].set_visible(False)
     ax.set_title("Effective Path Length Comparison", color="white", fontsize=10)
@@ -232,40 +246,24 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float,
 
 
 def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
-    """
-    Detailed horizontal progress bar with f-level labels and current marker.
-    """
     fig, ax = plt.subplots(figsize=(7, 1.2))
     fig.patch.set_facecolor("#1a1a1a")
     ax.set_facecolor("#1a1a1a")
 
-    # Background track
     ax.barh(0, 4.0, height=0.45, color="#2a2a2a", linewidth=0, left=1.0)
-    
-    # Current f̄ fill
-    fill_color = (
-        "#4CAF50" if f_bar_now < 1.5 else
-        "#FF9800" if f_bar_now < 3.0 else
-        "#F44336"
-    )
-    ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color,
-            linewidth=0, left=1.0, alpha=0.9)
+    fill_color = "#4CAF50" if f_bar_now < 1.5 else ("#FF9800" if f_bar_now < 3.0 else "#F44336")
+    ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color, left=1.0, alpha=0.9)
 
-    # Tick marks at each f level
     for f in [1, 2, 3, 4, 5]:
         ax.axvline(f, color="#555", linewidth=0.8, ymin=0.1, ymax=0.9)
         ax.text(f, -0.38, str(f), ha="center", fontsize=7.5, color="#aaaaaa")
 
-    # Current f̄ marker
     ax.axvline(f_bar_now, color="white", linewidth=2.0)
     ax.text(f_bar_now, 0.32, f" f̄ = {f_bar_now:.3f}",
             va="bottom", ha="left" if f_bar_now < 4 else "right",
             fontsize=9, color="white", fontweight="bold")
 
-    # Target label
-    ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left",
-            fontsize=7, color="#4CAF50")
-
+    ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left", fontsize=7, color="#4CAF50")
     ax.set_xlim(0.8, 5.4)
     ax.set_ylim(-0.5, 0.6)
     ax.axis("off")
@@ -288,17 +286,6 @@ def app():
     
     st.markdown("---")
 
-    # --- MOTIVATION ---
-    st.header("The Mechanics of Resistance")
-    st.markdown("""
-    In this audit, the sidewalk is modeled as a system of physical resistance. Every broken drain, encroachment, 
-    or missing footpath segment acts as a friction point that increases the energy required to traverse the path. 
-    By calculating the Mean Friction Index, we translate these physical barriers into an objective metric of street 
-    quality. This allows us to move beyond subjective complaints and provide a data-driven blueprint for 
-    targeted municipal intervention.
-    """)
-
-    # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("""
         Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor 
@@ -308,10 +295,10 @@ def app():
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
+            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Standard = 1.0)} \\
             D &: \text{Total physical distance of the surveyed route (900 meters)} \\
             d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
-            i &: \text{Summation index for segments within the 300m discrete node zone} \\
+            i &: \text{Summation index for segments within the 300m discrete zone} \\
             N &: \text{Total number of discrete segments surveyed (24 nodes)} \\
             f_i &: \text{The recorded friction value for the } i\text{-th segment} \\
             L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
@@ -333,25 +320,15 @@ def app():
 
     n_fixes = st.sidebar.slider(
         "Nodes brought to Tender S.U.R.E. standard (f=1):",
-        min_value=0, max_value=len(df), value=0, step=1,
-        help=(
-            "Nodes are ranked by f-value descending — highest friction first. "
-            "Setting n=1 fixes the single worst obstacle. "
-            "n=3 is the Lighthouse Pilot ask. "
-            "n=24 models a fully remediated 300m stretch."
-        )
+        min_value=0, max_value=len(df), value=0, step=1
     )
 
     if n_fixes == 0:
-        st.sidebar.caption("📍 Showing surveyed conditions — no fixes applied.")
+        st.sidebar.caption("📍 Showing surveyed conditions.")
     elif n_fixes <= 3:
-        st.sidebar.caption(f"🔧 Lighthouse Pilot scenario — {n_fixes} fixed.")
-    elif n_fixes <= 9:
-        st.sidebar.caption(f"🔧 {n_fixes} nodes fixed — all f=5 obstacles remediated.")
-    elif n_fixes <= 17:
-        st.sidebar.caption(f"🔧 {n_fixes} nodes fixed — wheelchair-navigable baseline.")
+        st.sidebar.caption(f"🔧 Lighthouse Pilot scenario — {n_fixes} nodes fixed.")
     else:
-        st.sidebar.caption(f"🔧 {n_fixes} nodes fixed — full S.U.R.E. compliance approach.")
+        st.sidebar.caption(f"🔧 {n_fixes} nodes remediated.")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
@@ -419,7 +396,7 @@ def app():
     st.header("Mapper Functionality")
     st.write("1. **Live Geotagging:** Every marker on the map corresponds to a physical obstacle audited on-site.")
     st.write("2. **Rubric Alignment:** Colors follow the Active Mobility Bill standards, where Red represents a total failure.")
-    st.write("3. **Intervention Simulation:** The slider allows planners to 'repair' hotspots and see the real-time drop in total friction.")
+    st.write("3. **Intervention Modeling:** The slider allows planners to 'repair' hotspots and see the real-time drop in total friction.")
     st.write("4. **Policy Data:** Provides the technical baseline required for government project approval.")
 
     st.markdown("---")
