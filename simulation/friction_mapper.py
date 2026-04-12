@@ -64,7 +64,7 @@ def load_audit_data() -> pd.DataFrame:
 
 
 # -------------------------------------------------------------------------
-# VISUALIZATION FUNCTIONS (Styles Restored)
+# MAP BUILDER
 # -------------------------------------------------------------------------
 
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.Map:
@@ -78,6 +78,11 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
         folium.CircleMarker(location=(row["lat"], row["lon"]), radius=8, color="white", weight=0.8, fill=True, fill_color=color, fill_opacity=0.9).add_to(m)
     return m
+
+
+# -------------------------------------------------------------------------
+# VISUALIZATION FUNCTIONS
+# -------------------------------------------------------------------------
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
     f_300 = df["f_value"].values.astype(float)
@@ -168,29 +173,24 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.title("Friction Mapper")
-    
     st.markdown("""
     This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
     infrastructure repairs directly reduce the effort required for urban navigation.
     """)
-    
     st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("""
-        Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor 
-        across the total surveyed distance. We calculate this by aggregating the friction of discrete obstacles 
-        and continuous failure zones.
-        """)
+        st.markdown("#### 1. Fundamental Equations")
+        st.markdown("Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor across the total surveyed distance.")
         st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
         st.latex(r"""
             \begin{aligned}
             \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
             D &: \text{Total physical distance of the surveyed route (900 meters)} \\
             d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
-            i &: \text{Summation index for segments within the 300m discrete zone} \\
+            i &: \text{Summation index for segments within the 300m discrete node zone} \\
             N &: \text{Total number of discrete segments surveyed (24 nodes)} \\
             f_i &: \text{The recorded friction value for the } i\text{-th segment} \\
             L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
@@ -198,6 +198,26 @@ def app():
             dx &: \text{Infinitesimal position element for integration across the continuous zone}
             \end{aligned}
         """)
+
+        st.markdown("#### 2. Detailed Baseline Calculation")
+        st.markdown("""
+        To arrive at the baseline difficulty multiplier of **4.653**, we aggregate the audit data from two structurally 
+        distinct zones of the Yeshwantpur corridor.
+        """)
+        
+        st.markdown("**Step A: The 300m Constitution Circle Zone**")
+        st.markdown("This stretch contains 24 discrete geotagged nodes. The sum of friction values is as follows:")
+        st.latex(r"\sum f_i = (9 \times f_5) + (8 \times f_4) + (4 \times f_3) + (3 \times f_2) = 45 + 32 + 12 + 6 = 95")
+        st.latex(r"L_{\text{eff}}^{300} = 95 \times 12.5\text{m} = 1187.5\text{m}")
+
+        st.markdown("**Step B: The 600m Bazaar Street Zone**")
+        st.markdown("This stretch is modeled as a continuous systemic failure ($f=5$) as audited in March 2026.")
+        st.latex(r"L_{\text{eff}}^{600} = 600\text{m} \times 5 = 3000\text{m}")
+
+        st.markdown("**Step C: Final Aggregation**")
+        st.markdown("Combining both zones yields the total effective effort distance and the mean index.")
+        st.latex(r"L_{\text{eff}}^{Total} = 1187.5\text{m} + 3000\text{m} = 4187.5\text{m}")
+        st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
 
     try:
         df = load_audit_data()
@@ -208,14 +228,8 @@ def app():
     # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Friction Mapper Controls")
-    st.sidebar.markdown("**300m stretch — hotspot fixes**")
-
-    n_fixes = st.sidebar.slider(
-        "Nodes brought to Tender S.U.R.E. standard (f=1):",
-        min_value=0, max_value=len(df), value=0, step=1,
-        help="Nodes are ranked by friction level, with the highest-impact obstacles fixed first."
-    )
-
+    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0)
+    
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
@@ -234,9 +248,8 @@ def app():
     if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
 
     L_eff_300_base = 12.5 * f_300.sum()
-    L_eff_300_now  = 12.5 * f_fixed.sum()
-    L_eff_base     = L_eff_300_base + (600 * 5)
-    L_eff_now      = L_eff_300_now  + (600 * bazaar_f)
+    L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
+    L_eff_base = L_eff_300_base + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
     # --- HEADLINE METRICS ---
@@ -249,24 +262,18 @@ def app():
 
     st.markdown("---")
 
-    # --- MAP ---
+    # --- MAP & GRADIENT ---
     st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
-
     st.markdown("---")
-
-    # --- GRADIENT BAR ---
     st.markdown("#### Friction Gradient — Full 900m Route")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
-
     st.markdown("---")
 
     # --- CORRIDOR ANALYSIS ---
     st.markdown("#### Corridor Analysis")
     col_left, col_right = st.columns(2)
-
     with col_left:
         st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
-
     with col_right:
         st.caption("S.U.R.E. Compliance Gauge")
         st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
@@ -275,23 +282,17 @@ def app():
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
     st.header("Mapper Functionality")
-    st.write("1. **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based $(\text{lat, lon})$ database.")
-    st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the **Active Mobility Bill** and **DULT** rubrics. By assigning a Friction Value $f \in \{1, \dots, 5\}$, the mapper provides an objective diagnostic of which segments are compliant and which represent a total systemic failure.")
-    st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool for urban planners. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index, quantifying the exact benefit of an infrastructure intervention.")
-    st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary evidentiary data for policy briefs to the BBMP and DULT, justifying the fiscal investment needed for the proposed Lighthouse Pilot repairs.")
+    st.write("1. **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based database.")
+    st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the Active Mobility Bill and DULT rubrics. By assigning a Friction Value $f$, the mapper provides an objective diagnostic of segment compliance.")
+    st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index $\bar{f}$.")
+    st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
 
     st.markdown("---")
     st.markdown("#### Friction Rubric")
     rubric = pd.DataFrame({
         "f": [1, 2, 3, 4, 5],
         "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course", "Physical Barrier", "Systemic Failure"],
-        "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath",
-            "Minor cracks, unlevelled slabs",
-            "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, partial blockage",
-            "Footpath ends entirely",
-        ],
+        "Infrastructure State": ["Continuous, unobstructed 3m+ footpath", "Minor cracks, unlevelled slabs", "Broken slabs, rubble, utility excavation", "Missing drain cover, partial blockage", "Footpath ends entirely"],
         "Wheelchair Access": ["Full", "Partial", "Restricted", "Impassable", "Fully Impassable"],
     })
     st.dataframe(rubric, hide_index=True, use_container_width=True)
