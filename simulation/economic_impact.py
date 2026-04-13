@@ -18,7 +18,7 @@ N_600 = 48
 
 M    = 100_000   # daily commuters at Yeshwantpur hub
 W    = 250       # working days per year
-WAGE = 50 / 60  # Rs 50/hr -> Rs/min
+WAGE = 50 / 60  # RBI informal wage rate — Rs50/hr -> Rs/min
 
 FIX_COST_LOW_LAKH  = 8
 FIX_COST_HIGH_LAKH = 12
@@ -97,7 +97,7 @@ def compute_economics(df: pd.DataFrame, personas: dict, n_fixes: int, bazaar_f: 
     }
 
 # -------------------------------------------------------------------------
-# VISUALIZATION HELPERS
+# VISUALIZATION HELPERS (Identical Aesthetics)
 # -------------------------------------------------------------------------
 
 def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
@@ -166,7 +166,7 @@ def app():
         st.latex(r"\mathcal{L} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot \text{WAGE}")
         st.latex(r"""
             \begin{aligned}
-            \mathcal{L} &: \text{Annual Economic Productivity Loss (Crore INR)} \\
+            \mathcal{L} &: \text{Annual Productivity Loss (expressed in Crore INR)} \\
             M &: \text{Daily hub commuter volume (100,000)} \\
             W &: \text{Standardized working days per year (250)} \\
             \text{WAGE} &: \text{RBI Informal wage rate (calculated at ₹0.83 per minute)}
@@ -182,12 +182,30 @@ def app():
     except Exception as e:
         st.error(f"Error loading data: {e}"); return
 
-    # --- SIDEBAR CONTROLS ---
+    # --- SIDEBAR CONTROLS (Restored to Exact Original) ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Rs Economic Impact Controls")
-    n_fixes = st.sidebar.slider("Hotspots fixed (top-N):", 0, len(df), 3)
-    sure_standards = {"Current — f=5": 5, "Moderate repair — f=3": 3, "Full S.U.R.E. — f=1": 1}
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", options=list(sure_standards.keys()))
+    n_fixes = st.sidebar.slider(
+        "Hotspots fixed (top-N by f-value):",
+        min_value=0, max_value=len(df), value=3, step=1,
+        help=(
+            "Nodes ranked highest-f first. Each fix sets that node to f=1. "
+            "BCR is only shown when n_fixes > 0."
+        )
+    )
+
+    sure_standards = {
+        "Current — f=5 (Systemic Failure)": 5,
+        "Partial repair — f=4 (Physical Barrier)": 4,
+        "Moderate repair — f=3 (Obstacle Course)": 3,
+        "Near compliant — f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance — f=1 (Gold Standard)": 1,
+    }
+    bazaar_label = st.sidebar.selectbox(
+        "Bazaar Street (600m) modelled as:",
+        options=list(sure_standards.keys()),
+        index=0,
+    )
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
@@ -205,8 +223,10 @@ def app():
     st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
     c4, c5, c6 = st.columns(3)
     delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
-    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", delta=f"{'−' if improved else '+'}Rs{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
-    c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
+    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", 
+              delta=f"{'−' if improved else '+'}Rs{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
+    c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
+              delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
     c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
 
     st.markdown("---")
@@ -220,19 +240,19 @@ def app():
         st.markdown("#### Annual Loss Delta")
         st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
 
-    # --- BCR CURVE (Ensured display logic) ---
+    # --- BCR CURVE ---
     if n_fixes > 0:
         st.markdown("---")
         st.markdown("#### Benefit-Cost Ratio Curve")
         st.caption("Investment efficiency across increasing remediation nodes. Green line indicates 10:1 return threshold.")
         st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
 
-    # --- POINTWISE DESCRIPTION ---
+    # --- POINTWISE DESCRIPTION (Numbered Style) ---
     st.markdown("---")
     st.header("🛠️ Briefing Functionality")
-    st.write("1. **Macro-Economic Aggregation:** Translates physical 'seconds lost' into city-wide productivity figures, anchoring policy arguments in PKR/INR value.")
-    st.write("2. **Investment Prioritization:** identifies that a small pilot expenditure on top hotspots yields a vastly disproportionate economic recovery.")
-    st.write("3. **Equity-Weighted Valuation:** Uses population shares ($w_\\phi$) to ensure the fiscal drain on factory workers and delivery partners is correctly prioritized.")
+    st.write("1. **Macro-Economic Aggregation:** Translates physical 'seconds lost' into city-wide productivity figures, anchoring policy arguments in localized PKR/INR value.")
+    st.write("2. **Investment Prioritization:** Identifies that a small pilot expenditure on top hotspots yields a vastly disproportionate economic recovery.")
+    st.write("3. **Equity-Weighted Valuation:** Uses population shares ($w_\\phi$) to ensure the fiscal drain on laborers and delivery partners is correctly prioritized.")
     st.write("4. **Standardized Proposal Synthesis:** Designed for direct inclusion in DULT/BBMP briefs, using 10:1 BCR as a benchmark for immediate project approval.")
 
     st.markdown("---")
