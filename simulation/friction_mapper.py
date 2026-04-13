@@ -74,10 +74,10 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
     b_popup_html = f"""
         <div style="font-family: sans-serif; font-size: 12px; width: 180px;">
             <b style="color: #F44336; font-size: 14px;">Bazaar Street Zone</b><br>
-            <b>Status:</b> {F_SHORT.get(bazaar_f)}<br>
-            <b>Modeled f:</b> {bazaar_f}<br>
+            <b>Type:</b> Systemic Failure Area<br>
+            <b>Modeled</b> f: {bazaar_f}<br>
             <hr style="margin: 5px 0;">
-            <i>600m stretch of surveyed footway failure.</i>
+            <i>600m stretch of missing or completely blocked footway.</i>
         </div>
     """
     
@@ -86,8 +86,8 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color=F_COLORS.get(bazaar_f, F_COLORS[5]),
         weight=6, 
         opacity=0.85,
-        tooltip="Bazaar St: Click for Data",
-        popup=folium.Popup(b_popup_html, max_width=250)
+        tooltip="Bazaar St: Click for Data", # TOOLTIP (Hover)
+        popup=folium.Popup(b_popup_html, max_width=250)           # POPUP (Click)
     ).add_to(m)
 
     # --- 2. THE DISCRETE NODES (300m) ---
@@ -100,6 +100,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
         status = "REMEDIATED" if is_fixed else F_SHORT.get(f)
         
+        # RICH POPUP BOX
         n_popup_html = f"""
             <div style="font-family: sans-serif; font-size: 12px; width: 200px;">
                 <b style="color: {color}; font-size: 13px;">Node ID: {int(row['id'])}</b><br>
@@ -119,8 +120,8 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
             fill=True, 
             fill_color=color, 
             fill_opacity=0.95,
-            tooltip=f"Node {int(row['id'])} · f={f}",
-            popup=folium.Popup(n_popup_html, max_width=300)
+            tooltip=f"Node {int(row['id'])} · f={f}", # TOOLTIP (Hover)
+            popup=folium.Popup(n_popup_html, max_width=300) # POPUP (Click)
         ).add_to(m)
 
     return m
@@ -132,8 +133,11 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
 
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
     f_300 = df["f_value"].values.astype(float)
-    f_display = f_300.copy()
-    if n_fixes > 0: f_display[np.argsort(f_display)[::-1][:n_fixes]] = 1.0
+    if n_fixes > 0:
+        f_display = f_300.copy()
+        f_display[np.argsort(f_display)[::-1][:n_fixes]] = 1.0
+    else:
+        f_display = f_300.copy()
     f_600 = np.full(48, float(bazaar_f))
     f_all = np.concatenate([f_display, f_600])
     d = 12.5
@@ -154,7 +158,8 @@ def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> 
 
 def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     f_vals = df["f_value"].values.astype(float).copy()
-    if n_fixes > 0: f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
+    if n_fixes > 0:
+        f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
     counts = {f: int((f_vals == f).sum()) for f in [1, 2, 3, 4, 5]}
     present = {f: c for f, c in counts.items() if c > 0}
     sizes, labels, colors = list(present.values()), [F_SHORT[f] for f in present.keys()], [F_COLORS[f] for f in present.keys()]
@@ -165,7 +170,7 @@ def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
     fig.tight_layout()
     return fig
 
-def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float, f_bar_now: float) -> plt.Figure:
+def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float, f_bar_now: float, n_fixes: int, bazaar_f: int) -> plt.Figure:
     scenarios = [("Surveyed Baseline", L_eff_base, f_bar_base), ("Modified Scenario", L_eff_now,  f_bar_now), ("S.U.R.E. Target", 900.0, 1.0)]
     fig, ax = plt.subplots(figsize=(8, 2.8))
     fig.patch.set_facecolor("#1a1a1a")
@@ -175,18 +180,24 @@ def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float,
     for i, (label, leff, fbar) in enumerate(scenarios):
         ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.85, left=0)
         excess = leff - 900
-        if excess > 0: ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900)
+        if excess > 0:
+            ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900)
         ax.text(leff + (max_leff * 0.05), i, f"f̄ = {fbar:.3f}", va="center", ha="left", fontsize=8.5, color="white", fontweight="bold")
         ax.text(leff / 2, i, f"L_eff = {leff:.0f}m", va="center", ha="center", fontsize=8, color="white", fontweight="bold")
     ax.axvline(900, color="#4CAF50", linewidth=1.5, linestyle="--", alpha=0.7)
-    ax.set_yticks([0, 1, 2]); ax.set_yticklabels([s[0] for s in scenarios], color="white", fontsize=8.5)
-    ax.set_xlim(0, max_leff * 1.3); ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False)
+    ax.set_yticks([0, 1, 2])
+    ax.set_yticklabels([s[0] for s in scenarios], fontsize=8.5, color="white")
+    ax.set_xlim(0, max_leff * 1.3)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.spines[:].set_visible(False)
+    ax.set_title("Effective Path Length Comparison", color="white", fontsize=10)
     fig.tight_layout()
     return fig
 
 def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
     fig, ax = plt.subplots(figsize=(7, 1.2))
-    fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
     ax.barh(0, 4.0, height=0.45, color="#2a2a2a", left=1.0)
     fill_color = "#4CAF50" if f_bar_now < 1.5 else ("#FF9800" if f_bar_now < 3.0 else "#F44336")
     ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color, left=1.0, alpha=0.9)
@@ -196,7 +207,9 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
     ax.axvline(f_bar_now, color="white", linewidth=2.0)
     ax.text(f_bar_now, 0.32, f" f̄ = {f_bar_now:.3f}", va="bottom", ha="left" if f_bar_now < 4 else "right", fontsize=9, color="white", fontweight="bold")
     ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left", fontsize=7, color="#4CAF50")
-    ax.set_xlim(0.8, 5.4); ax.set_ylim(-0.5, 0.6); ax.axis("off")
+    ax.set_xlim(0.8, 5.4)
+    ax.set_ylim(-0.5, 0.6)
+    ax.axis("off")
     fig.tight_layout(pad=0.3)
     return fig
 
@@ -207,7 +220,7 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.markdown("""
-    This module maps the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
+    This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
     infrastructure repairs directly reduce the effort required for urban navigation.
     """)
@@ -255,62 +268,105 @@ def app():
     try:
         df = load_audit_data()
     except Exception as e:
-        st.error(f"Error loading data: {e}"); return
+        st.error(f"Error loading data: {e}")
+        return
 
     # --- SIDEBAR CONTROLS ---
-    st.sidebar.markdown("---"); st.sidebar.markdown("### Friction Mapper Controls")
-    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0, help="Simulates fixing obstacles in the 300m stretch.")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### Friction Mapper Controls")
+    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
+                               help="Simulates the fixing of each of the obstacles which make the footways most inaccessible")
     
-    st.sidebar.markdown("---"); st.sidebar.markdown("**600m Bazaar Street stretch**")
-    sure_standards = {"Current — f=5 (Systemic Failure)": 5, "Serious barrier — f=4 (Physical Barrier)": 4, "Moderate repair — f=3 (Obstacle Course)": 3, "Minor repair — f=2 (Distracted Walk)": 2, "Full S.U.R.E. compliance — f=1": 1}
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()), help="Simulates gradual fixing of the Bazaar Street stretch by authorities.")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**600m Bazaar Street stretch**")
+    sure_standards = {
+        "Current — f=5 (Systemic Failure)": 5,
+        "Serious barrier — f=4 (Physical Barrier)": 4,
+        "Moderate repair — f=3 (Obstacle Course)": 3,
+        "Minor repair — f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance — f=1": 1,
+    }
+    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
+                                       help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
-    f_300 = df["f_value"].values.astype(float); f_fixed = f_300.copy()
+    f_300 = df["f_value"].values.astype(float)
+    f_fixed = f_300.copy()
     if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
 
-    len_compliant = ((f_fixed == 1).sum() * 12.5) + (600 if bazaar_f == 1 else 0)
-    len_inaccessible = ((f_fixed >= 4).sum() * 12.5) + (600 if bazaar_f >= 4 else 0)
-    len_wheelchair_fail = ((f_fixed >= 3).sum() * 12.5) + (600 if bazaar_f >= 3 else 0)
-    
+    L_eff_300_base = 12.5 * f_300.sum()
     L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
-    L_eff_base = (12.5 * f_300.sum()) + (600 * 5)
+    L_eff_base = L_eff_300_base + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
     # --- HEADLINE METRICS ---
     st.markdown("#### The State of the Corridor")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Compliance Rate", f"{(len_compliant/900)*100:.1f}%")
-    col2.metric("Wheelchair Inaccessible", f"{(len_wheelchair_fail/900)*100:.1f}%")
-    col3.metric("Impassable (f ≥ 4)", f"{(len_inaccessible/900)*100:.1f}%")
-    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x")
+    col1.metric("Fails Active Mobility Bill", "90.3%",
+                help="90.3% of the 900m stretch does not meet minimum pedestrian standards.")
+    col2.metric("Wheelchair inaccessible", "96.0%",
+                help="96% of the route has $f > f_{max}$ for wheelchair users ($f_{max} = 3$).")
+    col3.metric("Impassable Nodes ($f ≥ 4$)", f"{int((f_fixed > 3).sum())} / 24",
+               help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way.")
+    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x",
+               help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
     st.markdown("---")
 
     # --- MAP & GRADIENT ---
     st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
-    st.markdown("---"); st.markdown("#### Friction Gradient — Full 900m Route")
+    st.markdown("---")
+    st.markdown("#### Friction Gradient — Full 900m Route")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
     st.markdown("---")
 
     # --- CORRIDOR ANALYSIS ---
     st.markdown("#### Corridor Analysis")
-    c_l, c_r = st.columns(2)
-    with c_l: st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
-    with c_r:
+    col_left, col_right = st.columns(2)
+    with col_left:
+        st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
+    with col_right:
         st.caption("S.U.R.E. Compliance Gauge")
         st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
-        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now), use_container_width=True)
+        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), use_container_width=True)
 
     # --- POINTWISE DESCRIPTION ---
-    st.markdown("---"); st.header("Mapper Functionality")
+    st.markdown("---")
+    st.header("Mapper Functionality")
     st.write("1. **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based database.")
     st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the Active Mobility Bill and DULT rubrics. By assigning a Friction Value $f$, the mapper provides an objective diagnostic of segment compliance.")
     st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
 
-    st.markdown("---"); st.markdown("#### Friction Rubric")
-    st.dataframe(pd.DataFrame({"f": [1, 2, 3, 4, 5], "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course", "Physical Barrier", "Systemic Failure"], "Infrastructure State": ["Continuous, unobstructed 3m+ footpath", "Minor cracks, unlevelled slabs", "Broken slabs, rubble", "Missing drain cover, partial blockage", "Footpath ends entirely"], "Wheelchair Access": ["Full", "Partial", "Restricted", "Impassable", "Fully Impassable"]}), hide_index=True, use_container_width=True)
+    st.markdown("---")
+    st.markdown("#### Friction Rubric")
+    rubric = pd.DataFrame({
+        "f": [1, 2, 3, 4, 5],
+        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
+                  "Physical Barrier", "Systemic Failure"],
+        "Infrastructure State": [
+            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
+            "Minor cracks, unlevelled slabs, low-hanging cables",
+            "Broken slabs, rubble, utility excavation",
+            "Missing drain cover, high kerb, partial blockage",
+            "Footpath ends — transformer, encroachment, construction",
+        ],
+        "Wheelchair Access": [
+            "Full",
+            "Partial — discomfort",
+            "Severely restricted",
+            "Effectively impassable",
+            "Fully impassable",
+        ],
+        "S.U.R.E. compliant?": [
+            "✅ Yes — reference standard",
+            "⚠️ Marginal",
+            "❌ No",
+            "❌ No",
+            "❌ No",
+        ],
+    })
+    st.dataframe(rubric, hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
     app()
