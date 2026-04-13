@@ -75,7 +75,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         <div style="font-family: sans-serif; font-size: 12px; width: 180px;">
             <b style="color: #F44336; font-size: 14px;">Bazaar Street Zone</b><br>
             <b>Type:</b> Systemic Failure Area<br>
-            <b>Modeled f:</b> {bazaar_f}<br>
+            <b>Modeled</b> f: {bazaar_f}<br>
             <hr style="margin: 5px 0;">
             <i>600m stretch of missing or completely blocked footway.</i>
         </div>
