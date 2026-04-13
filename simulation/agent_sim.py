@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # -------------------------------------------------------------------------
-# CONSTANTS & LOGIC (Preserved Exactly)
+# CONSTANTS
 # -------------------------------------------------------------------------
 
 D      = 900.0   # total corridor length (m)
@@ -39,7 +39,7 @@ def load_personas() -> dict:
 
 
 # -------------------------------------------------------------------------
-# SIMULATION CORE (Logic Untouched)
+# SIMULATION CORE
 # -------------------------------------------------------------------------
 
 def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int) -> np.ndarray:
@@ -89,44 +89,61 @@ def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
 
 
 # -------------------------------------------------------------------------
-# PLOT HELPERS (Logic Untouched)
+# PLOT HELPERS
 # -------------------------------------------------------------------------
 
 def plot_traversal_comparison(results: dict, personas: dict, selected_key: str) -> plt.Figure:
     p   = personas[selected_key]
     res = results[selected_key]
-    labels = ["Ideal (f=1)", "Actual (Surveyed)"]
+    labels = ["Ideal\n(f=1 throughout)", "Actual\n(surveyed)"]
     values = [res["T_ideal"] / 60, res["T_actual"] / 60]
+    colors = ["#4CAF50", p["color"]]
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.bar(labels, values, color=["#4CAF50", p["color"]], width=0.45)
+    ax.bar(labels, values, color=colors, width=0.45)
+    for i, v in enumerate(values):
+        ax.text(i, v + max(values)*0.02, f"{v:.1f} min", ha="center", color="white", fontweight="bold")
     ax.set_ylabel("Traversal time (min)", color="white")
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
     ax.tick_params(colors="white")
-    plt.close()
+    ax.spines[:].set_visible(False)
+    fig.tight_layout()
     return fig
 
 def plot_segment_breakdown(f_array: np.ndarray, result: dict, persona: dict) -> plt.Figure:
+    F_COLORS = {1: "#9E9E9E", 2: "#4CAF50", 3: "#2196F3", 4: "#FF9800", 5: "#F44336"}
+    x = np.arange(len(f_array)) * d
+    colors = [F_COLORS.get(int(min(v, 5)), "#F44336") for v in f_array]
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 4.5), sharex=True)
-    ax1.set_facecolor("#1a1a1a")
-    ax2.set_facecolor("#1a1a1a")
+    ax1.bar(x, f_array, width=d*0.88, color=colors, align="edge")
+    ax1.set_yticks([1, 2, 3, 4, 5])
+    ax1.set_ylabel("f", color="white")
+    ax2.bar(x, result["tau_i"], width=d*0.88, color=persona["color"], align="edge")
+    ax2.axhline(d/persona["v0"], color="#4CAF50", linestyle=":", label="Ideal τᵢ")
+    ax2.set_ylabel("τᵢ (s)", color="white")
+    for ax in [ax1, ax2]:
+        ax.set_facecolor("#1a1a1a")
+        ax.tick_params(colors="white")
+        ax.spines[:].set_visible(False)
+        ax.axvline(300, color="#aaaaaa", linestyle="--", alpha=0.5)
     fig.patch.set_facecolor("#1a1a1a")
-    ax1.bar(np.arange(len(f_array))*d, f_array, width=d*0.8, color="#F44336", align="edge")
-    ax2.bar(np.arange(len(f_array))*d, result["tau_i"], width=d*0.8, color=persona["color"], align="edge")
-    ax1.tick_params(colors="white")
-    ax2.tick_params(colors="white")
-    plt.close()
+    fig.tight_layout()
     return fig
 
 def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
     labels = [p["label"] for p in personas.values()]
     taxes  = [results[k]["delta_tau"] / 60 for k in personas]
+    colors = [p["color"] for p in personas.values()]
     fig, ax = plt.subplots(figsize=(7, 3.2))
-    ax.barh(labels, taxes, color="#2196F3")
+    ax.barh(labels, taxes, color=colors, height=0.5)
+    for i, v in enumerate(taxes):
+        ax.text(v + max(taxes)*0.02, i, f"{v:.1f} min", va="center", color="white")
+    ax.set_xlabel("Time Tax per trip (min)", color="white")
     ax.set_facecolor("#1a1a1a")
     fig.patch.set_facecolor("#1a1a1a")
     ax.tick_params(colors="white")
-    plt.close()
+    ax.spines[:].set_visible(False)
+    fig.tight_layout()
     return fig
 
 
@@ -135,162 +152,118 @@ def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
 # -------------------------------------------------------------------------
 
 def app():
-    st.title("⏱️ Time Tax Simulator")
-    st.markdown("### The Physics of Stolen Time")
-    
     st.markdown("""
-    This module simulates the journey of four distinct commuter personas through the Yeshwantpur corridor. 
-    By applying persona-specific sensitivity to infrastructure friction, we quantify the 'Time Tax'—the 
-    cumulative seconds of life-time stolen from citizens by non-compliant design.
+    This module computes the **Time Tax** $\Delta\\tau(\phi)$ for specific commuter personas across the 900m corridor. 
+    By applying a power-law friction-velocity model, we quantify the measurable seconds stolen from every trip 
+    by non-compliant infrastructure versus a fully standardized route.
     """)
-    
     st.markdown("---")
 
-    # --- UPFRONT: SCALE, IMPACT, SOLUTION ---
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.subheader("📊 The Scale")
-        st.write("- **Audit Length:** 900m Corridor")
-        st.write("- **Commuters:** 100,000+ Daily trips")
-        st.write("- **Standard:** [Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) (f=1)")
-
-    with col2:
-        st.subheader("📉 The Impact")
-        st.write("- **Daily Loss:** ~480,000 Person-Minutes")
-        st.write("- **Disparity:** Vulnerable groups bear 3x tax")
-        st.error("- **Risk:** Forced detours into vehicular traffic")
-
-    with col3:
-        st.subheader("💡 The Solution")
-        st.write("- **Strategy:** Targeted Hotspot Fixes")
-        st.write("- **ROI:** 10 minutes saved per persona trip")
-        st.success("- **Equity:** Removing f > f_max barriers first")
-
-    st.markdown("---")
-
-    # --- MOTIVATION PARAGRAPH ---
-    st.header("🧠 Why Physics for Time?")
-    st.markdown("""
-    Urban planners often overlook that time is a physical resource governed by the environment. 
-    A broken sidewalk doesn't just 'annoy' a walker; it creates a resistive field that decreases velocity. 
-    By using a **Power-Law Velocity Model**, we can scientifically demonstrate that infrastructure 
-    failure does not affect everyone equally. For an able-bodied adult, a high-friction node is a 
-    slight delay; for a wheelchair user, that same node can be an impassable potential barrier that 
-    forces a dangerous detour into the road. This simulator visualizes how poor design effectively 
-    'taxes' the schedule of the city's most vulnerable citizens.
-    """)
-
-    # 
-
-    # --- THE MATHEMATICAL FRAMEWORK ---
-    with st.expander("🔬 View Technical Methodology and Variables"):
-        st.markdown("#### 1. The Friction-Velocity Model")
-        st.markdown("""
-        We use a non-linear decay model to represent how walking speed ($v_{\text{eff}}$) decreases 
-        as ground friction increases.
-        """)
-        st.latex(r"v_{\text{eff}}(i,\,\phi) = \frac{v_0(\phi)}{f_i^{\,k(\phi)}}")
+    # --- TECHNICAL MATH SECTION ---
+    with st.expander("View Technical Methodology and Mathematical Definitions"):
+        st.markdown("#### 1. Fundamental Equations")
+        st.markdown("We model effective velocity ($v_{\\text{eff}}$) as a non-linear decay function of infrastructure friction.")
+        st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
         st.latex(r"""
             \begin{aligned}
-            v_{\text{eff}} &: \text{Effective velocity achieved across segment } i \\
-            v_0 &: \text{Ideal walking speed of persona } \phi \text{ on a clear path} \\
-            f_i &: \text{The Friction Index (1-5) of the audited segment} \\
-            k &: \text{Sensitivity Exponent (Determines how quickly speed drops)}
+            \Delta\tau &: \text{The Time Tax (Cumulative seconds stolen per single trip)} \\
+            v_0(\phi) &: \text{Ideal walking speed of the persona on a compliant footpath} \\
+            f_i &: \text{Friction Index of the segment (1 = Standard, 5 = Failure)} \\
+            k(\phi) &: \text{Persona-specific friction sensitivity exponent} \\
+            d &: \text{Standard segment length used for discretization (12.5 meters)} \\
+            N &: \text{Total number of audited segments across the 900m corridor (72)}
             \end{aligned}
         """)
 
-        st.markdown("#### 2. The Time Tax Calculation")
+        st.markdown("#### 2. Detailed Sample Calculation")
         st.markdown("""
-        The **Time Tax** ($\Delta\tau$) is the difference between the actual time spent 
-        navigating the broken path versus the ideal time on a standard-compliant corridor.
+        To demonstrate the impact of the **Sensitivity Exponent ($k$)**, we compare an Able-Bodied Adult 
+        against a Wheelchair User at a single $f=5$ systemic failure segment.
         """)
-        st.latex(r"\Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{\,k(\phi)} - N \right)")
-        st.latex(r"""
-            \begin{aligned}
-            \Delta\tau &: \text{The Time Tax (Seconds stolen per trip)} \\
-            d &: \text{Standard segment length (12.5 meters)} \\
-            N &: \text{Total number of segments (72 segments for 900m)} \\
-            \sum f_i^k &: \text{The sum of persona-weighted friction across all nodes}
-            \end{aligned}
-        """)
+        
+        st.markdown("**Persona A: Able-Bodied Adult** ($v_0=1.4, k=0.6, f_{max}=5$)")
+        st.latex(r"\tau_{f=5} = \frac{12.5}{1.4 / 5^{0.6}} \approx \frac{12.5}{0.53} \approx 23.5\text{s} \quad (\text{Tax: } +14.6\text{s})")
 
-        st.markdown("#### 3. Rerouting Logic (ROW Detours)")
-        st.markdown("""
-        When friction exceeds a persona's limit ($f_{\text{max}}$), the agent must leave the 
-        footpath and enter the vehicular Right-of-Way, incurring a detour penalty.
-        """)
-        st.latex(r"\tau_i^{\text{ROW}}(\phi) = \frac{(d + \delta) \cdot \alpha}{v_0(\phi)}")
-        st.latex(r"""
-            \begin{aligned}
-            \tau_i^{\text{ROW}} &: \text{Time spent during a vehicular Right-of-Way detour} \\
-            \delta &: \text{Mean detour distance penalty (meters)} \\
-            \alpha &: \text{Safety multiplier (Accounts for caution and traffic interference)}
-            \end{aligned}
-        """)
+        st.markdown("**Persona B: Wheelchair User** ($v_0=0.8, k=1.2, f_{max}=3$)")
+        st.markdown("At $f=5$, the wheelchair exceeds $f_{max}$, triggering a vehicular Right-of-Way (ROW) detour:")
+        st.latex(r"\tau_{f=5}^{ROW} = \frac{(12.5 + \delta) \cdot \alpha}{v_0} = \frac{(12.5 + 5) \cdot 1.5}{0.8} \approx 32.8\text{s} \quad (\text{Tax: } +17.2\text{s})")
 
-    # -----------------------------------------------------------------------
-    # SIMULATION EXECUTION
-    # -----------------------------------------------------------------------
     try:
         df       = load_audit_data()
         personas = load_personas()
     except Exception as e:
-        st.error(f"Data loading failed: {e}")
+        st.error(f"Error loading data: {e}")
         return
 
-    # Sidebar Controls
+    # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### ⏱️ Simulator Controls")
-    selected_key = st.sidebar.selectbox("Commuter persona:", options=list(personas.keys()), format_func=lambda k: personas[k]["label"])
+    st.sidebar.markdown("### ⏱️ Time Tax Simulator Controls")
+    
+    selected_key = st.sidebar.selectbox("Commuter persona:", options=list(personas.keys()), 
+                                        format_func=lambda k: personas[k]["label"])
     p = personas[selected_key]
-    n_fixes = st.sidebar.slider("Nodes fixed to S.U.R.E. standard:", 0, len(df), 0)
-    sure_standards = {"Current (f=5)": 5, "Moderate (f=3)": 3, "Compliance (f=1)": 1}
-    bazaar_f = sure_standards[st.sidebar.selectbox("Bazaar St Model:", list(sure_standards.keys()))]
 
-    # Run Simulation
+    st.sidebar.markdown("**Scenario settings**")
+    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
+                                help="Simulates fixing obstacles in the 300m stretch ranked by severity")
+    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**600m Bazaar Street stretch**")
+    sure_standards = {
+        "Current — f=5 (Systemic Failure)": 5,
+        "Serious barrier — f=4 (Physical Barrier)": 4,
+        "Moderate repair — f=3 (Obstacle Course)": 3,
+        "Minor repair — f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance — f=1": 1,
+    }
+    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
+                                        help="Simulates gradual remediation of the continuous failure zone")
+    bazaar_f = sure_standards[bazaar_label]
+
+    # --- SIMULATION EXECUTION ---
     f_array = build_f_array(df, n_fixes, bazaar_f)
     results = {k: run_simulation(f_array, v) for k, v in personas.items()}
     res     = results[selected_key]
 
-    # Display Metrics
+    # --- HEADLINE METRICS ---
     st.markdown(f"#### {p['label']} — Traversal Summary")
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Ideal Time", f"{res['T_ideal'] / 60:.1f} min")
-    m2.metric("Actual Time", f"{res['T_actual'] / 60:.1f} min", delta=f"+{res['delta_tau'] / 60:.1f} min", delta_color="inverse")
-    m3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse")
-    m4.metric("ROW Detours", f"{res['n_detours']} segments")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Ideal Time", f"{res['T_ideal'] / 60:.1f} min", help="Time taken if f=1 throughout")
+    col2.metric("Actual Time", f"{res['T_actual'] / 60:.1f} min", delta=f"+{res['delta_tau'] / 60:.1f} min", delta_color="inverse")
+    col3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse")
+    col4.metric("ROW Detours", f"{res['n_detours']} segments", help="Segments forcing pedestrians into traffic")
 
     st.markdown("---")
 
-    # Display Visuals
+    # --- CHARTS ---
     c_left, c_right = st.columns([1, 1.8])
     with c_left:
-        st.markdown("#### Ideal vs Actual Traversal")
+        st.markdown("#### Traversal Comparison")
         st.pyplot(plot_traversal_comparison(results, personas, selected_key), use_container_width=True)
     with c_right:
-        st.markdown("#### All Personas — Time Tax Comparison")
+        st.markdown("#### Cross-Persona Time Tax")
         st.pyplot(plot_all_personas(results, personas), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("#### Per-Segment Breakdown")
+    st.markdown("#### Per-Segment Friction & Time Breakdown")
     st.pyplot(plot_segment_breakdown(f_array, res, p), use_container_width=True)
 
-    # --- POINTWISE MODULE DESCRIPTION ---
+    # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
-    st.header("🛠️ Simulator Functionality")
-    st.write("1. **Agent-Based Modeling:** Uses real persona parameters ($v_0, k$) to simulate how different demographics experience the same physical route.")
-    st.write("2. **Dynamic Time-Taxing:** Recalculates seconds lost in real-time as the user 'repairs' the 300m stretch or redesigns Bazaar Street.")
-    st.write("3. **Risk Quantification:** Specifically identifies 'Impassable' segments where pedestrians are forced to mix with vehicular traffic, highlighting safety hazards.")
-    st.write("4. **Equity Gap Visualization:** Directly compares the Time Tax of wheelchair users against able-bodied adults to argue for universal design standards.")
+    st.header("Simulator Functionality")
+    st.write("1. **Agent-Based Path Simulation:** This module uses individual persona parameters (base speed $v_0$ and sensitivity $k$) to simulate how different citizens experience the same physical corridor. This moves beyond 'average' walking speeds to capture the reality of diverse commuters.")
+    st.write("2. **Power-Law Friction Scaling:** Unlike linear models, our simulator penalizes speed exponentially as infrastructure degrades. This accurately models how a 'doubling' of ground roughness leads to more than a doubling of traversal difficulty for vulnerable groups.")
+    st.write("3. **Vehicular Risk Quantification:** The simulator identifies 'Impassable' segments ($f > f_{max}$) where agents are forced into the vehicular Right-of-Way. It calculates the associated safety multiplier $\\alpha$, highlighting the direct correlation between poor footpaths and high-risk pedestrian-vehicle mixing.")
+    st.write("4. **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
 
     st.markdown("---")
-    with st.expander("📋 View Raw Segment Data Table"):
+    with st.expander("📋 View Raw Simulation Data Table"):
         st.dataframe(pd.DataFrame({
             "Segment": range(1, len(f_array) + 1),
             "Friction (f)": f_array,
             "Speed (m/s)": np.round(res["v_eff_i"], 3),
             "Time (s)": np.round(res["tau_i"], 2),
-            "Detour": res["is_detour"]
+            "Detour Triggered": res["is_detour"]
         }), hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
