@@ -162,58 +162,60 @@ def app():
 
     # --- TECHNICAL MATH SECTION ---
     # --- TECHNICAL MATH SECTION (Enhanced with all variable definitions) ---
+    # --- TECHNICAL MATH SECTION (Standardized to LaTeX Block Style) ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("#### 1. Variable Definitions")
-        st.markdown("""
-| Symbol | Variable Name | Definition & Units |
-| :--- | :--- | :--- |
-| $f_i$ | **Friction Index** | The level of resistance at segment $i$ ($f \in \{1, 2, 3, 4, 5\}$). |
-| $v_0(\phi)$ | **Free Speed** | Ideal walking speed of persona $\phi$ on a clear footpath (m/s). |
-| $k(\phi)$ | **Sensitivity Exponent** | Persona-specific exponent determining the rate of velocity decay. |
-| $f_{\text{max}}(\phi)$ | **Threshold** | The friction level at which persona $\phi$ is forced into the road (ROW). |
-| $\tau_i(\phi)$ | **Traversal Time** | The time required for persona $\phi$ to cross segment $i$ (seconds). |
-| $w_\phi$ | **Population Weight** | The percentage share of persona $\phi$ in the total hub population. |
-| $\Delta\tau(\phi)$ | **Persona Time Tax** | Cumulative seconds lost per trip vs. an $f=1$ benchmark. |
-| $M$ | **Hub Volume** | Total daily commuters traversing the corridor (100,000). |
-| $W$ | **Annual Cycle** | Number of working days considered per year (250). |
-| $\text{WAGE}$ | **Wage Rate** | RBI informal hourly rate converted to per-minute value (₹0.83/min). |
-| $\mathcal{L}$ | **Productivity Loss** | Total annual economic drain in Crore INR. |
-| $BCR$ | **Fiscal Efficiency** | Benefit-Cost Ratio; value recovered for every ₹1 invested. |
+        st.markdown("#### 1. Fundamental Equations")
+        st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
+        st.latex(r"""
+            \begin{aligned}
+            v_{\text{eff}}(i, \phi) &= \frac{v_0(\phi)}{f_i^{\,k(\phi)}} \\
+            \Delta\tau(\phi) &= \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{\,k(\phi)} - N \right) \\
+            \mathcal{L} &= M \cdot W \cdot \frac{\bar{\Delta\tau}}{60} \cdot \text{WAGE} \cdot 10^{-7}
+            \end{aligned}
         """)
 
-        st.markdown("#### 2. The Physics of Traversal")
-        st.markdown("""
-        The model first determines if a segment is passable. If $f_i \leq f_{\text{max}}$, the persona stays on the path 
-        and experiences velocity decay. If $f_i > f_{\text{max}}$, a Right-of-Way (ROW) detour is triggered.
+        st.markdown("#### 2. Variable Definitions")
+        st.latex(r"""
+            \begin{aligned}
+            f_i &: \text{Friction Index of segment } i \text{ (Discrete nodes or Bazaar St)} \\
+            v_0(\phi) &: \text{Free-walking speed of persona } \phi \text{ (Standardized m/s)} \\
+            k(\phi) &: \text{Sensitivity exponent for persona } \phi \text{ (Rate of velocity decay)} \\
+            \Delta\tau(\phi) &: \text{Time Tax (Seconds stolen per trip) for a single persona} \\
+            M &: \text{Daily Hub Volume (100,000 commuters at Yeshwantpur hub)} \\
+            W &: \text{Annual Cycle (250 standardized working days per year)} \\
+            w_\phi &: \text{Weighting factor (Proportional share of persona in the population)} \\
+            \text{WAGE} &: \text{Economic value of time (RBI Informal rate } \approx \text{ ₹0.83/min)} \\
+            \mathcal{L} &: \text{Annual Economic Productivity Loss (Expressed in Crore INR)}
+            \end{aligned}
         """)
+
+        st.markdown("#### 3. Piecewise Segmental Traversal")
+        st.markdown("The model accounts for 'Impassability' where friction exceeds a persona's barrier threshold ($f_{\text{max}}$), forcing a vehicular Right-of-Way (ROW) detour.")
         st.latex(r"""
             \tau_i(\phi) = 
             \begin{cases} 
-            \frac{d \cdot f_i^{k(\phi)}}{v_0(\phi)} & \text{if } f_i \leq f_{\text{max}} \quad \text{(Passable Path)} \\ 
-            \frac{(d + \delta) \cdot \alpha}{v_0(\phi)} & \text{if } f_i > f_{\text{max}} \quad \text{(ROW Detour)} 
+            \frac{d \cdot f_i^{k(\phi)}}{v_0(\phi)} & \text{if } f_i \leq f_{\text{max}} \quad \text{(Path Traversal)} \\ 
+            \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)} & \text{if } f_i > f_{\text{max}} \quad \text{(ROW Detour)} 
             \end{cases}
         """)
-
-        st.markdown("#### 3. Scaling to Economic Impact")
-        st.markdown("""
-        The individual struggle is aggregated across the population to calculate the **Annual Economic Productivity Loss** ($\mathcal{L}$). 
-        This is a four-step derivation:
+        st.latex(r"""
+            \begin{aligned}
+            \tau_i &: \text{Time required to navigate segment } i \text{ (seconds)} \\
+            d &: \text{Unit segment length (12.5 meters)} \\
+            \delta(\phi) &: \text{Detour distance penalty incurred entering traffic} \\
+            \alpha &: \text{Safety penalty multiplier (1.5x speed reduction during detour)}
+            \end{aligned}
         """)
-        
-        st.markdown("**Step A: Weighted Mean Time Tax**")
-        st.latex(r"\bar{\Delta\tau} = \frac{\sum_{\phi} w_\phi (T_{\text{actual}, \phi} - T_{\text{ideal}, \phi})}{\sum w_\phi}")
 
-        st.markdown("**Step B: Annual Time Drain**")
-        st.markdown("Total minutes stolen from the city's workforce per year:")
-        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\bar{\Delta\tau}}{60}")
-
-        st.markdown("**Step C: Fiscal Conversion**")
-        st.markdown("Applying the localized value of time to determine the total Crore-value drain:")
-        st.latex(r"\mathcal{L} = \mathcal{T}_{\text{year}} \cdot \text{WAGE} \cdot 10^{-7}")
-
-        st.markdown("**Step D: Benefit-Cost Ratio (BCR)**")
-        st.markdown("Efficiency of the intervention, where $\Delta\mathcal{L}$ is the loss recovered by the fixes:")
-        st.latex(r"BCR = \frac{\Delta\mathcal{L} \cdot 100}{\text{Repair Cost (Lakhs)}}")
+        st.markdown("#### 4. Fiscal Aggregation and Efficiency")
+        st.markdown("The final metrics quantify the baseline drain and the efficiency of the proposed capital expenditure.")
+        st.latex(r"""
+            \begin{aligned}
+            \bar{\Delta\tau} &= \frac{\sum_{\phi} w_\phi \Delta\tau(\phi)}{\sum w_\phi} \quad \text{(Weighted Mean Time Tax)} \\
+            \Delta\mathcal{L} &= \mathcal{L}_{\text{baseline}} - \mathcal{L}_{\text{scenario}} \quad \text{(Annual Economic Benefit)} \\
+            BCR &= \frac{\Delta\mathcal{L} \cdot 100}{\text{Repair Cost (Lakhs)}} \quad \text{(Benefit-Cost Ratio)}
+            \end{aligned}
+        """)
 
     try:
         df = load_audit_data(); personas = load_personas()
