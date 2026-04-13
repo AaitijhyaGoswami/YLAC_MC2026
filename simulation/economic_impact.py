@@ -293,15 +293,15 @@ def app():
     st.markdown("#### Baseline — Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
     c1.metric("Annual person-minutes lost", f"{econ['annual_pm_b']/1e6:.2f}M")
-    c2.metric("Annual productivity loss", f"Rs{econ['annual_loss_cr_b']:.2f} Cr")
+    c2.metric("Annual productivity loss", f"Rs {econ['annual_loss_cr_b']:.2f} Cr")
     c3.metric("Weighted mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip")
 
     st.markdown("---")
     st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
     c4, c5, c6 = st.columns(3)
     delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
-    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", 
-              delta=f"{'−' if improved else '+'}Rs{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
+    c4.metric("Annual loss — scenario", f"Rs {econ['annual_loss_cr_s']:.2f} Cr", 
+              delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
     c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
               delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
     c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
