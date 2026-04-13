@@ -1,8 +1,25 @@
-import argparse
-import io
+"""
+policy_brief.py
+===============
+Economic Impact & Policy Brief module for the Escape the Knot dashboard.
+PDF generation has been removed. Streamlit entry point: app()
+
+Economics model notes
+---------------------
+Baseline: always (n_fixes=0, bazaar_f=5) — surveyed conditions.
+Scenario: n_fixes hotspots fixed to f=1, Bazaar Street at bazaar_f.
+
+pct_recovered can be negative: lowering bazaar_f can worsen some personas'
+Time Tax. At bazaar_f=4, elderly (k=0.9, f_max=4) and delivery (k=0.75,
+f_max=4) become passable but slow (d*4^k/v0) instead of triggering the
+cheaper ROW detour ((d+delta)*alpha/v0). This is physically correct.
+
+BCR is only computed when n_fixes > 0. Toggling bazaar_f alone has no
+associated repair cost. Repair cost scales linearly with n_fixes at rate
+FIX_COST_PER_3_FIXES / 3 per fix, ensuring the BCR curve is monotonic.
+"""
+
 import os
-import sys
-import tempfile
 
 import matplotlib
 matplotlib.use("Agg")
@@ -22,7 +39,7 @@ N_600 = 48
 
 M    = 100_000   # daily commuters at Yeshwantpur hub
 W    = 250       # working days per year
-WAGE = 50 / 60  # RBI informal wage rate — ₹50/hr → ₹/min
+WAGE = 50 / 60  # RBI informal wage rate — Rs50/hr -> Rs/min
 
 FIX_COST_LOW_LAKH  = 8
 FIX_COST_HIGH_LAKH = 12
@@ -49,6 +66,12 @@ def load_personas() -> dict:
 # -------------------------------------------------------------------------
 
 def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int = 5) -> np.ndarray:
+    """
+    Build the 72-element friction array for the full 900m corridor.
+    Segments 0-23  : 300m stretch, discrete nodes from audit_log.csv.
+                     Top n_fixes nodes (by descending f_value) set to f=1.
+    Segments 24-71 : 600m Bazaar Street stretch, uniform at bazaar_f.
+    """
     f_300 = df["f_value"].values.astype(float)
     if n_fixes > 0:
         fix_idx = np.argsort(f_300)[::-1][:n_fixes]
@@ -58,18 +81,35 @@ def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int = 5) -> np.ndarr
 
 
 def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
-    v0, k     = persona["v0"], persona["k"]
-    f_max     = persona["f_max"]
-    alpha     = persona["alpha"]
-    delta_m   = persona["delta"]
-    tau_i     = np.empty(len(f_array))
-    is_det    = np.zeros(len(f_array), dtype=bool)
+    """
+    Power-law friction-velocity model for one persona.
+
+    Passable (f_i <= f_max):  tau_i = d * f_i^k / v0
+    Impassable (f_i > f_max): tau_i = (d + delta) * alpha / v0  [ROW detour]
+
+    Note: the ROW detour formula can produce a SMALLER tau than the passable
+    formula at moderate f with high k. Example:
+      elderly (k=0.9, f_max=4) at f=4:
+        passable  tau = 12.5 * 4^0.9 / 0.9 = 57.4s
+        ROW @f=5  tau = (12.5+10)*1.5/0.9  = 37.5s
+    So lowering Bazaar Street from f=5 to f=4 makes elderly SLOWER. Correct.
+    """
+    v0    = persona["v0"]
+    k     = persona["k"]
+    f_max = persona["f_max"]
+    alpha = persona["alpha"]
+    delta = persona["delta"]
+
+    tau_i  = np.empty(len(f_array))
+    is_det = np.zeros(len(f_array), dtype=bool)
+
     for i, fi in enumerate(f_array):
         if fi > f_max:
-            tau_i[i]  = (d + delta_m) * alpha / v0
+            tau_i[i]  = (d + delta) * alpha / v0
             is_det[i] = True
         else:
             tau_i[i] = d * (fi ** k) / v0
+
     T_actual = float(tau_i.sum())
     T_ideal  = D / v0
     return {
@@ -77,11 +117,13 @@ def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
         "T_ideal":   T_ideal,
         "delta_tau": T_actual - T_ideal,
         "n_detours": int(is_det.sum()),
+        "tau_i":     tau_i,
+        "is_det":    is_det,
     }
 
 
 # -------------------------------------------------------------------------
-# ECONOMIC CALCULATIONS
+# ECONOMIC MODEL
 # -------------------------------------------------------------------------
 
 def compute_economics(
@@ -90,458 +132,203 @@ def compute_economics(
     n_fixes: int,
     bazaar_f: int = 5,
 ) -> dict:
-    f_array = build_f_array(df, n_fixes, bazaar_f)
-    f_base  = build_f_array(df, 0, 5)
+    """
+    Compute all economic metrics for a given scenario vs the fixed baseline.
 
-    results  = {k: run_simulation(f_array, v) for k, v in personas.items()}
-    results0 = {k: run_simulation(f_base,  v) for k, v in personas.items()}
+    Baseline: n_fixes=0, bazaar_f=5 (surveyed conditions, never changes).
+    Scenario: n_fixes hotspots fixed, Bazaar Street at bazaar_f.
+
+    pct_recovered: positive = improvement, negative = scenario worsens.
+    BCR: only computed when n_fixes > 0. Zero otherwise.
+    """
+    f_scenario = build_f_array(df, n_fixes, bazaar_f)
+    f_baseline = build_f_array(df, 0, 5)          # always surveyed conditions
+
+    res_s = {k: run_simulation(f_scenario, v) for k, v in personas.items()}
+    res_b = {k: run_simulation(f_baseline, v) for k, v in personas.items()}
 
     total_w = sum(p["weight"] for p in personas.values())
 
-    def weighted_mean(res):
+    def weighted_mean_dtau(res):
         return sum(
             res[k]["delta_tau"] * personas[k]["weight"] for k in personas
         ) / total_w
 
-    dtau_bar  = weighted_mean(results)
-    dtau_bar0 = weighted_mean(results0)
+    dtau_bar_s = weighted_mean_dtau(res_s)
+    dtau_bar_b = weighted_mean_dtau(res_b)
 
-    annual_pm  = M * W * dtau_bar  / 60   # person-minutes
-    annual_pm0 = M * W * dtau_bar0 / 60
+    annual_pm_s = M * W * dtau_bar_s / 60    # person-minutes
+    annual_pm_b = M * W * dtau_bar_b / 60
 
-    annual_loss_cr  = annual_pm  * WAGE / 1e7   # ₹ crore
-    annual_loss_cr0 = annual_pm0 * WAGE / 1e7
+    annual_loss_cr_s = annual_pm_s * WAGE / 1e7   # Rs crore
+    annual_loss_cr_b = annual_pm_b * WAGE / 1e7
 
     pct_recovered = (
-        (annual_loss_cr0 - annual_loss_cr) / annual_loss_cr0 * 100
-        if annual_loss_cr0 > 0 and (n_fixes > 0 or bazaar_f < 5) else 0.0
+        (annual_loss_cr_b - annual_loss_cr_s) / annual_loss_cr_b * 100
+        if annual_loss_cr_b > 0 else 0.0
     )
 
-    recovered_lakh = (annual_loss_cr0 - annual_loss_cr) * 100  # cr → lakh
-    bcr_low  = recovered_lakh / FIX_COST_HIGH_LAKH if n_fixes > 0 else 0.0
-    bcr_high = recovered_lakh / FIX_COST_LOW_LAKH  if n_fixes > 0 else 0.0
+    # BCR only when physical fixes are applied
+    if n_fixes > 0:
+        cost_low_lakh  = FIX_COST_LOW_LAKH  * n_fixes / 3
+        cost_high_lakh = FIX_COST_HIGH_LAKH * n_fixes / 3
+        saving_lakh = (annual_loss_cr_b - annual_loss_cr_s) * 100
+        bcr_low  = saving_lakh / cost_high_lakh if cost_high_lakh > 0 else 0.0
+        bcr_high = saving_lakh / cost_low_lakh  if cost_low_lakh  > 0 else 0.0
+    else:
+        bcr_low = bcr_high = saving_lakh = 0.0
+
+    persona_losses = {
+        key: {
+            "baseline": M * W * res_b[key]["delta_tau"] / 60 * WAGE / 1e7,
+            "scenario": M * W * res_s[key]["delta_tau"] / 60 * WAGE / 1e7,
+        }
+        for key in personas
+    }
 
     return {
-        "results":         results,
-        "results0":        results0,
-        "delta_tau_bar":   dtau_bar,
-        "delta_tau_bar0":  dtau_bar0,
-        "annual_pm":       annual_pm,
-        "annual_pm0":      annual_pm0,
-        "annual_loss_cr":  annual_loss_cr,
-        "annual_loss_cr0": annual_loss_cr0,
-        "pct_recovered":   pct_recovered,
-        "bcr_low":         bcr_low,
-        "bcr_high":        bcr_high,
-        "n_fixes":         n_fixes,
-        "bazaar_f":        bazaar_f,
+        "res_scenario":     res_s,
+        "res_baseline":     res_b,
+        "dtau_bar_s":       dtau_bar_s,
+        "dtau_bar_b":       dtau_bar_b,
+        "annual_pm_s":      annual_pm_s,
+        "annual_pm_b":      annual_pm_b,
+        "annual_loss_cr_s": annual_loss_cr_s,
+        "annual_loss_cr_b": annual_loss_cr_b,
+        "pct_recovered":    pct_recovered,
+        "bcr_low":          bcr_low,
+        "bcr_high":         bcr_high,
+        "saving_lakh":      saving_lakh,
+        "persona_losses":   persona_losses,
+        "n_fixes":          n_fixes,
+        "bazaar_f":         bazaar_f,
     }
 
 
 # -------------------------------------------------------------------------
-# PLOT HELPERS  (white background — suitable for PDF and screen)
+# PLOT HELPERS
 # -------------------------------------------------------------------------
 
-def plot_time_tax_bars(results: dict, personas: dict,
-                       dark: bool = True) -> plt.Figure:
-    """Horizontal bar — Time Tax per persona (minutes)."""
-    labels = [p["label"] for p in personas.values()]
-    taxes  = [results[k]["delta_tau"] / 60 for k in personas]
-    colors = [p["color"] for p in personas.values()]
-    bg     = "#1a1a1a" if dark else "white"
-    tc     = "white"   if dark else "#333333"
+def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
+    """Grouped horizontal bars — baseline vs scenario Time Tax per persona."""
+    labels  = [p["label"] for p in personas.values()]
+    taxes_b = [res_b[k]["delta_tau"] / 60 for k in personas]
+    taxes_s = [res_s[k]["delta_tau"] / 60 for k in personas]
+    colors  = [p["color"] for p in personas.values()]
 
-    fig, ax = plt.subplots(figsize=(7, 3))
-    bars = ax.barh(labels, taxes, color=colors, height=0.5, linewidth=0)
-    for bar, val in zip(bars, taxes):
-        ax.text(val + 0.05, bar.get_y() + bar.get_height() / 2,
-                f"{val:.1f} min", va="center", fontsize=8.5, color=tc)
-    ax.set_xlabel("Time Tax per trip (min)", fontsize=9, color=tc)
-    ax.set_facecolor(bg)
-    fig.patch.set_facecolor(bg)
-    ax.tick_params(colors=tc, labelsize=9)
-    ax.xaxis.label.set_color(tc)
-    for spine in ax.spines.values():
-        spine.set_visible(False if dark else True)
-        spine.set_color("#cccccc")
+    max_tax = max(max(taxes_b), max(taxes_s), 0.5)
+    n = len(labels)
+    y = np.arange(n)
+    h = 0.35
+
+    fig, ax = plt.subplots(figsize=(8, 3.5))
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+
+    ax.barh(y + h/2, taxes_b, height=h, color=colors, alpha=0.35,
+            linewidth=0, label="Baseline (surveyed)")
+    ax.barh(y - h/2, taxes_s, height=h, color=colors, alpha=0.9,
+            linewidth=0, label="Scenario")
+
+    for i, (vb, vs) in enumerate(zip(taxes_b, taxes_s)):
+        ax.text(max_tax * 0.015, y[i] + h/2, f"{vb:.1f}m",
+                va="center", fontsize=7, color="#aaaaaa")
+        col = "#4CAF50" if vs <= vb else "#F44336"
+        ax.text(max_tax * 0.015, y[i] - h/2, f"{vs:.1f}m",
+                va="center", fontsize=7, color=col)
+
+    ax.set_xlim(0, max_tax * 1.3)
+    ax.set_yticks(y)
+    ax.set_yticklabels(labels, fontsize=8.5, color="white")
+    ax.set_xlabel("Time Tax per trip (min)", fontsize=9, color="white")
+    ax.tick_params(colors="white", labelsize=8)
+    ax.xaxis.label.set_color("white")
+    ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white",
+              framealpha=0.85, loc="lower right")
+    ax.spines[:].set_visible(False)
     fig.tight_layout()
     return fig
 
 
-def plot_friction_distribution(df: pd.DataFrame,
-                                dark: bool = True) -> plt.Figure:
-    """Pie chart of f-value distribution across the 300m stretch."""
-    F_COLORS = {2: "#4CAF50", 3: "#2196F3", 4: "#FF9800", 5: "#F44336"}
-    counts = df["f_value"].value_counts().sort_index()
-    colors = [F_COLORS.get(int(f), "#9E9E9E") for f in counts.index]
-    labels = [f"f={int(f)}" for f in counts.index]
-    bg = "#1a1a1a" if dark else "white"
-    tc = "white"   if dark else "#333333"
+def plot_loss_waterfall(econ: dict, personas: dict) -> plt.Figure:
+    """Bar chart of per-persona annual loss change vs baseline."""
+    PCOLORS = {"able_bodied":"#2196F3","elderly":"#FF9800",
+               "wheelchair":"#9C27B0","delivery":"#F44336"}
+    PLABELS = {"able_bodied":"Able-bodied","elderly":"Elderly",
+               "wheelchair":"Wheelchair","delivery":"Delivery"}
 
-    fig, ax = plt.subplots(figsize=(4, 4))
-    _, texts, autotexts = ax.pie(
-        counts.values, labels=labels, colors=colors,
-        autopct="%1.1f%%", startangle=140,
-        textprops={"color": tc, "fontsize": 9},
-    )
-    for at in autotexts:
-        at.set_color(tc)
-        at.set_fontsize(8)
-    ax.set_facecolor(bg)
-    fig.patch.set_facecolor(bg)
-    ax.set_title("Obstacle Distribution — 300m stretch",
-                 color=tc, fontsize=9)
+    keys    = list(econ["persona_losses"].keys())
+    deltas  = [econ["persona_losses"][k]["baseline"] -
+               econ["persona_losses"][k]["scenario"] for k in keys]
+    cats    = [PLABELS.get(k, k) for k in keys]
+    colors  = ["#4CAF50" if d >= 0 else "#F44336" for d in deltas]
+
+    max_abs = max(abs(d) for d in deltas) if deltas else 1.0
+
+    fig, ax = plt.subplots(figsize=(7, 3))
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+
+    bars = ax.bar(cats, deltas, color=colors, linewidth=0, width=0.5)
+    ax.axhline(0, color="#555", linewidth=0.8)
+
+    for bar, val in zip(bars, deltas):
+        va  = "bottom" if val >= 0 else "top"
+        off = max_abs * 0.03 * (1 if val >= 0 else -1)
+        ax.text(bar.get_x() + bar.get_width() / 2, val + off,
+                f"{'−' if val < 0 else '+'}Rs{abs(val):.2f}Cr",
+                ha="center", va=va, fontsize=7.5, color="white")
+
+    ax.set_ylabel("Annual loss change (Rs Cr)", fontsize=9, color="white")
+    ax.set_title("Per-Persona Loss Delta vs Baseline  (positive = improvement)",
+                 fontsize=8, color="#aaaaaa", pad=4)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.yaxis.label.set_color("white")
+    ax.spines[:].set_visible(False)
     fig.tight_layout()
     return fig
 
 
 def plot_bcr_curve(df: pd.DataFrame, personas: dict,
-                   bazaar_f: int, n_range: int = 10,
-                   dark: bool = True) -> plt.Figure:
-    """BCR vs n_fixes curve."""
-    bg = "#1a1a1a" if dark else "white"
-    tc = "white"   if dark else "#333333"
-
+                   bazaar_f: int, n_range: int = 10) -> plt.Figure:
+    """BCR midpoint vs n_fixes. Y-axis floored at 0."""
     bcr_vals = []
     for n in range(n_range + 1):
         e = compute_economics(df, personas, n, bazaar_f)
-        mid = (e["bcr_low"] + e["bcr_high"]) / 2
-        bcr_vals.append(mid)
+        bcr_vals.append((e["bcr_low"] + e["bcr_high"]) / 2)
 
     fig, ax = plt.subplots(figsize=(7, 3))
-    ax.plot(range(n_range + 1), bcr_vals, color="#FF9800",
-            linewidth=2.5, marker="o", markersize=5)
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+
+    xs = list(range(n_range + 1))
+    ax.plot(xs, bcr_vals, color="#FF9800", linewidth=2.5,
+            marker="o", markersize=5, zorder=3)
+    ax.fill_between(xs, [max(v, 0) for v in bcr_vals], 0,
+                    alpha=0.12, color="#FF9800")
     ax.axhline(10, color="#4CAF50", linewidth=1, linestyle="--",
-               label="BCR = 10:1 threshold")
-    ax.fill_between(range(n_range + 1), bcr_vals, 0,
-                    alpha=0.15, color="#FF9800")
-    ax.set_xlabel("Number of hotspots fixed (top-N)", fontsize=9, color=tc)
-    ax.set_ylabel("Benefit-Cost Ratio", fontsize=9, color=tc)
-    ax.legend(fontsize=8,
-              facecolor="#2a2a2a" if dark else "white",
-              labelcolor=tc)
-    ax.set_facecolor(bg)
-    fig.patch.set_facecolor(bg)
-    ax.tick_params(colors=tc, labelsize=8)
-    ax.xaxis.label.set_color(tc)
-    ax.yaxis.label.set_color(tc)
-    for spine in ax.spines.values():
-        spine.set_visible(not dark)
-        spine.set_color("#cccccc")
+               label="BCR = 10:1 threshold", alpha=0.8)
+
+    if n_range >= 3 and bcr_vals[3] > 0:
+        ax.annotate(
+            f"Lighthouse Pilot\nn=3 -> BCR {bcr_vals[3]:.1f}:1",
+            xy=(3, bcr_vals[3]),
+            xytext=(3.5, bcr_vals[3] + max(0, max(bcr_vals)) * 0.1),
+            fontsize=7, color="#FF9800",
+            arrowprops=dict(arrowstyle="->", color="#FF9800", lw=1),
+        )
+
+    ax.set_xlabel("Number of hotspots fixed (top-N)", fontsize=9, color="white")
+    ax.set_ylabel("Benefit-Cost Ratio", fontsize=9, color="white")
+    ax.set_xlim(-0.3, n_range + 0.3)
+    ax.set_ylim(0, max(max(bcr_vals) * 1.2, 15))
+    ax.legend(fontsize=8, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.xaxis.label.set_color("white")
+    ax.yaxis.label.set_color("white")
+    ax.spines[:].set_visible(False)
     fig.tight_layout()
     return fig
-
-
-# -------------------------------------------------------------------------
-# TABLE STYLE HELPER  (avoids repeating setStyle boilerplate)
-# -------------------------------------------------------------------------
-
-def _table_style(colors_mod, header_rows=1):
-    """Return a TableStyle for ReportLab tables."""
-    from reportlab.platypus import TableStyle as TS
-
-    style = [
-        # Header row(s)
-        ("BACKGROUND",   (0, 0), (-1, header_rows - 1),
-         colors_mod.HexColor("#2c2c2c")),
-        ("TEXTCOLOR",    (0, 0), (-1, header_rows - 1), colors_mod.white),
-        ("FONTNAME",     (0, 0), (-1, header_rows - 1), "Helvetica-Bold"),
-        ("FONTSIZE",     (0, 0), (-1, -1), 8),
-        ("LEADING",      (0, 0), (-1, -1), 11),
-        ("GRID",         (0, 0), (-1, -1), 0.3, colors_mod.HexColor("#dddddd")),
-        ("LEFTPADDING",  (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING",   (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING",(0, 0), (-1, -1), 4),
-        ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
-    ]
-    # Alternating row backgrounds (data rows only)
-    from reportlab.lib import colors as C
-    for i in range(header_rows, 99, 2):
-        style.append(("BACKGROUND", (0, i), (-1, i),
-                       C.HexColor("#f5f5f5")))
-    return TS(style)
-
-
-# -------------------------------------------------------------------------
-# PDF GENERATOR
-# -------------------------------------------------------------------------
-
-def generate_pdf(
-    df: pd.DataFrame,
-    personas: dict,
-    n_fixes: int,
-    bazaar_f: int,
-    output_path: str,
-) -> None:
-    """
-    Render a 2-page A4 policy brief PDF using ReportLab.
-
-    Page 1 — Audit findings: statistics table, friction pie, Time Tax bars.
-    Page 2 — Economic impact, Lighthouse Proposal table, policy ask.
-    """
-    try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.units import cm
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib import colors
-        from reportlab.platypus import (
-            SimpleDocTemplate, Paragraph, Spacer,
-            Table, Image, HRFlowable, PageBreak,
-        )
-        from reportlab.lib.enums import TA_LEFT, TA_CENTER
-    except ImportError:
-        print("ReportLab not installed. Run: pip install reportlab")
-        sys.exit(1)
-
-    econ = compute_economics(df, personas, n_fixes, bazaar_f)
-
-    # --- Render charts to PNG bytes (white background for print) ---
-    def fig_to_buf(fig: plt.Figure) -> io.BytesIO:
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png", dpi=150,
-                    bbox_inches="tight", facecolor=fig.get_facecolor())
-        buf.seek(0)
-        plt.close(fig)
-        return buf
-
-    buf_pie  = fig_to_buf(plot_friction_distribution(df, dark=False))
-    buf_bars = fig_to_buf(plot_time_tax_bars(econ["results0"], personas, dark=False))
-
-    # --- Document ---
-    doc = SimpleDocTemplate(
-        output_path, pagesize=A4,
-        leftMargin=2.5*cm, rightMargin=2.5*cm,
-        topMargin=2*cm, bottomMargin=2*cm,
-    )
-    ss   = getSampleStyleSheet()
-    H1   = ParagraphStyle("H1",  parent=ss["Heading1"],
-                           fontSize=14, spaceAfter=4, spaceBefore=0)
-    H2   = ParagraphStyle("H2",  parent=ss["Heading2"],
-                           fontSize=11, spaceAfter=4, spaceBefore=8)
-    BODY = ParagraphStyle("BODY", parent=ss["Normal"],
-                           fontSize=9, leading=14, spaceAfter=5)
-    SMALL = ParagraphStyle("SMALL", parent=ss["Normal"],
-                            fontSize=8, leading=11,
-                            textColor=colors.HexColor("#666666"))
-    MONO  = ParagraphStyle("MONO", parent=ss["Normal"],
-                            fontSize=8, leading=12, fontName="Courier",
-                            backColor=colors.HexColor("#f0f0f0"),
-                            leftIndent=12, rightIndent=12,
-                            spaceAfter=6)
-
-    story = []
-    W_FULL = 17 * cm   # usable page width (A4 - margins)
-
-    # ================================================================
-    # PAGE 1 — AUDIT FINDINGS
-    # ================================================================
-    story.append(Paragraph(
-        "Escape the Knot: Yeshwantpur Mobility Audit", H1))
-    story.append(Paragraph(
-        "Student-Led Pedestrian Infrastructure Audit &mdash; "
-        "YLAC Mobility Champions 2026 &middot; Bengawalk", SMALL))
-    story.append(Paragraph(
-        "Survey conducted: 7&ndash;8 March 2026 &middot; "
-        "900m Yeshwantpur&ndash;Constitution Circle corridor", SMALL))
-    story.append(HRFlowable(width="100%", thickness=0.5,
-                             color=colors.HexColor("#cccccc"), spaceAfter=8))
-
-    story.append(Paragraph("1. Audit Findings", H2))
-    story.append(Paragraph(
-        "The 900m corridor was split into two zones: (a) a 300m stretch from the "
-        "South Western Railway exit to Constitution Circle, where 24 obstacles were "
-        "geotagged and assigned friction values f &isin; {1,2,3,4,5} per the "
-        "Active Mobility Bill rubric; and (b) a 600m Bazaar Street stretch rated "
-        "as a continuous f&nbsp;=&nbsp;5 (Systemic Failure) block where the "
-        "footpath is entirely absent. The mean friction index "
-        "f&#772; = L<sub>eff</sub>/D = 4187.5/900 &asymp; 4.653 means the corridor "
-        "imposes 4.65&times; the energetic cost of a Tender S.U.R.E.-compliant path.",
-        BODY,
-    ))
-
-    # Key statistics table
-    stats = [
-        ["Metric", "Value"],
-        ["Total corridor length",          "900 m"],
-        ["Discrete obstacle nodes (300m)", "24 nodes, d = 12.5 m each"],
-        ["Continuous f=5 block (600m)",    "Bazaar Street — footpath absent"],
-        ["L\u2090\u2091\u2092 (300m)",    "12.5 \u00d7 95 = 1187.5 m"],
-        ["L\u2090\u2091\u2092 (600m)",    "600 \u00d7 5 = 3000.0 m"],
-        ["L\u2090\u2091\u2092 (total)",   "4187.5 m"],
-        ["Mean friction index f\u0305",    "4.653"],
-        ["Fails Active Mobility Bill",     "90.3% of corridor"],
-        ["Wheelchair inaccessible",        "96.0% of corridor"],
-        ["Nodes at f=5 (Systemic Failure)","9 / 24  (37.5%)"],
-        ["Nodes at f=4 (Physical Barrier)","8 / 24  (33.3%)"],
-        ["Nodes at f=3 (Obstacle Course)", "4 / 24  (16.7%)"],
-        ["Nodes at f=2 (Distracted Walk)", "3 / 24  (12.5%)"],
-    ]
-    t = Table(stats, colWidths=[9*cm, 8*cm])
-    t.setStyle(_table_style(colors))
-    story.append(t)
-    story.append(Spacer(1, 0.4*cm))
-
-    # Charts side by side
-    story.append(Paragraph(
-        "Obstacle Distribution (300m stretch) and Per-Persona Time Tax", H2))
-    chart_row = Table(
-        [[Image(buf_pie,  width=7.5*cm, height=7*cm),
-          Image(buf_bars, width=8.5*cm, height=5.5*cm)]],
-        colWidths=[8*cm, 9*cm],
-    )
-    story.append(chart_row)
-
-    # ================================================================
-    # PAGE 2 — ECONOMIC IMPACT + LIGHTHOUSE PROPOSAL
-    # ================================================================
-    story.append(PageBreak())
-
-    story.append(Paragraph("2. Methodology: Time Tax Computation", H2))
-    story.append(Paragraph(
-        "Each path segment of length d = 12.5 m is traversed at an effective "
-        "speed governed by the local friction value and the commuter persona &phi;. "
-        "Rather than a linear speed reduction, a power-law model is used:", BODY))
-    story.append(Paragraph(
-        "v_eff(i, \u03c6) = v\u2080(\u03c6) / f_i^k(\u03c6)", MONO))
-    story.append(Paragraph(
-        "where v\u2080 is the free-walking speed (m/s) and k is the "
-        "friction sensitivity exponent. A higher k means the persona loses speed "
-        "super-linearly as friction increases &mdash; critical for wheelchair users "
-        "and the elderly. Segment traversal time:", BODY))
-    story.append(Paragraph(
-        "\u03c4_i(\u03c6) = d \u00d7 f_i^k / v\u2080", MONO))
-    story.append(Paragraph(
-        "If f_i > f_max(\u03c6), the segment is impassable. The agent is rerouted "
-        "into the vehicular Right-of-Way (ROW), incurring a geometric detour of "
-        "\u03b4 metres and a safety penalty multiplier \u03b1 = 1.5:", BODY))
-    story.append(Paragraph(
-        "\u03c4_i\u1d3f\u1d3f\u1d42 = (d + \u03b4) \u00d7 \u03b1 / v\u2080", MONO))
-    story.append(Paragraph(
-        "The Time Tax per trip is the difference between actual and ideal "
-        "(fully S.U.R.E.-compliant, f=1 throughout) traversal time:", BODY))
-    story.append(Paragraph(
-        "\u0394\u03c4(\u03c6) = T_actual \u2212 T_ideal = "
-        "(d/v\u2080) \u00d7 (\u03a3 f_i^k \u2212 N)", MONO))
-
-    # Persona parameter table
-    story.append(Paragraph("Commuter Persona Parameters", H2))
-    persona_rows = [["Persona", "v\u2080 (m/s)", "k", "f_max",
-                     "\u03b4 (m)", "Weight", "\u0394\u03c4 baseline (s)"]]
-    for key, p in personas.items():
-        r0 = econ["results0"][key]
-        persona_rows.append([
-            p["label"],
-            str(p["v0"]),
-            str(p["k"]),
-            str(p["f_max"]),
-            str(p["delta"]),
-            f"{p['weight']*100:.0f}%",
-            f"{r0['delta_tau']:.0f}",
-        ])
-    tp = Table(persona_rows,
-               colWidths=[4.5*cm, 2*cm, 1.5*cm, 1.5*cm, 1.5*cm, 2*cm, 4*cm])
-    tp.setStyle(_table_style(colors))
-    story.append(tp)
-    story.append(Spacer(1, 0.4*cm))
-
-    story.append(Paragraph("3. Economic Impact", H2))
-    story.append(Paragraph(
-        "The persona-weighted mean Time Tax is:", BODY))
-    story.append(Paragraph(
-        "\u0394\u03c4\u0305 = \u03a3(\u03c6) w_\u03c6 \u00d7 \u0394\u03c4(\u03c6) "
-        "/ \u03a3 w_\u03c6  =  "
-        f"{econ['delta_tau_bar0']:.1f} s/trip  (baseline)", MONO))
-    story.append(Paragraph(
-        "Aggregated across M = 100,000 daily commuters and W = 250 working days:", BODY))
-    story.append(Paragraph(
-        f"T_year = M \u00d7 W \u00d7 \u0394\u03c4\u0305 / 60  =  "
-        f"{M:,} \u00d7 {W} \u00d7 {econ['delta_tau_bar0']:.1f} / 60  =  "
-        f"{econ['annual_pm0']/1e6:.1f}M person-minutes/year", MONO))
-    story.append(Paragraph(
-        "Converting at the RBI informal wage rate (~\u20b950/hr = \u20b90.833/min):", BODY))
-    story.append(Paragraph(
-        f"Annual loss = {econ['annual_pm0']/1e6:.1f}M min \u00d7 \u20b90.833/min "
-        f"= \u20b9{econ['annual_loss_cr0']:.1f} crore/year", MONO))
-
-    econ_data = [["Metric", "Baseline", f"After {n_fixes} fixes"]]
-    econ_data.append([
-        "Weighted mean \u0394\u03c4\u0305",
-        f"{econ['delta_tau_bar0']:.1f} s",
-        f"{econ['delta_tau_bar']:.1f} s",
-    ])
-    econ_data.append([
-        "Annual person-minutes lost",
-        f"{econ['annual_pm0']/1e6:.2f}M",
-        f"{econ['annual_pm']/1e6:.2f}M",
-    ])
-    econ_data.append([
-        "Annual productivity loss",
-        f"\u20b9{econ['annual_loss_cr0']:.2f} Cr",
-        f"\u20b9{econ['annual_loss_cr']:.2f} Cr",
-    ])
-    econ_data.append([
-        "Time Tax recovered", "—",
-        f"{econ['pct_recovered']:.1f}%",
-    ])
-    for key, p in personas.items():
-        r0 = econ["results0"][key]
-        r  = econ["results"][key]
-        l0 = M * W * r0["delta_tau"] / 60 * WAGE / 1e7
-        l  = M * W * r["delta_tau"]  / 60 * WAGE / 1e7
-        econ_data.append([
-            f"  {p['label']}  (w={p['weight']})",
-            f"\u0394\u03c4={r0['delta_tau']:.0f}s  \u20b9{l0:.2f}Cr",
-            f"\u0394\u03c4={r['delta_tau']:.0f}s  \u20b9{l:.2f}Cr",
-        ])
-    te = Table(econ_data, colWidths=[7*cm, 5*cm, 5*cm])
-    te.setStyle(_table_style(colors))
-    story.append(te)
-    story.append(Spacer(1, 0.4*cm))
-
-    story.append(Paragraph("4. Lighthouse Proposal", H2))
-    story.append(Paragraph(
-        f"Bringing the top {n_fixes} friction hotspot(s) to Tender S.U.R.E. "
-        f"standard (f=1) &mdash; estimated cost "
-        f"\u20b9{FIX_COST_LOW_LAKH}&ndash;{FIX_COST_HIGH_LAKH} lakh for drain "
-        f"covers and slab repair &mdash; yields the following return:", BODY))
-
-    lh_data = [
-        ["Repair cost estimate",
-         f"\u20b9{FIX_COST_LOW_LAKH}\u2013{FIX_COST_HIGH_LAKH} lakh"],
-        ["Annual productivity recovered",
-         f"\u20b9{(econ['annual_loss_cr0']-econ['annual_loss_cr'])*100:.0f} lakh/yr"],
-        ["% of Time Tax recovered",
-         f"{econ['pct_recovered']:.1f}%"],
-        ["Benefit-cost ratio",
-         f"{econ['bcr_low']:.1f}:1 \u2013 {econ['bcr_high']:.1f}:1"],
-    ]
-    tl = Table(lh_data, colWidths=[10*cm, 7*cm])
-    tl.setStyle(_table_style(colors))
-    story.append(tl)
-    story.append(Spacer(1, 0.4*cm))
-
-    story.append(Paragraph("5. Policy Ask", H2))
-    story.append(Paragraph(
-        "We request that DULT and BBMP initiate a Lighthouse Pilot project at the "
-        "Yeshwantpur Mobility Knot, mandating Tender S.U.R.E. Design Standards on "
-        "the 900m Constitution Circle&ndash;Railway Station corridor. Specific ask: "
-        "(1) replace open box drains with integrated Pipe and Chamber systems; "
-        "(2) restore continuous 3m footpath width on Bazaar Street; "
-        "(3) install kerb ramps at all crossings per IRC 103 guidelines. "
-        "A benefit-to-cost ratio exceeding 10:1 makes this the highest-return "
-        "pedestrian investment available at the hub.", BODY))
-
-    story.append(Spacer(1, 0.3*cm))
-    story.append(HRFlowable(width="100%", thickness=0.5,
-                             color=colors.HexColor("#cccccc"), spaceAfter=6))
-    story.append(Paragraph(
-        "Submitted by: Aaitijhya Goswami &amp; Prajwal Kagalgomb &middot; "
-        "YLAC Mobility Champions 2026 &middot; Partner: Bengawalk &middot; "
-        "Field audit: March 7&ndash;8, 2026", SMALL))
-
-    doc.build(story)
-    print(f"PDF written to: {output_path}")
 
 
 # -------------------------------------------------------------------------
@@ -558,11 +345,12 @@ def app():
     @st.cache_data
     def _load_personas():
         return load_personas()
+
+    st.title("Economic Impact & Policy Brief")
     st.markdown(
         "Aggregates the persona-weighted Time Tax across $M = 100{,}000$ daily "
-        "commuters and $W = 250$ working days, converts to economic value at the "
-        "RBI informal wage rate (~₹50/hr), and generates a submission-ready "
-        "PDF brief for DULT and BBMP."
+        "commuters and $W = 250$ working days, converted to economic value at the "
+        "RBI informal wage rate (~Rs50/hr)."
     )
     st.markdown("---")
 
@@ -577,14 +365,14 @@ def app():
     # SIDEBAR
     # -----------------------------------------------------------------------
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📄 Policy Brief Controls")
+    st.sidebar.markdown("### Rs Economic Impact Controls")
 
     n_fixes = st.sidebar.slider(
-        "Hotspots fixed (top-N) for Lighthouse Proposal:",
+        "Hotspots fixed (top-N by f-value):",
         min_value=0, max_value=len(df), value=3, step=1,
         help=(
-            "Default is 3 — the Lighthouse Pilot ask. "
-            "This is the number of hotspot fixes costed in the PDF brief."
+            "Nodes ranked highest-f first. Each fix sets that node to f=1. "
+            "BCR is only shown when n_fixes > 0."
         )
     )
 
@@ -596,323 +384,222 @@ def app():
         "Full S.U.R.E. compliance — f=1 (Gold Standard)": 1,
     }
     bazaar_label = st.sidebar.selectbox(
-        "Bazaar Street modelled as:",
+        "Bazaar Street (600m) modelled as:",
         options=list(sure_standards.keys()),
         index=0,
     )
     bazaar_f = sure_standards[bazaar_label]
 
-    if n_fixes == 3:
+    if n_fixes == 0 and bazaar_f == 5:
+        st.sidebar.caption("Showing baseline surveyed conditions.")
+    elif n_fixes == 0 and bazaar_f < 5:
         st.sidebar.caption(
-            f"📋 Default Lighthouse Pilot: fix 3 obstacles for "
-            f"₹{FIX_COST_LOW_LAKH}–{FIX_COST_HIGH_LAKH} lakh."
+            f"Bazaar Street at f={bazaar_f}, no node fixes. "
+            "Note: f=4 increases elderly/delivery Time Tax vs baseline — "
+            "see explanation below."
         )
-    elif n_fixes == 0:
-        st.sidebar.caption("📋 Showing baseline surveyed conditions — no fixes applied.")
     else:
+        cost_lo = FIX_COST_LOW_LAKH  * n_fixes / 3
+        cost_hi = FIX_COST_HIGH_LAKH * n_fixes / 3
         st.sidebar.caption(
-            f"📋 Custom scenario: {n_fixes} fix(es). "
-            "Adjust to explore different intervention sizes."
+            f"{n_fixes} fix(es) — estimated Rs{cost_lo:.0f}–{cost_hi:.0f} lakh."
         )
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**PDF export settings**")
-    pdf_fixes  = st.sidebar.number_input(
-        "n_fixes for PDF:", min_value=0, max_value=len(df),
-        value=n_fixes, step=1,
-    )
-    pdf_output = st.sidebar.text_input("Filename:", value="brief.pdf")
 
     # -----------------------------------------------------------------------
     # COMPUTE
     # -----------------------------------------------------------------------
-    econ = compute_economics(df, personas, n_fixes, bazaar_f)
+    econ     = compute_economics(df, personas, n_fixes, bazaar_f)
+    improved = econ["pct_recovered"] >= 0
 
     # -----------------------------------------------------------------------
-    # HEADLINE METRICS
+    # BASELINE METRICS
     # -----------------------------------------------------------------------
-    st.markdown("#### Annual Economic Impact — Baseline Conditions")
-    col1, col2, col3 = st.columns(3)
-    col1.metric(
-        "Annual person-minutes lost",
-        f"{econ['annual_pm0']/1e6:.2f}M",
-        help=f"M × W × Δτ̄ / 60 = {M:,} × {W} × {econ['delta_tau_bar0']:.1f}s / 60",
-    )
-    col2.metric(
-        "Annual productivity loss",
-        f"₹{econ['annual_loss_cr0']:.2f} Cr",
-        help="Person-minutes × ₹50/hr RBI informal wage rate",
-    )
-    col3.metric(
-        "Weighted mean Time Tax Δτ̄",
-        f"{econ['delta_tau_bar0']:.1f} s/trip",
-        help="Σ(w_φ × Δτ(φ)) / Σ w_φ across all four personas.",
-    )
+    st.markdown("#### Baseline — Surveyed Conditions")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Annual person-minutes lost",
+              f"{econ['annual_pm_b']/1e6:.2f}M")
+    c2.metric("Annual productivity loss",
+              f"Rs{econ['annual_loss_cr_b']:.2f} Cr")
+    c3.metric("Weighted mean Time Tax",
+              f"{econ['dtau_bar_b']:.1f} s/trip")
 
     st.markdown("---")
-    st.markdown("#### Lighthouse Proposal — Impact of Fixes")
-    col4, col5, col6 = st.columns(3)
-    col4.metric(
-        f"Loss after {n_fixes} fix(es)",
-        f"₹{econ['annual_loss_cr']:.2f} Cr",
-        delta=f"−₹{econ['annual_loss_cr0'] - econ['annual_loss_cr']:.2f} Cr",
-        delta_color="normal",
-    )
-    col5.metric("Time Tax recovered", f"{econ['pct_recovered']:.1f}%")
-    col6.metric(
-        "Benefit-cost ratio",
-        f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1",
-        help=f"Annual saving / repair cost (₹{FIX_COST_LOW_LAKH}–{FIX_COST_HIGH_LAKH} lakh)",
-    )
+    st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
+    c4, c5, c6 = st.columns(3)
 
-    if econ["pct_recovered"] > 0:
+    delta_loss = econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"]
+    c4.metric(
+        "Annual loss — scenario",
+        f"Rs{econ['annual_loss_cr_s']:.2f} Cr",
+        delta=f"{'−' if improved else '+'}Rs{abs(delta_loss):.2f} Cr",
+        delta_color="normal" if improved else "inverse",
+    )
+    c5.metric(
+        "Time Tax change vs baseline",
+        f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}",
+        delta=f"{econ['pct_recovered']:+.1f}%",
+        delta_color="normal" if improved else "inverse",
+    )
+    if n_fixes > 0:
+        bcr_mid = (econ["bcr_low"] + econ["bcr_high"]) / 2
+        c6.metric(
+            "Benefit-cost ratio",
+            f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1"
+            if bcr_mid > 0 else "Negative — scenario worsens",
+        )
+    else:
+        c6.metric("Benefit-cost ratio", "N/A — no fixes applied")
+
+    # Contextual banners
+    if n_fixes > 0 and improved and econ["bcr_low"] >= 10:
         st.success(
             f"Fixing the top {n_fixes} hotspot(s) to "
             "[Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure) "
             f"standard recovers **{econ['pct_recovered']:.1f}%** of the annual "
-            f"Time Tax at a BCR of **{econ['bcr_low']:.1f}:1 – {econ['bcr_high']:.1f}:1**."
+            f"Time Tax at a BCR of **{econ['bcr_low']:.1f}:1 – "
+            f"{econ['bcr_high']:.1f}:1**."
+        )
+    elif bazaar_f == 4 and n_fixes == 0:
+        st.warning(
+            "**Why does f=4 worsen the aggregate?** "
+            "At f=5 (impassable), elderly and delivery personas take the ROW detour: "
+            r"$\tau^\text{ROW} = (d+\delta)\cdot\alpha/v_0$. "
+            "At f=4 (now passable), they traverse at "
+            r"$\tau = d\cdot4^k/v_0$, which is **slower** for high-$k$ personas. "
+            "Example — elderly at $f=4$: $12.5\\times4^{0.9}/0.9=57.4$s vs ROW "
+            "at $f=5$: $(12.5+10)\\times1.5/0.9=37.5$s. "
+            "This is physically correct, not a bug."
+        )
+    elif not improved and n_fixes > 0:
+        st.info(
+            f"The Bazaar Street setting (f={bazaar_f}) is worsening some personas "
+            "more than the node fixes recover. Set Bazaar Street to Current (f=5) "
+            "to isolate the effect of node fixes alone."
         )
 
     st.markdown("---")
 
-  # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # CHARTS
     # -----------------------------------------------------------------------
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.markdown("#### Time Tax — Baseline vs Scenario")
+        st.caption("Light = baseline · Dark = scenario · Green value = improvement · Red = worsening")
+        fig_bars = plot_time_tax_bars(econ["res_baseline"], econ["res_scenario"], personas)
+        st.pyplot(fig_bars, use_container_width=True)
+        plt.close(fig_bars)
+
+    with col_r:
+        st.markdown("#### Per-Persona Annual Loss Change")
+        st.caption("Positive bar = loss reduced · Negative bar = loss increased vs baseline")
+        fig_wf = plot_loss_waterfall(econ, personas)
+        st.pyplot(fig_wf, use_container_width=True)
+        plt.close(fig_wf)
+
+    if n_fixes > 0:
+        st.markdown("---")
+        st.markdown("#### Benefit-Cost Ratio vs Number of Fixes")
+        st.caption(
+            "BCR for current Bazaar Street setting. "
+            "Green dashed = 10:1 threshold. Y-axis floored at 0."
+        )
+        fig_bcr = plot_bcr_curve(df, personas, bazaar_f)
+        st.pyplot(fig_bcr, use_container_width=True)
+        plt.close(fig_bcr)
 
     st.markdown("---")
-    st.markdown("#### Benefit-Cost Ratio vs Number of Fixes")
-    st.caption(
-        "Green dashed line = 10:1 threshold. "
-        "The curve flattens as lower-friction nodes are reached — "
-        "revealing the point of diminishing returns."
-    )
-    fig_bcr = plot_bcr_curve(df, personas, bazaar_f, dark=True)
-    st.pyplot(fig_bcr, use_container_width=True)
-    plt.close(fig_bcr)
 
-    st.markdown("---")
-
-# -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     # PER-PERSONA TABLE
     # -----------------------------------------------------------------------
     st.markdown("#### Per-Persona Breakdown")
     rows = []
     for key, p in personas.items():
-        r0   = econ["results0"][key]
-        r    = econ["results"][key]
-        l0   = M * W * r0["delta_tau"] / 60 * WAGE / 1e7
-        l    = M * W * r["delta_tau"]  / 60 * WAGE / 1e7
+        rb = econ["res_baseline"][key]
+        rs = econ["res_scenario"][key]
+        lb = econ["persona_losses"][key]["baseline"]
+        ls = econ["persona_losses"][key]["scenario"]
+        dl = lb - ls
         rows.append({
-            "Persona":                          p["label"],
-            "Weight":                           f"{p['weight']*100:.0f}%",
-            "v₀ (m/s)":                         p["v0"],
-            "k":                                p["k"],
-            "f_max":                            p["f_max"],
-            "Δτ baseline (s)":                  f"{r0['delta_tau']:.0f}",
-            f"Δτ after {n_fixes} fix(es) (s)":  f"{r['delta_tau']:.0f}",
-            "ROW detours (baseline)":           r0["n_detours"],
-            "Annual loss — baseline (₹ Cr)":    f"{l0:.2f}",
-            f"Annual loss — fixed (₹ Cr)":      f"{l:.2f}",
+            "Persona":                      p["label"],
+            "Weight":                       f"{p['weight']*100:.0f}%",
+            "v0 (m/s)":                     p["v0"],
+            "k":                            p["k"],
+            "f_max":                        p["f_max"],
+            "Baseline detours":             rb["n_detours"],
+            "Scenario detours":             rs["n_detours"],
+            "Baseline Dt (s)":              f"{rb['delta_tau']:.0f}",
+            "Scenario Dt (s)":              f"{rs['delta_tau']:.0f}",
+            "Baseline loss (Rs Cr)":        f"{lb:.2f}",
+            "Scenario loss (Rs Cr)":        f"{ls:.2f}",
+            "Delta loss (Rs Cr)":           f"{'−' if dl < 0 else '+'}Rs{abs(dl):.2f}",
         })
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
     st.markdown("---")
 
     # -----------------------------------------------------------------------
-    # DETAILED MATH EXPANDER
+    # MATH EXPANDER
     # -----------------------------------------------------------------------
-    with st.expander("📐 Full mathematical derivation"):
+    with st.expander("Full mathematical derivation"):
 
         st.markdown("##### Notation")
         st.markdown("""
-        | Symbol | Meaning |
-        |--------|---------|
-        | $D = 900$ m | Total corridor length |
-        | $d = 12.5$ m | Segment length ($D/N$, where $N = 72$ segments) |
-        | $N_{300} = 24$ | Discrete obstacle nodes in the 300m stretch |
-        | $N_{600} = 48$ | Uniform segments in the 600m Bazaar Street stretch |
-        | $f_i \\in \\{1,2,3,4,5\\}$ | Friction value at segment $i$ |
-        | $\\phi$ | Commuter persona |
-        | $v_0(\\phi)$ | Free-walking speed of persona $\\phi$ (m/s) |
-        | $k(\\phi)$ | Friction sensitivity exponent of persona $\\phi$ |
-        | $f_{\\text{max}}(\\phi)$ | Impassability threshold — segments above this force ROW detour |
-        | $\\delta(\\phi)$ | Mean detour length per impassable segment (m) |
-        | $\\alpha = 1.5$ | Velocity penalty multiplier for walking in traffic |
-        | $w_\\phi$ | Population share weight of persona $\\phi$ |
-        | $M = 100{,}000$ | Daily commuters at Yeshwantpur hub |
-        | $W = 250$ | Working days per year |
+| Symbol | Meaning |
+|--------|---------|
+| $D = 900$ m | Total corridor length |
+| $d = 12.5$ m | Segment length |
+| $N_{300} = 24$ | Discrete obstacle nodes, 300m stretch |
+| $N_{600} = 48$ | Uniform segments, 600m Bazaar Street |
+| $f_i \\in \\{1,2,3,4,5\\}$ | Friction at segment $i$ |
+| $v_0(\\phi)$ | Free-walking speed (m/s) |
+| $k(\\phi)$ | Friction sensitivity exponent |
+| $f_{\\text{max}}(\\phi)$ | Impassability threshold |
+| $\\delta(\\phi)$ | Mean ROW detour length (m) |
+| $\\alpha = 1.5$ | ROW velocity penalty multiplier |
+| $w_\\phi$ | Population share weight |
+| $M = 100{,}000$ | Daily commuters |
+| $W = 250$ | Working days/year |
         """)
 
         st.markdown("##### Effective Path Length")
-        st.markdown(
-            "The friction field $f(x, \\phi)$ is treated as a continuous "
-            "potential energy barrier. The **Effective Path Length** is its "
-            "integral over the corridor:"
-        )
-        st.latex(
-            r"L_{\text{eff}}(\phi) = \int_0^D f(x,\phi)\,dx "
-            r"\;\approx\; d\sum_{i=1}^{N} f_i"
-        )
-        st.markdown(
-            "For the Yeshwantpur survey, evaluated numerically over both zones:"
-        )
-        st.latex(
-            r"L_{\text{eff}}^{300} = 12.5 \times "
-            r"(9{\times}5 + 8{\times}4 + 4{\times}3 + 3{\times}2) "
-            r"= 12.5 \times 95 = 1187.5\text{ m}"
-        )
-        st.latex(
-            r"L_{\text{eff}}^{600} = 600 \times 5 = 3000\text{ m}"
-        )
-        st.latex(
-            r"\bar{f} = \frac{L_{\text{eff}}}{D} = \frac{4187.5}{900} \approx 4.653"
+        st.latex(r"L_{\text{eff}}=d\sum_{i=1}^N f_i \qquad \bar{f}=\frac{L_{\text{eff}}}{D}")
+        st.latex(r"L_{\text{eff}}^{300}=1187.5\text{ m} \quad L_{\text{eff}}^{600}=3000\text{ m} \quad \bar{f}=4.653")
+
+        st.markdown("##### Power-Law Velocity & Traversal Time")
+        st.latex(r"v_{\text{eff}}(i,\phi)=\frac{v_0}{f_i^k} \qquad \tau_i=\frac{d\cdot f_i^k}{v_0} \quad(f_i\leq f_{\max})")
+        st.latex(r"\tau_i^{\text{ROW}}=\frac{(d+\delta)\cdot\alpha}{v_0} \quad(f_i>f_{\max})")
+
+        st.info(
+            "**The f=4 paradox:** For elderly ($k=0.9$, $f_\\text{max}=4$):\n\n"
+            "- Bazaar St at $f=5$ (impassable): "
+            r"$\tau^\text{ROW}=(12.5+10)\times1.5/0.9=37.5$ s" "\n\n"
+            "- Bazaar St at $f=4$ (passable): "
+            r"$\tau=12.5\times4^{0.9}/0.9=57.4$ s" "\n\n"
+            "Lowering from f=5 to f=4 makes elderly **20s slower per segment**. "
+            "Across 48 Bazaar Street segments this adds ~960s to elderly traversal time. "
+            "The ROW detour at f=5 was paradoxically cheaper. This is a real-world "
+            "effect of the power-law model with high $k$."
         )
 
-        st.markdown("##### Power-Law Velocity Model")
-        st.markdown(
-            "A linear speed reduction underestimates the compounding impact on "
-            "vulnerable users. Instead, effective speed decays as a power law "
-            "in the local friction value:"
-        )
-        st.latex(
-            r"v_{\text{eff}}(i,\,\phi) = \frac{v_0(\phi)}{f_i^{\,k(\phi)}}"
-        )
-        st.markdown(
-            "The exponent $k(\\phi)$ encodes how sensitively the persona responds "
-            "to friction. A wheelchair user ($k=1.2$) loses speed super-linearly — "
-            "at $f=5$: $v_{\\text{eff}} = 0.8 / 5^{1.2} = 0.117$ m/s, "
-            "roughly one-seventh of free-walking speed. "
-            "An able-bodied adult ($k=0.6$) at the same node: "
-            "$v_{\\text{eff}} = 1.4 / 5^{0.6} = 0.490$ m/s."
-        )
+        st.markdown("##### Time Tax & Economic Aggregation")
+        st.latex(r"\Delta\tau(\phi)=\frac{d}{v_0}\left(\sum_i f_i^k-N\right)")
+        st.latex(r"\bar{\Delta\tau}=\frac{\sum_\phi w_\phi\Delta\tau(\phi)}{\sum_\phi w_\phi} ="
+                 rf" {econ['dtau_bar_b']:.1f}\text{{ s (baseline)}}")
+        st.latex(r"\mathcal{T}_\text{year}=M\cdot W\cdot\bar{\Delta\tau}/60"
+                 rf" = {econ['annual_pm_b']/1e6:.2f}\text{{M person-minutes}}")
+        st.latex(r"\text{Loss}=\mathcal{T}_\text{year}\times\frac{50}{60}"
+                 rf" \approx \text{{Rs}}{econ['annual_loss_cr_b']:.2f}\text{{ Cr/yr}}")
 
-        st.markdown("##### Per-Segment Traversal Time")
+        st.markdown("##### Benefit-Cost Ratio")
+        st.latex(r"\text{BCR}=\frac{(\mathcal{L}_\text{baseline}-\mathcal{L}_\text{scenario})\times100}{\text{repair cost (lakh Rs)}}")
         st.markdown(
-            "For **passable** segments ($f_i \\leq f_{\\text{max}}$):"
-        )
-        st.latex(
-            r"\tau_i(\phi) = \frac{d}{v_{\text{eff}}(i,\phi)} "
-            r"= \frac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)}"
-        )
-        st.markdown(
-            "For **impassable** segments ($f_i > f_{\\text{max}}$), "
-            "the agent is rerouted into the vehicular Right-of-Way. "
-            "The detour adds a geometric extra length $\\delta$ "
-            "and a safety penalty multiplier $\\alpha = 1.5$:"
-        )
-        st.latex(
-            r"\tau_i^{\text{ROW}}(\phi) "
-            r"= \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)}"
-        )
-
-        st.markdown("##### Time Tax per Trip")
-        st.markdown(
-            "Summing over all $N = 72$ segments gives the actual traversal time. "
-            "The ideal time assumes $f=1$ throughout "
-            "(a fully [Tender S.U.R.E.](https://www.janausp.org/portfolio/tender-sure)"
-            "-compliant corridor):"
-        )
-        st.latex(
-            r"T_{\text{actual}}(\phi) = \sum_{i=1}^{N} \tau_i(\phi)"
-        )
-        st.latex(
-            r"T_{\text{ideal}}(\phi) = \frac{D}{v_0(\phi)}"
-        )
-        st.latex(
-            r"\Delta\tau(\phi) = T_{\text{actual}} - T_{\text{ideal}} "
-            r"= \frac{d}{v_0(\phi)} \left(\sum_{i=1}^{N} f_i^{\,k(\phi)} - N\right)"
-        )
-
-        st.markdown("##### Economic Aggregation")
-        st.markdown(
-            "The persona-weighted mean Time Tax, aggregated across all $M$ commuters "
-            "and $W$ working days, then converted to economic value:"
-        )
-        st.latex(
-            r"\bar{\Delta\tau} = "
-            r"\frac{\displaystyle\sum_{\phi} w_\phi \cdot \Delta\tau(\phi)}"
-            r"{\displaystyle\sum_{\phi} w_\phi}"
-        )
-        st.latex(
-            r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \bar{\Delta\tau}"
-            r"\quad \text{(person-seconds/year)}"
-        )
-        st.latex(
-            r"\text{Annual loss (₹)} = \frac{\mathcal{T}_{\text{year}}}{60} "
-            r"\times \frac{50}{60}"
-            r"\quad \left(\text{at ₹50/hr} = \frac{50}{60}\text{ ₹/min}\right)"
-        )
-        st.markdown(
-            f"**Evaluated:** $\\bar{{\\Delta\\tau}} = {econ['delta_tau_bar0']:.1f}$ s/trip · "
-            f"$\\mathcal{{T}}_{{\\text{{year}}}} = {econ['annual_pm0']/1e6:.2f}$ million person-minutes · "
-            f"Annual loss = ₹{econ['annual_loss_cr0']:.2f} Cr"
-        )
-
-        st.markdown("##### What-If Delta (Lighthouse Proposal)")
-        st.markdown(
-            "Fixing the top $n$ hotspots to $f=1$ (S.U.R.E. standard), "
-            "where nodes are ranked by $f_j^{k(\\phi)}$ descending:"
-        )
-        st.latex(
-            r"\Delta\tau_{\text{saved}}(n,\phi) = "
-            r"\frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left(f_j^{\,k(\phi)} - 1\right)"
-        )
-        st.latex(
-            r"\text{BCR} = \frac{M \cdot W \cdot \Delta\bar{\tau}_{\text{saved}} "
-            r"\cdot \tfrac{50}{3600}}{\text{repair cost (₹)}}"
+            f"Cost scales at Rs{FIX_COST_LOW_LAKH}/3–{FIX_COST_HIGH_LAKH}/3 lakh per fix. "
+            "**BCR = 0 when n\\_fixes = 0**, regardless of bazaar\\_f setting."
         )
         if n_fixes > 0:
             st.markdown(
-                f"**For $n = {n_fixes}$ fixes:** "
-                f"Time Tax recovered = {econ['pct_recovered']:.1f}% · "
+                f"**For $n={n_fixes}$:** saving = Rs{econ['saving_lakh']:.1f} lakh/yr · "
                 f"BCR = {econ['bcr_low']:.1f}:1 – {econ['bcr_high']:.1f}:1"
             )
-
-    st.markdown("---")
-
-    # -----------------------------------------------------------------------
-    # PDF DOWNLOAD
-    # -----------------------------------------------------------------------
-    st.markdown("#### Generate Policy Brief PDF")
-    st.markdown(
-        "2-page A4 brief formatted for submission to DULT, BBMP, "
-        "and the MLA of the Yeshwantpur constituency. "
-        "Includes all tables, charts, and the Lighthouse Proposal."
-    )
-    if st.button("📄 Generate PDF", type="primary"):
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            tmp_path = tmp.name
-        try:
-            generate_pdf(df, personas, pdf_fixes, bazaar_f, tmp_path)
-            with open(tmp_path, "rb") as f:
-                pdf_bytes = f.read()
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=pdf_bytes,
-                file_name=pdf_output,
-                mime="application/pdf",
-            )
-            st.success("PDF generated successfully.")
-        except Exception as e:
-            st.error(f"PDF generation failed: {e}")
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
-
-
-# -------------------------------------------------------------------------
-# CLI ENTRY POINT
-# -------------------------------------------------------------------------
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate Yeshwantpur policy brief PDF headlessly."
-    )
-    parser.add_argument("--fixes",    type=int, default=3)
-    parser.add_argument("--bazaar-f", type=int, default=5)
-    parser.add_argument("--output",   type=str, default="brief.pdf")
-    args = parser.parse_args()
-
-    df       = load_audit_data()
-    personas = load_personas()
-    generate_pdf(df, personas, args.fixes, args.bazaar_f, args.output)
