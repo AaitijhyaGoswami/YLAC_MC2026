@@ -227,7 +227,8 @@ def app():
     # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Friction Mapper Controls")
-    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0)
+    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
+                               help="Simulates the fixing of each of the obstacles which make the footways most inaccessible")
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
@@ -238,7 +239,8 @@ def app():
         "Minor repair — f=2 (Distracted Walk)": 2,
         "Full S.U.R.E. compliance — f=1": 1,
     }
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()))
+    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
+                                       help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
