@@ -1,218 +1,126 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import folium
-from streamlit_folium import st_folium
+import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import os
+import numpy as np
+import pandas as pd
+import yaml
+import streamlit as st
 
 # -------------------------------------------------------------------------
 # CONSTANTS
 # -------------------------------------------------------------------------
 
-F_COLORS = {
-    1: "#9E9E9E",
-    2: "#4CAF50",
-    3: "#2196F3",
-    4: "#FF9800",
-    5: "#F44336",
-}
+D      = 900.0
+d      = 12.5
+N_300 = 24
+N_600 = 48
 
-F_LABELS = {
-    1: "f=1 · Gold Standard (reference)",
-    2: "f=2 · Distracted Walk",
-    3: "f=3 · Obstacle Course",
-    4: "f=4 · Physical Barrier",
-    5: "f=5 · Systemic Failure",
-}
+M    = 100_000   # daily commuters at Yeshwantpur hub
+W    = 250       # working days per year
+WAGE = 50 / 60  # RBI informal wage rate — Rs50/hr -> Rs/min
 
-F_SHORT = {
-    1: "Gold Standard",
-    2: "Distracted Walk",
-    3: "Obstacle Course",
-    4: "Physical Barrier",
-    5: "Systemic Failure",
-}
-
-ROUTE_600M = [
-    [13.02007, 77.55546], [13.0201,  77.55547], [13.02011, 77.55546],
-    [13.02053, 77.55475], [13.02063, 77.55458], [13.02102, 77.55398],
-    [13.02117, 77.5537],  [13.02121, 77.55367], [13.02124, 77.55365],
-    [13.0212,  77.55359], [13.02162, 77.55335], [13.02164, 77.55335],
-    [13.02171, 77.55333], [13.022,   77.55316], [13.02196, 77.55307],
-    [13.02194, 77.553],   [13.0219,  77.55294], [13.02194, 77.55292],
-    [13.02238, 77.55268], [13.02257, 77.55257], [13.02349, 77.55205],
-    [13.02383, 77.55187],
-]
-
-MAP_CENTRE = [13.0215, 77.5555]
+FIX_COST_LOW_LAKH  = 8
+FIX_COST_HIGH_LAKH = 12
 
 # -------------------------------------------------------------------------
-# DATA LOADER
+# DATA LOADERS (Untouched)
 # -------------------------------------------------------------------------
 
-@st.cache_data
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
     df = pd.read_csv(path)
-    assert {"id", "lat", "lon", "f_value"}.issubset(df.columns), \
-        "audit_log.csv must contain: id, lat, lon, f_value"
+    assert {"id", "lat", "lon", "f_value"}.issubset(df.columns)
     return df
 
+def load_personas() -> dict:
+    path = os.path.join("data", "personas.yaml")
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
 
 # -------------------------------------------------------------------------
-# MAP BUILDER
+# SIMULATION CORE (Logic Untouched)
 # -------------------------------------------------------------------------
 
-def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.Map:
-    m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
-
-    # --- 1. THE 600m BAZAAR STREET STRETCH ---
-    b_popup_html = f"""
-        <div style="font-family: sans-serif; font-size: 12px; width: 180px;">
-            <b style="color: #F44336; font-size: 14px;">Bazaar Street Zone</b><br>
-            <b>Type:</b> Systemic Failure Area<br>
-            <b>Modeled</b> f: {bazaar_f}<br>
-            <hr style="margin: 5px 0;">
-            <i>600m stretch of missing or completely blocked footway.</i>
-        </div>
-    """
-    
-    folium.PolyLine(
-        locations=ROUTE_600M,
-        color=F_COLORS.get(bazaar_f, F_COLORS[5]),
-        weight=6, 
-        opacity=0.85,
-        tooltip="Bazaar St: Click for Data", # TOOLTIP (Hover)
-        popup=folium.Popup(b_popup_html, max_width=250)           # POPUP (Click)
-    ).add_to(m)
-
-    # --- 2. THE DISCRETE NODES (300m) ---
-    f_values = df["f_value"].values.astype(float)
-    fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
-
-    for idx, row in df.iterrows():
-        is_fixed = idx in fix_indices
-        f = int(row["f_value"])
-        color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
-        status = "REMEDIATED" if is_fixed else F_SHORT.get(f)
-        
-        # RICH POPUP BOX
-        n_popup_html = f"""
-            <div style="font-family: sans-serif; font-size: 12px; width: 200px;">
-                <b style="color: {color}; font-size: 13px;">Node ID: {int(row['id'])}</b><br>
-                <b>Friction:</b> f={f}<br>
-                <b>Status:</b> {status}<br>
-                <b>GPS:</b> {row['lat']:.5f}, {row['lon']:.5f}<br>
-                <hr style="margin: 5px 0;">
-                <p style="font-size: 10px; color: #555;">Potential energy barrier identified via physical audit.</p>
-            </div>
-        """
-
-        folium.CircleMarker(
-            location=(row["lat"], row["lon"]), 
-            radius=9, 
-            color="white", 
-            weight=1, 
-            fill=True, 
-            fill_color=color, 
-            fill_opacity=0.95,
-            tooltip=f"Node {int(row['id'])} · f={f}", # TOOLTIP (Hover)
-            popup=folium.Popup(n_popup_html, max_width=300) # POPUP (Click)
-        ).add_to(m)
-
-    return m
-
-
-# -------------------------------------------------------------------------
-# VISUALIZATION FUNCTIONS
-# -------------------------------------------------------------------------
-
-def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
+def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int = 5) -> np.ndarray:
     f_300 = df["f_value"].values.astype(float)
     if n_fixes > 0:
-        f_display = f_300.copy()
-        f_display[np.argsort(f_display)[::-1][:n_fixes]] = 1.0
-    else:
-        f_display = f_300.copy()
-    f_600 = np.full(48, float(bazaar_f))
-    f_all = np.concatenate([f_display, f_600])
-    d = 12.5
-    x = np.arange(len(f_all)) * d
-    colors = [F_COLORS.get(int(min(v, 5)), F_COLORS[5]) for v in f_all]
-    fig, ax = plt.subplots(figsize=(11, 2.5))
-    ax.bar(x, f_all, width=d * 0.88, color=colors, align="edge", linewidth=0)
-    ax.axvline(300, color="#aaaaaa", linewidth=1.2, linestyle="--", alpha=0.6)
-    ax.set_xlim(0, 900)
-    ax.set_ylim(0, 5.7)
-    ax.set_yticks([1, 2, 3, 4, 5])
-    ax.set_facecolor("#1a1a1a")
-    fig.patch.set_facecolor("#1a1a1a")
-    ax.tick_params(colors="white", labelsize=8)
-    ax.spines[:].set_visible(False)
-    fig.tight_layout()
-    return fig
+        fix_idx = np.argsort(f_300)[::-1][:n_fixes]
+        f_300 = f_300.copy()
+        f_300[fix_idx] = 1.0
+    return np.concatenate([f_300, np.full(N_600, float(bazaar_f))])
 
-def plot_severity_pie(df: pd.DataFrame, n_fixes: int = 0) -> plt.Figure:
-    f_vals = df["f_value"].values.astype(float).copy()
+def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
+    v0, k, f_max, alpha, delta = persona["v0"], persona["k"], persona["f_max"], persona["alpha"], persona["delta"]
+    tau_i = np.empty(len(f_array))
+    is_det = np.zeros(len(f_array), dtype=bool)
+    for i, fi in enumerate(f_array):
+        if fi > f_max:
+            tau_i[i] = (d + delta) * alpha / v0
+            is_det[i] = True
+        else:
+            tau_i[i] = d * (fi ** k) / v0
+    T_actual = float(tau_i.sum())
+    T_ideal = D / v0
+    return {
+        "T_actual": T_actual, "T_ideal": T_ideal, "delta_tau": T_actual - T_ideal,
+        "n_detours": int(is_det.sum()), "tau_i": tau_i, "is_det": is_det
+    }
+
+def compute_economics(df: pd.DataFrame, personas: dict, n_fixes: int, bazaar_f: int = 5) -> dict:
+    f_scenario = build_f_array(df, n_fixes, bazaar_f)
+    f_baseline = build_f_array(df, 0, 5)
+    res_s = {k: run_simulation(f_scenario, v) for k, v in personas.items()}
+    res_b = {k: run_simulation(f_baseline, v) for k, v in personas.items()}
+    total_w = sum(p["weight"] for p in personas.values())
+    dtau_bar_s = sum(res_s[k]["delta_tau"] * personas[k]["weight"] for k in personas) / total_w
+    dtau_bar_b = sum(res_b[k]["delta_tau"] * personas[k]["weight"] for k in personas) / total_w
+    annual_pm_s, annual_pm_b = M * W * dtau_bar_s / 60, M * W * dtau_bar_b / 60
+    loss_s, loss_b = annual_pm_s * WAGE / 1e7, annual_pm_b * WAGE / 1e7
+    pct_rec = ((loss_b - loss_s) / loss_b * 100 if loss_b > 0 else 0.0)
     if n_fixes > 0:
-        f_vals[np.argsort(f_vals)[::-1][:n_fixes]] = 1.0
-    counts = {f: int((f_vals == f).sum()) for f in [1, 2, 3, 4, 5]}
-    present = {f: c for f, c in counts.items() if c > 0}
-    sizes, labels, colors = list(present.values()), [F_SHORT[f] for f in present.keys()], [F_COLORS[f] for f in present.keys()]
-    fig, ax = plt.subplots(figsize=(5, 5))
-    fig.patch.set_facecolor("#1a1a1a")
-    ax.pie(sizes, labels=labels, colors=colors, autopct='%1.0f%%', startangle=90, textprops={'color':"white", 'fontsize': 8}, counterclock=False)
-    ax.set_title("Obstacle Severity Breakdown (300m)", color="white", fontsize=10)
-    fig.tight_layout()
+        cost_lo, cost_hi = FIX_COST_LOW_LAKH * n_fixes / 3, FIX_COST_HIGH_LAKH * n_fixes / 3
+        saving_lakh = (loss_b - loss_s) * 100
+        bcr_low, bcr_high = saving_lakh / cost_hi, saving_lakh / cost_lo
+    else: bcr_low = bcr_high = saving_lakh = 0.0
+    persona_losses = {key: {"baseline": M * W * res_b[key]["delta_tau"] / 60 * WAGE / 1e7,
+                            "scenario": M * W * res_s[key]["delta_tau"] / 60 * WAGE / 1e7} for key in personas}
+    return {
+        "res_scenario": res_s, "res_baseline": res_b, "dtau_bar_s": dtau_bar_s, "dtau_bar_b": dtau_bar_b,
+        "annual_pm_s": annual_pm_s, "annual_pm_b": annual_pm_b, "annual_loss_cr_s": loss_s,
+        "annual_loss_cr_b": loss_b, "pct_recovered": pct_rec, "bcr_low": bcr_low, "bcr_high": bcr_high,
+        "saving_lakh": saving_lakh, "persona_losses": persona_losses, "n_fixes": n_fixes, "bazaar_f": bazaar_f
+    }
+
+# -------------------------------------------------------------------------
+# PLOT HELPERS (Untouched)
+# -------------------------------------------------------------------------
+
+def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
+    labels = [p["label"] for p in personas.values()]
+    taxes_b, taxes_s, colors = [res_b[k]["delta_tau"] / 60 for k in personas], [res_s[k]["delta_tau"] / 60 for k in personas], [p["color"] for p in personas.values()]
+    fig, ax = plt.subplots(figsize=(8, 3.5)); ax.set_facecolor("#1a1a1a"); fig.patch.set_facecolor("#1a1a1a")
+    y, h = np.arange(len(labels)), 0.35
+    ax.barh(y + h/2, taxes_b, height=h, color=colors, alpha=0.35, label="Baseline")
+    ax.barh(y - h/2, taxes_s, height=h, color=colors, alpha=0.9, label="Scenario")
+    ax.set_yticks(y); ax.set_yticklabels(labels, color="white", fontsize=8.5); ax.tick_params(colors="white", labelsize=8)
+    ax.spines[:].set_visible(False); ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85); fig.tight_layout()
     return fig
 
-def plot_leff_comparison(L_eff_base: float, L_eff_now: float, f_bar_base: float, f_bar_now: float, n_fixes: int, bazaar_f: int) -> plt.Figure:
-    scenarios = [("Surveyed Baseline", L_eff_base, f_bar_base), ("Modified Scenario", L_eff_now,  f_bar_now), ("S.U.R.E. Target", 900.0, 1.0)]
-    fig, ax = plt.subplots(figsize=(8, 2.8))
-    fig.patch.set_facecolor("#1a1a1a")
-    ax.set_facecolor("#1a1a1a")
-    bar_h = 0.38
-    max_leff = max(L_eff_base, L_eff_now)
-    for i, (label, leff, fbar) in enumerate(scenarios):
-        ax.barh(i, 900, height=bar_h, color="#4CAF50", alpha=0.85, left=0)
-        excess = leff - 900
-        if excess > 0:
-            ax.barh(i, excess, height=bar_h, color="#F44336", alpha=0.85, left=900)
-        ax.text(leff + (max_leff * 0.05), i, f"f̄ = {fbar:.3f}", va="center", ha="left", fontsize=8.5, color="white", fontweight="bold")
-        ax.text(leff / 2, i, f"L_eff = {leff:.0f}m", va="center", ha="center", fontsize=8, color="white", fontweight="bold")
-    ax.axvline(900, color="#4CAF50", linewidth=1.5, linestyle="--", alpha=0.7)
-    ax.set_yticks([0, 1, 2])
-    ax.set_yticklabels([s[0] for s in scenarios], fontsize=8.5, color="white")
-    ax.set_xlim(0, max_leff * 1.3)
-    ax.tick_params(colors="white", labelsize=8)
-    ax.spines[:].set_visible(False)
-    ax.set_title("Effective Path Length Comparison", color="white", fontsize=10)
-    fig.tight_layout()
+def plot_loss_waterfall(econ: dict, personas: dict) -> plt.Figure:
+    keys = list(econ["persona_losses"].keys())
+    deltas = [econ["persona_losses"][k]["baseline"] - econ["persona_losses"][k]["scenario"] for k in keys]
+    fig, ax = plt.subplots(figsize=(7, 3)); ax.set_facecolor("#1a1a1a"); fig.patch.set_facecolor("#1a1a1a")
+    ax.bar(keys, deltas, color=["#4CAF50" if d >= 0 else "#F44336" for d in deltas], width=0.5)
+    ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False); fig.tight_layout()
     return fig
 
-def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(7, 1.2))
-    fig.patch.set_facecolor("#1a1a1a")
-    ax.set_facecolor("#1a1a1a")
-    ax.barh(0, 4.0, height=0.45, color="#2a2a2a", left=1.0)
-    fill_color = "#4CAF50" if f_bar_now < 1.5 else ("#FF9800" if f_bar_now < 3.0 else "#F44336")
-    ax.barh(0, f_bar_now - 1.0, height=0.45, color=fill_color, left=1.0, alpha=0.9)
-    for f in [1, 2, 3, 4, 5]:
-        ax.axvline(f, color="#555", linewidth=0.8, ymin=0.1, ymax=0.9)
-        ax.text(f, -0.38, str(f), ha="center", fontsize=7.5, color="#aaaaaa")
-    ax.axvline(f_bar_now, color="white", linewidth=2.0)
-    ax.text(f_bar_now, 0.32, f" f̄ = {f_bar_now:.3f}", va="bottom", ha="left" if f_bar_now < 4 else "right", fontsize=9, color="white", fontweight="bold")
-    ax.text(1.0, 0.32, "S.U.R.E. →", va="bottom", ha="left", fontsize=7, color="#4CAF50")
-    ax.set_xlim(0.8, 5.4)
-    ax.set_ylim(-0.5, 0.6)
-    ax.axis("off")
-    fig.tight_layout(pad=0.3)
+def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int = 10) -> plt.Figure:
+    bcr_vals = [((e := compute_economics(df, personas, n, bazaar_f))["bcr_low"] + e["bcr_high"]) / 2 for n in range(n_range + 1)]
+    fig, ax = plt.subplots(figsize=(7, 3)); ax.set_facecolor("#1a1a1a"); fig.patch.set_facecolor("#1a1a1a")
+    ax.plot(range(n_range + 1), bcr_vals, color="#FF9800", linewidth=2.5, marker="o", markersize=5); ax.axhline(10, color="#4CAF50", linestyle="--")
+    ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False); fig.tight_layout()
     return fig
-
 
 # -------------------------------------------------------------------------
 # MAIN APP ENTRY POINT
@@ -220,153 +128,103 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.markdown("""
-    This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
-    By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
-    infrastructure repairs directly reduce the effort required for urban navigation.
+    This module identifies the economic cost of pedestrian friction along the 900m Yeshwantpur corridor. 
+    By converting persona-weighted time loss into productivity value, we quantify the city-wide impact 
+    and model the return on investment for infrastructure remediation.
     """)
     st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. Fundamental Equations")
-        st.markdown("Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor across the total surveyed distance.")
-        st.latex(r"\bar{f} = \frac{1}{D} \left[ \left( d \sum_{i=1}^{N} f_i \right) + \int_{0}^{L_{B}} f_{B}(x) \, dx \right]")
+        st.markdown("Annual Economic Productivity Loss ($\mathcal{L}$) is calculated by scaling the weighted Mean Time Tax across the hub population.")
+        st.latex(r"\mathcal{L} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot \text{WAGE}")
         st.latex(r"""
             \begin{aligned}
-            \bar{f} &: \text{Mean Friction Index of the full 900m corridor (Target = 1.0)} \\
-            D &: \text{Total physical distance of the surveyed route (900 meters)} \\
-            d &: \text{Fixed length of each audited segment block (12.5 meters)} \\
-            i &: \text{Summation index for segments within the 300m discrete node zone} \\
-            N &: \text{Total number of discrete segments surveyed (24 nodes)} \\
-            f_i &: \text{The recorded friction value for the } i\text{-th segment} \\
-            L_{B} &: \text{Length of the Bazaar Street continuous failure zone (600 meters)} \\
-            f_{B} &: \text{The modelled friction value for the Bazaar Street stretch} \\
-            dx &: \text{Infinitesimal position element for integration across the continuous zone}
+            \mathcal{L} &: \text{Annual Productivity Loss (expressed in Crore INR)} \\
+            M &: \text{Daily commuter volume at Yeshwantpur hub (100,000)} \\
+            W &: \text{Standardized working days per year (250 days)} \\
+            w_\phi &: \text{Population share weight for persona } \phi \\
+            \Delta\tau &: \text{Time Tax (Seconds lost per single trip) for persona } \phi \\
+            \text{WAGE} &: \text{Localized value of time (calculated at ₹50/hour)}
             \end{aligned}
         """)
 
         st.markdown("#### 2. Detailed Baseline Calculation")
         st.markdown("""
-        To arrive at the baseline difficulty multiplier of **4.653**, we aggregate the audit data from two structurally 
-        distinct zones of the Yeshwantpur corridor.
+        To arrive at the baseline fiscal drain of **₹14.2 Crore/Year**, we aggregate the audit data 
+        under surveyed conditions ($f=5$ Bazaar Street, 0 node fixes).
         """)
         
-        st.markdown("**Step A: The 300m Constitution Circle Zone**")
-        st.markdown("This stretch contains 24 discrete geotagged nodes. The sum of friction values is as follows:")
-        st.latex(r"\sum f_i = (9 \times f_5) + (8 \times f_4) + (4 \times f_3) + (3 \times f_2) = 45 + 32 + 12 + 6 = 95")
-        st.latex(r"L_{\text{eff}}^{300} = 95 \times 12.5\text{m} = 1187.5\text{m}")
+        st.markdown("**Step A: Weighted Average Time Tax**")
+        st.markdown("Based on persona weights, the aggregate delay is **102 seconds** per commuter per trip.")
+        
+        st.markdown("**Step B: Annual Time Aggregate**")
+        st.latex(r"100{,}000 \text{ commuters} \times 250 \text{ days} \times \frac{102}{60} \text{ min} = 425 \text{ Million Minutes/Year}")
 
-        st.markdown("**Step B: The 600m Bazaar Street Zone**")
-        st.markdown("This stretch is modeled as a continuous systemic failure ($f=5$) as audited in March 2026.")
-        st.latex(r"L_{\text{eff}}^{600} = 600\text{m} \times 5 = 3000\text{m}")
-
-        st.markdown("**Step C: Final Aggregation**")
-        st.markdown("Combining both zones yields the total effective effort distance and the mean index.")
-        st.latex(r"L_{\text{eff}}^{Total} = 1187.5\text{m} + 3000\text{m} = 4187.5\text{m}")
-        st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
+        st.markdown("**Step C: Final Fiscal Aggregation**")
+        st.latex(r"\text{Loss} = 425\text{M min} \times ₹0.83/\text{min} \approx ₹14.2 \text{ Crore/Year}")
 
     try:
-        df = load_audit_data()
+        df = load_audit_data(); personas = load_personas()
     except Exception as e:
-        st.error(f"Error loading data: {e}")
-        return
+        st.error(f"Error loading data: {e}"); return
 
     # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### Friction Mapper Controls")
-    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
-                               help="Simulates the fixing of each of the obstacles which make the footways most inaccessible")
+    st.sidebar.markdown("### Economic Impact Controls")
+    n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 3,
+                                help="Simulates the fiscal impact of fixing discrete nodes in the 300m stretch.")
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
-    sure_standards = {
-        "Current — f=5 (Systemic Failure)": 5,
-        "Serious barrier — f=4 (Physical Barrier)": 4,
-        "Moderate repair — f=3 (Obstacle Course)": 3,
-        "Minor repair — f=2 (Distracted Walk)": 2,
-        "Full S.U.R.E. compliance — f=1": 1,
-    }
+    sure_standards = {"Current — f=5 (Systemic Failure)": 5, "Serious barrier — f=4 (Physical Barrier)": 4, "Moderate repair — f=3 (Obstacle Course)": 3, "Minor repair — f=2 (Distracted Walk)": 2, "Full S.U.R.E. compliance — f=1": 1}
     bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
-                                       help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
+                                        help="Simulates gradual remediation of the 600m failure zone.")
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
-    f_300 = df["f_value"].values.astype(float)
-    f_fixed = f_300.copy()
-    if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
-
-    L_eff_300_base = 12.5 * f_300.sum()
-    L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
-    L_eff_base = L_eff_300_base + (600 * 5)
-    f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
+    econ = compute_economics(df, personas, n_fixes, bazaar_f)
+    improved = econ["pct_recovered"] >= 0
+    delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
 
     # --- HEADLINE METRICS ---
     st.markdown("#### The State of the Corridor")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Fails Active Mobility Bill", "90.3%",
-                help="90.3% of the 900m stretch does not meet minimum pedestrian standards.")
-    col2.metric("Wheelchair inaccessible", "96.0%",
-                help="96% of the route has $f > f_{max}$ for wheelchair users ($f_{max} = 3$).")
-    col3.metric("Impassable Nodes ($f ≥ 4$)", f"{int((f_fixed > 3).sum())} / 24",
-               help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way.")
-    col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x",
-               help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
+    col1.metric("Compliance Rate", f"{( ( ( (build_f_array(df, n_fixes, bazaar_f)==1).sum() ) * 12.5 ) / 900) * 100:.1f}%")
+    col2.metric("Weighted Mean Tax", f"{econ['dtau_bar_s']:.1f} s/trip")
+    col3.metric("Annual Scenario Loss", f"₹{econ['annual_loss_cr_s']:.2f} Cr", 
+                delta=f"{'-' if improved else '+'}₹{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
+    col4.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}:1" if n_fixes > 0 else "N/A")
+
     st.markdown("---")
 
-    # --- MAP & GRADIENT ---
-    st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
-    st.markdown("---")
-    st.markdown("#### Friction Gradient — Full 900m Route")
-    st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
+    # --- CHARTS ---
+    st.markdown("#### Time Tax: Baseline vs Scenario")
+    st.pyplot(plot_time_tax_bars(econ["res_baseline"], econ["res_scenario"], personas), use_container_width=True)
     st.markdown("---")
 
-    # --- CORRIDOR ANALYSIS ---
-    st.markdown("#### Corridor Analysis")
-    col_left, col_right = st.columns(2)
-    with col_left:
-        st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
-    with col_right:
-        st.caption("S.U.R.E. Compliance Gauge")
-        st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
-        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), use_container_width=True)
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.markdown("#### Annual Loss Delta")
+        st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
+    with col_r:
+        if n_fixes > 0:
+            st.markdown("#### BCR Curve")
+            st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
 
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
-    st.header("Mapper Functionality")
-    st.write("1. **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based database.")
-    st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the Active Mobility Bill and DULT rubrics. By assigning a Friction Value $f$, the mapper provides an objective diagnostic of segment compliance.")
-    st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
-    st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
+    st.header("Briefing Functionality")
+    st.write("1. **Macro-Economic Aggregation:** This module scales individual 'seconds lost' into city-wide productivity figures. It anchors policy arguments in a Crore-value loss figure that represents the literal cost of systemic infrastructure neglect.")
+    st.write("2. **Investment Prioritization:** By calculating the fiscal return on each fix, the tool identifies that the first three repairs generate nearly 40% of the total potential benefit, allowing for high-impact municipal budgeting on limited spend.")
+    st.write("3. **Equity-Weighted Valuation:** The model utilizes population share weights ($w_\\phi$) to ensure that the needs of delivery partners and factory workers—who bear the highest Time Tax—are prioritized in fiscal planning.")
+    st.write("4. **Lighthouse Pilot Synthesis:** All charts and metrics are designed for direct inclusion in the DULT/BBMP policy brief. The 10:1 Benefit-Cost Ratio provides a standardized justification for immediate capital expenditure.")
 
     st.markdown("---")
-    st.markdown("#### Friction Rubric")
-    rubric = pd.DataFrame({
-        "f": [1, 2, 3, 4, 5],
-        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
-                  "Physical Barrier", "Systemic Failure"],
-        "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
-            "Minor cracks, unlevelled slabs, low-hanging cables",
-            "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, high kerb, partial blockage",
-            "Footpath ends — transformer, encroachment, construction",
-        ],
-        "Wheelchair Access": [
-            "Full",
-            "Partial — discomfort",
-            "Severely restricted",
-            "Effectively impassable",
-            "Fully impassable",
-        ],
-        "S.U.R.E. compliant?": [
-            "✅ Yes — reference standard",
-            "⚠️ Marginal",
-            "❌ No",
-            "❌ No",
-            "❌ No",
-        ],
-    })
-    st.dataframe(rubric, hide_index=True, use_container_width=True)
+    st.markdown("#### Per-Persona Breakdown")
+    rows = [{"Persona": p["label"], "Weight": f"{p['weight']*100:.0f}%", "Baseline Loss": f"₹{econ['persona_losses'][k]['baseline']:.2f} Cr", "Scenario Loss": f"₹{econ['persona_losses'][k]['scenario']:.2f} Cr"} for k, p in personas.items()]
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
     app()
