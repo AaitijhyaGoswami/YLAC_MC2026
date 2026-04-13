@@ -37,8 +37,8 @@ except ImportError:
 
 
 # SIDEBAR NAVIGATION
-st.sidebar.title("🚶 Escape the Knot")
-st.sidebar.caption("Yeshwantpur Mobility Audit · YLAC 2026")
+st.sidebar.title("Advocacy Modules")
+st.sidebar.caption("Yeshwantpur Mobility Audit 2026")
 
 options = ["Home"] + list(modules.keys())
 page = st.sidebar.radio("Navigate:", options)
@@ -53,8 +53,8 @@ st.sidebar.info(
 
 # MAIN ROUTING
 if page == "Home":
-    st.title("🚶 Escape the Knot")
-    st.markdown("### A Physics-Based Audit of the Yeshwantpur Mobility Knot")
+    st.title("🚶 Escape the Knot: The Yeshwantpur-Mathikere Nexus")
+    st.markdown("### A Physics-Based Audit of the Yeshwantpur-Mathikere Region")
     
     st.markdown("""
     This project quantifies the **infrastructural tax** imposed on pedestrians at the Yeshwantpur intermodal hub. 
