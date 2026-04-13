@@ -69,14 +69,61 @@ def load_audit_data() -> pd.DataFrame:
 
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
-    folium.PolyLine(locations=ROUTE_600M, color=F_COLORS.get(bazaar_f, F_COLORS[5]), weight=5, opacity=0.85).add_to(m)
+
+    # --- 1. THE 600m BAZAAR STREET STRETCH ---
+    b_popup_html = f"""
+        <div style="font-family: sans-serif; font-size: 12px; width: 180px;">
+            <b style="color: #F44336; font-size: 14px;">Bazaar Street Zone</b><br>
+            <b>Type:</b> Systemic Failure Area<br>
+            <b>Modeled f:</b> {bazaar_f}<br>
+            <hr style="margin: 5px 0;">
+            <i>600m stretch of missing or completely blocked footway.</i>
+        </div>
+    """
+    
+    folium.PolyLine(
+        locations=ROUTE_600M,
+        color=F_COLORS.get(bazaar_f, F_COLORS[5]),
+        weight=6, 
+        opacity=0.85,
+        tooltip="Bazaar St: Hover for Summary, Click for Data", # TOOLTIP (Hover)
+        popup=folium.Popup(b_popup_html, max_width=250)           # POPUP (Click)
+    ).add_to(m)
+
+    # --- 2. THE DISCRETE NODES (300m) ---
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
+
     for idx, row in df.iterrows():
         is_fixed = idx in fix_indices
         f = int(row["f_value"])
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
-        folium.CircleMarker(location=(row["lat"], row["lon"]), radius=8, color="white", weight=0.8, fill=True, fill_color=color, fill_opacity=0.9).add_to(m)
+        status = "REMEDIATED" if is_fixed else F_SHORT.get(f)
+        
+        # RICH POPUP BOX
+        n_popup_html = f"""
+            <div style="font-family: sans-serif; font-size: 12px; width: 200px;">
+                <b style="color: {color}; font-size: 13px;">Node ID: {int(row['id'])}</b><br>
+                <b>Friction:</b> f={f}<br>
+                <b>Status:</b> {status}<br>
+                <b>GPS:</b> {row['lat']:.5f}, {row['lon']:.5f}<br>
+                <hr style="margin: 5px 0;">
+                <p style="font-size: 10px; color: #555;">Potential energy barrier identified via physical audit.</p>
+            </div>
+        """
+
+        folium.CircleMarker(
+            location=(row["lat"], row["lon"]), 
+            radius=9, 
+            color="white", 
+            weight=1, 
+            fill=True, 
+            fill_color=color, 
+            fill_opacity=0.95,
+            tooltip=f"Node {int(row['id'])} · f={f}", # TOOLTIP (Hover)
+            popup=folium.Popup(n_popup_html, max_width=300) # POPUP (Click)
+        ).add_to(m)
+
     return m
 
 
