@@ -18,7 +18,7 @@ N_600 = 48
 
 M    = 100_000   # daily commuters at Yeshwantpur hub
 W    = 250       # working days per year
-WAGE = 50 / 60  # RBI informal wage rate — Rs50/hr -> Rs/min
+WAGE = 50 / 60  # Rs 50/hr -> Rs/min
 
 FIX_COST_LOW_LAKH  = 8
 FIX_COST_HIGH_LAKH = 12
@@ -33,12 +33,10 @@ def load_audit_data() -> pd.DataFrame:
     assert {"id", "lat", "lon", "f_value"}.issubset(df.columns)
     return df
 
-
 def load_personas() -> dict:
     path = os.path.join("data", "personas.yaml")
     with open(path, "r") as f:
         return yaml.safe_load(f)
-
 
 # -------------------------------------------------------------------------
 # SIMULATION CORE
@@ -52,97 +50,64 @@ def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int = 5) -> np.ndarr
         f_300[fix_idx] = 1.0
     return np.concatenate([f_300, np.full(N_600, float(bazaar_f))])
 
-
 def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
-    v0    = persona["v0"]
-    k     = persona["k"]
-    f_max = persona["f_max"]
-    alpha = persona["alpha"]
-    delta = persona["delta"]
-
-    tau_i  = np.empty(len(f_array))
+    v0, k, f_max, alpha, delta = persona["v0"], persona["k"], persona["f_max"], persona["alpha"], persona["delta"]
+    tau_i = np.empty(len(f_array))
     is_det = np.zeros(len(f_array), dtype=bool)
-
     for i, fi in enumerate(f_array):
         if fi > f_max:
-            tau_i[i]  = (d + delta) * alpha / v0
+            tau_i[i] = (d + delta) * alpha / v0
             is_det[i] = True
         else:
             tau_i[i] = d * (fi ** k) / v0
-
     T_actual = float(tau_i.sum())
-    T_ideal  = D / v0
+    T_ideal = D / v0
     return {
-        "T_actual":  T_actual,
-        "T_ideal":   T_ideal,
-        "delta_tau": T_actual - T_ideal,
-        "n_detours": int(is_det.sum()),
-        "tau_i":     tau_i,
-        "is_det":    is_det,
+        "T_actual": T_actual, "T_ideal": T_ideal, "delta_tau": T_actual - T_ideal,
+        "n_detours": int(is_det.sum()), "tau_i": tau_i, "is_det": is_det
     }
-
-
-# -------------------------------------------------------------------------
-# ECONOMIC MODEL
-# -------------------------------------------------------------------------
 
 def compute_economics(df: pd.DataFrame, personas: dict, n_fixes: int, bazaar_f: int = 5) -> dict:
     f_scenario = build_f_array(df, n_fixes, bazaar_f)
     f_baseline = build_f_array(df, 0, 5)
-
     res_s = {k: run_simulation(f_scenario, v) for k, v in personas.items()}
     res_b = {k: run_simulation(f_baseline, v) for k, v in personas.items()}
-
     total_w = sum(p["weight"] for p in personas.values())
-
-    def weighted_mean_dtau(res):
-        return sum(res[k]["delta_tau"] * personas[k]["weight"] for k in personas) / total_w
-
-    dtau_bar_s = weighted_mean_dtau(res_s)
-    dtau_bar_b = weighted_mean_dtau(res_b)
-
-    annual_pm_s = M * W * dtau_bar_s / 60
-    annual_pm_b = M * W * dtau_bar_b / 60
-
-    annual_loss_cr_s = annual_pm_s * WAGE / 1e7
-    annual_loss_cr_b = annual_pm_b * WAGE / 1e7
-
-    pct_recovered = ((annual_loss_cr_b - annual_loss_cr_s) / annual_loss_cr_b * 100 if annual_loss_cr_b > 0 else 0.0)
+    
+    dtau_bar_s = sum(res_s[k]["delta_tau"] * personas[k]["weight"] for k in personas) / total_w
+    dtau_bar_b = sum(res_b[k]["delta_tau"] * personas[k]["weight"] for k in personas) / total_w
+    
+    pm_s, pm_b = M * W * dtau_bar_s / 60, M * W * dtau_bar_b / 60
+    loss_s, loss_b = pm_s * WAGE / 1e7, pm_b * WAGE / 1e7
+    pct_rec = ((loss_b - loss_s) / loss_b * 100 if loss_b > 0 else 0.0)
 
     if n_fixes > 0:
-        cost_low_lakh  = FIX_COST_LOW_LAKH  * n_fixes / 3
-        cost_high_lakh = FIX_COST_HIGH_LAKH * n_fixes / 3
-        saving_lakh = (annual_loss_cr_b - annual_loss_cr_s) * 100
-        bcr_low  = saving_lakh / cost_high_lakh if cost_high_lakh > 0 else 0.0
-        bcr_high = saving_lakh / cost_low_lakh  if cost_low_lakh  > 0 else 0.0
-    else:
-        bcr_low = bcr_high = saving_lakh = 0.0
-
+        cost_lo, cost_hi = FIX_COST_LOW_LAKH * n_fixes / 3, FIX_COST_HIGH_LAKH * n_fixes / 3
+        saving_lakh = (loss_b - loss_s) * 100
+        bcr_low, bcr_high = saving_lakh / cost_hi, saving_lakh / cost_lo
+    else: bcr_low = bcr_high = saving_lakh = 0.0
+    
     persona_losses = {key: {"baseline": M * W * res_b[key]["delta_tau"] / 60 * WAGE / 1e7,
                             "scenario": M * W * res_s[key]["delta_tau"] / 60 * WAGE / 1e7} for key in personas}
-
     return {
         "res_scenario": res_s, "res_baseline": res_b, "dtau_bar_s": dtau_bar_s, "dtau_bar_b": dtau_bar_b,
-        "annual_pm_s": annual_pm_s, "annual_pm_b": annual_pm_b, "annual_loss_cr_s": annual_loss_cr_s,
-        "annual_loss_cr_b": annual_loss_cr_b, "pct_recovered": pct_recovered, "bcr_low": bcr_low,
-        "bcr_high": bcr_high, "saving_lakh": saving_lakh, "persona_losses": persona_losses,
-        "n_fixes": n_fixes, "bazaar_f": bazaar_f,
+        "annual_pm_s": pm_s, "annual_pm_b": pm_b, "annual_loss_cr_s": loss_s, "annual_loss_cr_b": loss_b,
+        "pct_recovered": pct_rec, "bcr_low": bcr_low, "bcr_high": bcr_high, "saving_lakh": saving_lakh,
+        "persona_losses": persona_losses, "n_fixes": n_fixes, "bazaar_f": bazaar_f
     }
 
-
 # -------------------------------------------------------------------------
-# PLOT HELPERS (Identical to Original)
+# VISUALIZATION HELPERS
 # -------------------------------------------------------------------------
 
 def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
-    labels  = [p["label"] for p in personas.values()]
+    labels = [p["label"] for p in personas.values()]
     taxes_b = [res_b[k]["delta_tau"] / 60 for k in personas]
     taxes_s = [res_s[k]["delta_tau"] / 60 for k in personas]
-    colors  = [p["color"] for p in personas.values()]
+    colors = [p["color"] for p in personas.values()]
     max_tax = max(max(taxes_b), max(taxes_s), 0.5)
     y, h = np.arange(len(labels)), 0.35
-    fig, ax = plt.subplots(figsize=(8, 3.5))
-    fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
+    fig, ax = plt.subplots(figsize=(8, 3.5)); fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
     ax.barh(y + h/2, taxes_b, height=h, color=colors, alpha=0.35, linewidth=0, label="Baseline (surveyed)")
     ax.barh(y - h/2, taxes_s, height=h, color=colors, alpha=0.9, linewidth=0, label="Scenario")
     for i, (vb, vs) in enumerate(zip(taxes_b, taxes_s)):
@@ -150,43 +115,39 @@ def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
         col = "#4CAF50" if vs <= vb else "#F44336"
         ax.text(max_tax * 0.015, y[i] - h/2, f"{vs:.1f}m", va="center", fontsize=7, color=col)
     ax.set_xlim(0, max_tax * 1.3); ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=8.5, color="white")
-    ax.set_xlabel("Time Tax per trip (min)", fontsize=9, color="white"); ax.tick_params(colors="white", labelsize=8)
-    ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85, loc="lower right")
-    ax.spines[:].set_visible(False); fig.tight_layout()
-    return fig
-
+    ax.set_xlabel("Time Tax per trip (min)", color="white"); ax.tick_params(colors="white", labelsize=8)
+    ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85); ax.spines[:].set_visible(False)
+    fig.tight_layout(); return fig
 
 def plot_loss_waterfall(econ: dict, personas: dict) -> plt.Figure:
     PLABELS = {"able_bodied":"Able-bodied","elderly":"Elderly","wheelchair":"Wheelchair","delivery":"Delivery"}
-    keys    = list(econ["persona_losses"].keys())
-    deltas  = [econ["persona_losses"][k]["baseline"] - econ["persona_losses"][k]["scenario"] for k in keys]
-    cats    = [PLABELS.get(k, k) for k in keys]
-    colors  = ["#4CAF50" if d >= 0 else "#F44336" for d in deltas]
+    keys = list(econ["persona_losses"].keys())
+    deltas = [econ["persona_losses"][k]["baseline"] - econ["persona_losses"][k]["scenario"] for k in keys]
+    cats = [PLABELS.get(k, k) for k in keys]
+    colors = ["#4CAF50" if d >= 0 else "#F44336" for d in deltas]
     max_abs = max(abs(d) for d in deltas) if deltas else 1.0
-    fig, ax = plt.subplots(figsize=(7, 3))
-    fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
+    fig, ax = plt.subplots(figsize=(7, 3)); fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
     bars = ax.bar(cats, deltas, color=colors, linewidth=0, width=0.5); ax.axhline(0, color="#555", linewidth=0.8)
     for bar, val in zip(bars, deltas):
         va, off = ("bottom", max_abs * 0.03) if val >= 0 else ("top", -max_abs * 0.03)
         ax.text(bar.get_x() + bar.get_width() / 2, val + off, f"{'−' if val < 0 else '+'}Rs{abs(val):.2f}Cr", ha="center", va=va, fontsize=7.5, color="white")
-    ax.set_ylabel("Annual loss change (Rs Cr)", fontsize=9, color="white")
-    ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False); fig.tight_layout()
-    return fig
-
+    ax.set_ylabel("Annual loss change (Rs Cr)", color="white"); ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False)
+    fig.tight_layout(); return fig
 
 def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int = 10) -> plt.Figure:
-    bcr_vals = [((e := compute_economics(df, personas, n, bazaar_f))["bcr_low"] + e["bcr_high"]) / 2 for n in range(n_range + 1)]
-    fig, ax = plt.subplots(figsize=(7, 3))
-    fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
+    bcr_vals = []
+    for n in range(n_range + 1):
+        e = compute_economics(df, personas, n, bazaar_f)
+        bcr_vals.append((e["bcr_low"] + e["bcr_high"]) / 2)
+    fig, ax = plt.subplots(figsize=(7, 3.2)); fig.patch.set_facecolor("#1a1a1a"); ax.set_facecolor("#1a1a1a")
     xs = list(range(n_range + 1))
     ax.plot(xs, bcr_vals, color="#FF9800", linewidth=2.5, marker="o", markersize=5, zorder=3)
     ax.fill_between(xs, [max(v, 0) for v in bcr_vals], 0, alpha=0.12, color="#FF9800")
-    ax.axhline(10, color="#4CAF50", linewidth=1, linestyle="--", label="BCR = 10:1 threshold", alpha=0.8)
-    ax.set_xlabel("Number of hotspots fixed (top-N)", fontsize=9, color="white"); ax.set_ylabel("Benefit-Cost Ratio", fontsize=9, color="white")
-    ax.set_ylim(0, max(max(bcr_vals) * 1.2, 15)); ax.legend(fontsize=8, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85)
-    ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False); fig.tight_layout()
-    return fig
-
+    ax.axhline(10, color="#4CAF50", linewidth=1, linestyle="--", label="BCR = 10:1 threshold")
+    ax.set_xlabel("Number of hotspots fixed (top-N)", color="white"); ax.set_ylabel("Benefit-Cost Ratio", color="white")
+    ax.set_ylim(0, max(max(bcr_vals) * 1.3, 15)); ax.legend(fontsize=8, labelcolor="white", frameon=False)
+    ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False)
+    fig.tight_layout(); return fig
 
 # -------------------------------------------------------------------------
 # MAIN APP ENTRY POINT
@@ -195,34 +156,25 @@ def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int
 def app():
     st.markdown("""
     This module identifies the economic cost of pedestrian friction along the 900m Yeshwantpur corridor. 
-    By converting persona-weighted time loss into productivity value, we quantify the city-wide impact 
-    and model the fiscal return on investment for infrastructure remediation.
+    By converting weighted time loss into productivity figures, we quantify the hub's impact on Bengaluru's GDP.
     """)
     st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. Fundamental Equations")
-        st.markdown("Annual Economic Productivity Loss ($\mathcal{L}$) is calculated by scaling the weighted Mean Time Tax across the hub population.")
         st.latex(r"\mathcal{L} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot \text{WAGE}")
         st.latex(r"""
             \begin{aligned}
-            \mathcal{L} &: \text{Annual Productivity Loss (expressed in Crore INR)} \\
-            M &: \text{Daily commuter volume at Yeshwantpur hub (100,000)} \\
-            W &: \text{Standardized working days per year (250 days)} \\
-            w_\phi &: \text{Population share weight for persona } \phi \\
-            \Delta\tau &: \text{Time Tax (Seconds lost per single trip) for persona } \phi \\
-            \text{WAGE} &: \text{Localized value of time (calculated at ₹50/hour)}
+            \mathcal{L} &: \text{Annual Economic Productivity Loss (Crore INR)} \\
+            M &: \text{Daily hub commuter volume (100,000)} \\
+            W &: \text{Standardized working days per year (250)} \\
+            \text{WAGE} &: \text{RBI Informal wage rate (calculated at ₹0.83 per minute)}
             \end{aligned}
         """)
-
         st.markdown("#### 2. Detailed Baseline Calculation")
-        st.markdown("To arrive at the baseline fiscal drain of **₹14.2 Crore/Year**, we aggregate the audit data under surveyed conditions ($f=5$ Bazaar Street, 0 node fixes).")
-        st.markdown("**Step A: Weighted Average Time Tax**")
-        st.markdown("Based on persona weights, the aggregate delay is **102 seconds** per commuter per trip.")
-        st.markdown("**Step B: Annual Time Aggregate**")
-        st.latex(r"100{,}000 \text{ commuters} \times 250 \text{ days} \times \frac{102}{60} \text{ min} = 425 \text{ Million Minutes/Year}")
-        st.markdown("**Step C: Final Fiscal Aggregation**")
+        st.markdown("Under surveyed conditions ($f=5$, 0 fixes), the weighted average delay is **102 seconds** per trip.")
+        st.latex(r"100{,}000 \text{ trips} \times 250 \text{ days} \times \frac{102}{60} \text{ min} = 425 \text{ Million Minutes/Year}")
         st.latex(r"\text{Loss} = 425\text{M min} \times ₹0.83/\text{min} \approx ₹14.2 \text{ Crore/Year}")
 
     try:
@@ -230,29 +182,19 @@ def app():
     except Exception as e:
         st.error(f"Error loading data: {e}"); return
 
-    # --- SIDEBAR CONTROLS (Identical to Original) ---
+    # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Rs Economic Impact Controls")
-    n_fixes = st.sidebar.slider(
-        "Hotspots fixed (top-N by f-value):",
-        min_value=0, max_value=len(df), value=3, step=1,
-        help="Nodes ranked highest-f first. Each fix sets that node to f=1. BCR is only shown when n_fixes > 0."
-    )
-    sure_standards = {
-        "Current — f=5 (Systemic Failure)": 5,
-        "Partial repair — f=4 (Physical Barrier)": 4,
-        "Moderate repair — f=3 (Obstacle Course)": 3,
-        "Near compliant — f=2 (Distracted Walk)": 2,
-        "Full S.U.R.E. compliance — f=1 (Gold Standard)": 1,
-    }
-    bazaar_label = st.sidebar.selectbox("Bazaar Street (600m) modelled as:", options=list(sure_standards.keys()), index=0)
+    n_fixes = st.sidebar.slider("Hotspots fixed (top-N):", 0, len(df), 3)
+    sure_standards = {"Current — f=5": 5, "Moderate repair — f=3": 3, "Full S.U.R.E. — f=1": 1}
+    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", options=list(sure_standards.keys()))
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
     econ = compute_economics(df, personas, n_fixes, bazaar_f)
     improved = econ["pct_recovered"] >= 0
 
-    # --- HEADLINE METRICS (Identical layout to Original) ---
+    # --- HEADLINE METRICS (Exact Original Style) ---
     st.markdown("#### Baseline — Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
     c1.metric("Annual person-minutes lost", f"{econ['annual_pm_b']/1e6:.2f}M")
@@ -262,41 +204,40 @@ def app():
     st.markdown("---")
     st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
     c4, c5, c6 = st.columns(3)
-    delta_loss = econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"]
-    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", delta=f"{'−' if improved else '+'}Rs{abs(delta_loss):.2f} Cr", delta_color="normal" if improved else "inverse")
+    delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
+    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", delta=f"{'−' if improved else '+'}Rs{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
     c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
-    if n_fixes > 0:
-        c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1")
-    else:
-        c6.metric("Benefit-cost ratio", "N/A — no fixes applied")
+    c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
 
     st.markdown("---")
 
-    # --- CHARTS (Identical layout to Original) ---
+    # --- CHARTS (Exact Original Style) ---
     col_l, col_r = st.columns(2)
     with col_l:
-        st.markdown("#### Time Tax — Baseline vs Scenario")
+        st.markdown("#### Time Tax Comparison")
         st.pyplot(plot_time_tax_bars(econ["res_baseline"], econ["res_scenario"], personas), use_container_width=True)
     with col_r:
-        st.markdown("#### Per-Persona Annual Loss Delta")
+        st.markdown("#### Annual Loss Delta")
         st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
 
+    # --- BCR CURVE (Ensured display logic) ---
     if n_fixes > 0:
         st.markdown("---")
         st.markdown("#### Benefit-Cost Ratio Curve")
+        st.caption("Investment efficiency across increasing remediation nodes. Green line indicates 10:1 return threshold.")
         st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
 
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
     st.header("🛠️ Briefing Functionality")
-    st.write("1. **Macro-Economic Aggregation:** This module scales individual 'seconds lost' into city-wide productivity figures. It anchors policy arguments in a Crore-value loss figure that represents the literal cost of systemic infrastructure neglect.")
-    st.write("2. **Investment Prioritization:** By calculating the fiscal return on each fix, the tool identifies that the first three repairs generate nearly 40% of the total potential benefit, allowing for high-impact municipal budgeting.")
-    st.write("3. **Equity-Weighted Valuation:** The model utilizes population share weights ($w_\\phi$) to ensure that the needs of delivery partners and laborers who bear the highest Time Tax are prioritized in fiscal planning.")
-    st.write("4. **Lighthouse Pilot Synthesis:** All charts and metrics are designed for direct inclusion in the DULT/BBMP policy brief. The 10:1 Benefit-Cost Ratio provides a standardized justification for immediate capital expenditure.")
+    st.write("1. **Macro-Economic Aggregation:** Translates physical 'seconds lost' into city-wide productivity figures, anchoring policy arguments in PKR/INR value.")
+    st.write("2. **Investment Prioritization:** identifies that a small pilot expenditure on top hotspots yields a vastly disproportionate economic recovery.")
+    st.write("3. **Equity-Weighted Valuation:** Uses population shares ($w_\\phi$) to ensure the fiscal drain on factory workers and delivery partners is correctly prioritized.")
+    st.write("4. **Standardized Proposal Synthesis:** Designed for direct inclusion in DULT/BBMP briefs, using 10:1 BCR as a benchmark for immediate project approval.")
 
     st.markdown("---")
     st.markdown("#### Per-Persona Breakdown")
-    rows = [{"Persona": p["label"], "Weight": f"{p['weight']*100:.0f}%", "Baseline Loss": f"₹{econ['persona_losses'][k]['baseline']:.2f} Cr", "Scenario Loss": f"₹{econ['persona_losses'][k]['scenario']:.2f} Cr"} for k, p in personas.items()]
+    rows = [{"Persona": p["label"], "Weight": f"{p['weight']*100:.0f}%", "Baseline Loss": f"Rs{econ['persona_losses'][k]['baseline']:.2f} Cr", "Scenario Loss": f"Rs{econ['persona_losses'][k]['scenario']:.2f} Cr"} for k, p in personas.items()]
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
