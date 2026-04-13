@@ -86,7 +86,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color=F_COLORS.get(bazaar_f, F_COLORS[5]),
         weight=6, 
         opacity=0.85,
-        tooltip="Bazaar St: Hover for Summary, Click for Data", # TOOLTIP (Hover)
+        tooltip="Bazaar St: Click for Data", # TOOLTIP (Hover)
         popup=folium.Popup(b_popup_html, max_width=250)           # POPUP (Click)
     ).add_to(m)
 
