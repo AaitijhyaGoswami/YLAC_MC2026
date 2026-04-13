@@ -163,6 +163,7 @@ def app():
     # --- TECHNICAL MATH SECTION ---
     # --- TECHNICAL MATH SECTION (Enhanced with all variable definitions) ---
     # --- TECHNICAL MATH SECTION (Standardized to LaTeX Block Style) ---
+    # --- TECHNICAL MATH SECTION (Standardized Block Style with Worked Example) ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. Fundamental Equations")
         st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
@@ -216,40 +217,40 @@ def app():
             BCR &= \frac{\Delta\mathcal{L} \cdot 100}{\text{Repair Cost (Lakhs)}} \quad \text{(Benefit-Cost Ratio)}
             \end{aligned}
         """)
+
         st.markdown("#### 5. Worked Unit Example: The Cost of One Failed Node")
-    st.markdown("""
-    Consider a single segment ($d = 12.5\text{m}$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
-    specifically on the **Able-bodied Persona** ($\phi_{A}$) who makes up 45% of the hub volume.
-    """)
+        st.markdown("""
+        Consider a single segment ($d = 12.5\text{m}$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
+        specifically on the **Able-bodied Persona** ($\phi_{A}$) who makes up 45% of the hub volume.
+        """)
 
-    st.latex(r"""
-        \begin{aligned}
-        \text{Input Parameters: } & v_0 = 1.4 \text{ m/s, } k = 0.6, \text{ } w_A = 0.45 \\
-        \tau_{\text{ideal}} &= \frac{12.5}{1.4} = 8.93 \text{ seconds} \\
-        v_{\text{eff}} &= \frac{1.4}{5^{0.6}} \approx 0.533 \text{ m/s} \\
-        \tau_{\text{actual}} &= \frac{12.5}{0.533} \approx 23.45 \text{ seconds} \\
-        \Delta\tau (\phi_A) &= 23.45 - 8.93 = 14.52 \text{ seconds per trip}
-        \end{aligned}
-    """)
+        st.latex(r"""
+            \begin{aligned}
+            \text{Input Parameters: } & v_0 = 1.4 \text{ m/s, } k = 0.6, \text{ } w_A = 0.45 \\
+            \tau_{\text{ideal}} &= \frac{12.5}{1.4} = 8.93 \text{ seconds} \\
+            v_{\text{eff}} &= \frac{1.4}{5^{0.6}} \approx 0.533 \text{ m/s} \\
+            \tau_{\text{actual}} &= \frac{12.5}{0.533} \approx 23.45 \text{ seconds} \\
+            \Delta\tau (\phi_A) &= 23.45 - 8.93 = 14.52 \text{ seconds per trip}
+            \end{aligned}
+        """)
 
-    st.markdown("""
-    Scaling this 14.5-second delay across the annual commuter volume ($M=100,000$) for the population share ($w_A=0.45$):
-    """)
+        st.markdown("""
+        Scaling this 14.5-second delay across the annual commuter volume ($M=100,000$) for the population share ($w_A=0.45$):
+        """)
 
-    st.latex(r"""
-        \begin{aligned}
-        \mathcal{T}_{\text{year}} &= (100,000 \cdot 0.45) \cdot 250 \cdot \frac{14.52}{60} \\
-        \mathcal{T}_{\text{year}} &\approx 2,722,500 \text{ person-minutes lost per year} \\
-        \text{Loss} &= 2,722,500 \cdot ₹0.833 \approx ₹2,267,842
-        \end{aligned}
-    """)
+        st.latex(r"""
+            \begin{aligned}
+            \mathcal{T}_{\text{year}} &= (100,000 \cdot 0.45) \cdot 250 \cdot \frac{14.52}{60} \\
+            \mathcal{T}_{\text{year}} &\approx 2,722,500 \text{ person-minutes lost per year} \\
+            \text{Loss} &= 2,722,500 \cdot ₹0.833 \approx ₹2,267,842
+            \end{aligned}
+        """)
 
-    st.markdown("""
-    **The Result:** A single 12.5m stretch of broken footpath costs the city **₹22.6 Lakhs per year** in lost productivity 
-    for just one demographic. When aggregated across all 72 segments and all four personas, this produces the baseline 
-    drain of **₹14.2 Crore/Year**.
-    """)
-
+        st.markdown("""
+        **The Result:** A single 12.5m stretch of broken footpath costs the city **₹22.6 Lakhs per year** in lost productivity 
+        for just one demographic. When aggregated across all 72 segments and all four personas, this produces the baseline 
+        drain of **₹14.2 Crore/Year**.
+        """)
 
     # --- WORKED EXAMPLE SECTION (To be included in the expander or as a new section) ---
     
