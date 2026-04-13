@@ -93,7 +93,7 @@ def compute_economics(df: pd.DataFrame, personas: dict, n_fixes: int, bazaar_f: 
     }
 
 # -------------------------------------------------------------------------
-# PLOT HELPERS (Untouched)
+# PLOT HELPERS (Logic & Aesthetics Untouched)
 # -------------------------------------------------------------------------
 
 def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
@@ -101,7 +101,7 @@ def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
     taxes_b, taxes_s, colors = [res_b[k]["delta_tau"] / 60 for k in personas], [res_s[k]["delta_tau"] / 60 for k in personas], [p["color"] for p in personas.values()]
     fig, ax = plt.subplots(figsize=(8, 3.5)); ax.set_facecolor("#1a1a1a"); fig.patch.set_facecolor("#1a1a1a")
     y, h = np.arange(len(labels)), 0.35
-    ax.barh(y + h/2, taxes_b, height=h, color=colors, alpha=0.35, label="Baseline")
+    ax.barh(y + h/2, taxes_b, height=h, color=colors, alpha=0.35, label="Baseline (surveyed)")
     ax.barh(y - h/2, taxes_s, height=h, color=colors, alpha=0.9, label="Scenario")
     ax.set_yticks(y); ax.set_yticklabels(labels, color="white", fontsize=8.5); ax.tick_params(colors="white", labelsize=8)
     ax.spines[:].set_visible(False); ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white", framealpha=0.85); fig.tight_layout()
@@ -128,13 +128,13 @@ def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int
 
 def app():
     st.markdown("""
-    This module identifies the economic cost of pedestrian friction along the 900m Yeshwantpur corridor. 
-    By converting persona-weighted time loss into productivity value, we quantify the city-wide impact 
-    and model the return on investment for infrastructure remediation.
+    This module aggregates persona-weighted Time Tax data across 100,000 daily commuters to quantify 
+    the systemic productivity drain on Bengaluru's economy. By applying the RBI informal wage rate, 
+    we translate physical infrastructure friction into a Crore-value fiscal baseline.
     """)
     st.markdown("---")
 
-    # --- TECHNICAL MATH SECTION ---
+    # --- TECHNICAL MATH SECTION (Inspired by Friction Mapper structure) ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. Fundamental Equations")
         st.markdown("Annual Economic Productivity Loss ($\mathcal{L}$) is calculated by scaling the weighted Mean Time Tax across the hub population.")
@@ -151,17 +151,11 @@ def app():
         """)
 
         st.markdown("#### 2. Detailed Baseline Calculation")
-        st.markdown("""
-        To arrive at the baseline fiscal drain of **₹14.2 Crore/Year**, we aggregate the audit data 
-        under surveyed conditions ($f=5$ Bazaar Street, 0 node fixes).
-        """)
-        
+        st.markdown("To arrive at the baseline fiscal drain of **₹14.2 Crore/Year**, we aggregate the audit data under surveyed conditions ($f=5$ Bazaar Street, 0 node fixes).")
         st.markdown("**Step A: Weighted Average Time Tax**")
         st.markdown("Based on persona weights, the aggregate delay is **102 seconds** per commuter per trip.")
-        
         st.markdown("**Step B: Annual Time Aggregate**")
         st.latex(r"100{,}000 \text{ commuters} \times 250 \text{ days} \times \frac{102}{60} \text{ min} = 425 \text{ Million Minutes/Year}")
-
         st.markdown("**Step C: Final Fiscal Aggregation**")
         st.latex(r"\text{Loss} = 425\text{M min} \times ₹0.83/\text{min} \approx ₹14.2 \text{ Crore/Year}")
 
@@ -174,51 +168,60 @@ def app():
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Economic Impact Controls")
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 3,
-                                help="Simulates the fiscal impact of fixing discrete nodes in the 300m stretch.")
-    
+                                help="Simulates fixing obstacles in the 300m stretch.")
     st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
-    sure_standards = {"Current — f=5 (Systemic Failure)": 5, "Serious barrier — f=4 (Physical Barrier)": 4, "Moderate repair — f=3 (Obstacle Course)": 3, "Minor repair — f=2 (Distracted Walk)": 2, "Full S.U.R.E. compliance — f=1": 1}
-    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
-                                        help="Simulates gradual remediation of the 600m failure zone.")
+    sure_standards = {"Current — f=5": 5, "Serious barrier — f=4": 4, "Moderate repair — f=3": 3, "Minor repair — f=2": 2, "Full S.U.R.E. compliance — f=1": 1}
+    bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()))
     bazaar_f = sure_standards[bazaar_label]
 
     # --- COMPUTATION ---
     econ = compute_economics(df, personas, n_fixes, bazaar_f)
     improved = econ["pct_recovered"] >= 0
-    delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
 
-    # --- HEADLINE METRICS ---
-    st.markdown("#### The State of the Corridor")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Compliance Rate", f"{( ( ( (build_f_array(df, n_fixes, bazaar_f)==1).sum() ) * 12.5 ) / 900) * 100:.1f}%")
-    col2.metric("Weighted Mean Tax", f"{econ['dtau_bar_s']:.1f} s/trip")
-    col3.metric("Annual Scenario Loss", f"₹{econ['annual_loss_cr_s']:.2f} Cr", 
-                delta=f"{'-' if improved else '+'}₹{delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
-    col4.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}:1" if n_fixes > 0 else "N/A")
+    # --- HEADLINE METRICS (Exact layout from original code) ---
+    st.markdown("#### Baseline — Surveyed Conditions")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Annual person-minutes lost", f"{econ['annual_pm_b']/1e6:.2f}M")
+    c2.metric("Annual productivity loss", f"Rs{econ['annual_loss_cr_b']:.2f} Cr")
+    c3.metric("Weighted mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip")
+
+    st.markdown("---")
+    st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
+    c4, c5, c6 = st.columns(3)
+    delta_loss = econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"]
+    c4.metric("Annual loss — scenario", f"Rs{econ['annual_loss_cr_s']:.2f} Cr", 
+              delta=f"{'−' if improved else '+'}Rs{abs(delta_loss):.2f} Cr", delta_color="normal" if improved else "inverse")
+    c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
+              delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
+    
+    if n_fixes > 0:
+        c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1")
+    else:
+        c6.metric("Benefit-cost ratio", "N/A — no fixes applied")
 
     st.markdown("---")
 
-    # --- CHARTS ---
-    st.markdown("#### Time Tax: Baseline vs Scenario")
-    st.pyplot(plot_time_tax_bars(econ["res_baseline"], econ["res_scenario"], personas), use_container_width=True)
-    st.markdown("---")
-
+    # --- CHARTS (Exact layout from original code) ---
     col_l, col_r = st.columns(2)
     with col_l:
-        st.markdown("#### Annual Loss Delta")
-        st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
+        st.markdown("#### Time Tax — Baseline vs Scenario")
+        st.pyplot(plot_time_tax_bars(econ["res_baseline"], econ["res_scenario"], personas), use_container_width=True)
     with col_r:
-        if n_fixes > 0:
-            st.markdown("#### BCR Curve")
-            st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
+        st.markdown("#### Per-Persona Annual Loss Delta")
+        st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
 
-    # --- POINTWISE DESCRIPTION ---
+    if n_fixes > 0:
+        st.markdown("---")
+        st.markdown("#### Benefit-Cost Ratio Curve")
+        st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
+
+    # --- POINTWISE DESCRIPTION (New Numbered Style) ---
     st.markdown("---")
-    st.header("Briefing Functionality")
+    st.header("🛠️ Briefing Functionality")
     st.write("1. **Macro-Economic Aggregation:** This module scales individual 'seconds lost' into city-wide productivity figures. It anchors policy arguments in a Crore-value loss figure that represents the literal cost of systemic infrastructure neglect.")
-    st.write("2. **Investment Prioritization:** By calculating the fiscal return on each fix, the tool identifies that the first three repairs generate nearly 40% of the total potential benefit, allowing for high-impact municipal budgeting on limited spend.")
-    st.write("3. **Equity-Weighted Valuation:** The model utilizes population share weights ($w_\\phi$) to ensure that the needs of delivery partners and factory workers—who bear the highest Time Tax—are prioritized in fiscal planning.")
+    st.write("2. **Investment Prioritization:** By calculating the fiscal return on each fix, the tool identifies that the first three repairs generate nearly 40% of the total potential benefit, allowing for high-impact municipal budgeting.")
+    st.write("3. **Equity-Weighted Valuation:** The model utilizes population share weights ($w_\\phi$) to ensure that the needs of delivery partners and laborers who bear the highest Time Tax are prioritized in fiscal planning.")
     st.write("4. **Lighthouse Pilot Synthesis:** All charts and metrics are designed for direct inclusion in the DULT/BBMP policy brief. The 10:1 Benefit-Cost Ratio provides a standardized justification for immediate capital expenditure.")
 
     st.markdown("---")
