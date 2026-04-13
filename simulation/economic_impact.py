@@ -216,9 +216,7 @@ def app():
             BCR &= \frac{\Delta\mathcal{L} \cdot 100}{\text{Repair Cost (Lakhs)}} \quad \text{(Benefit-Cost Ratio)}
             \end{aligned}
         """)
-
-    # --- WORKED EXAMPLE SECTION (To be included in the expander or as a new section) ---
-    st.markdown("#### 5. Worked Unit Example: The Cost of One Failed Node")
+        st.markdown("#### 5. Worked Unit Example: The Cost of One Failed Node")
     st.markdown("""
     Consider a single segment ($d = 12.5\text{m}$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
     specifically on the **Able-bodied Persona** ($\phi_{A}$) who makes up 45% of the hub volume.
@@ -252,6 +250,9 @@ def app():
     drain of **₹14.2 Crore/Year**.
     """)
 
+
+    # --- WORKED EXAMPLE SECTION (To be included in the expander or as a new section) ---
+    
     try:
         df = load_audit_data(); personas = load_personas()
     except Exception as e:
