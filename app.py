@@ -53,7 +53,7 @@ st.sidebar.info(
 
 # MAIN ROUTING
 if page == "Home":
-    st.title("🚶 Escape the Knot: The Yeshwantpur-Mathikere Nexus")
+    st.title("🚶 Escape the Knot: The Yeshwantpur Nexus")
     st.markdown("### A Physics-Based Audit of the Yeshwantpur-Mathikere Region")
     
     st.markdown("""
