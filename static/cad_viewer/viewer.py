@@ -51,7 +51,7 @@ def app():
     # Pathing: With enableStaticServing, ylac_mc2026/static/ is the root (/)
     with col_f5:
         render_3d_model(
-            model_url="cad_viewer/yeshwantpur.gltf", 
+            model_url="cad_viewer/yeshu.gltf", 
             label="Current: Systemic Failure (f=5)", 
             color="#F44336"
         )
@@ -61,7 +61,7 @@ def app():
 
     with col_f1:
         render_3d_model(
-            model_url="cad_viewer/fixed.gltf", 
+            model_url="cad_viewer/f=1.gltf", 
             label="Proposed: Gold Standard (f=1)", 
             color="#00D4FF"
         )
