@@ -2,46 +2,30 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 
-# -------------------------------------------------------------------------
-# 3D RENDER ENGINE (glTF + Binary)
-# -------------------------------------------------------------------------
-
 def render_3d_model(model_url, label, color):
     """
     Renders the 3D model. 
-    Streamlit serves 'static/' at the root, so the path is just 'cad_viewer/...'
+    Since 'static/' is served at '/', the path is 'cad_viewer/filename.gltf'
     """
     html_code = f"""
-    <div style="font-family: 'Inter', sans-serif; text-align: center;">
-        <h4 style="color: {color}; margin-bottom: 15px; font-weight: 600;">{label}</h4>
-        
-        <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-        
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <div style="text-align: center; font-family: sans-serif;">
+        <h4 style="color: {color}; margin-bottom: 12px; font-weight: 500;">{label}</h4>
         <model-viewer src="{model_url}" 
-                      style="width: 100%; height: 500px; background-color: #0e1117; border-radius: 15px; border: 1px solid #333;" 
-                      auto-rotate 
-                      camera-controls 
-                      shadow-intensity="2" 
-                      exposure="1.2" 
-                      environment-image="neutral">
-            <div slot="progress-bar" style="height: 5px; background-color: {color};"></div>
+                      style="width: 100%; height: 500px; background-color: #0e1117; border-radius: 12px; border: 1px solid #333;" 
+                      auto-rotate camera-controls shadow-intensity="2" exposure="1.2">
         </model-viewer>
     </div>
     """
     return components.html(html_code, height=580)
 
-# -------------------------------------------------------------------------
-# MAIN MODULE ENTRY POINT
-# -------------------------------------------------------------------------
-
 def app():
     st.write("### 🏗️ Lighthouse Prototype: Yeshwantpur Corridor")
-    st.write("Compare the current containment geometry ($f=5$) with the proposed hierarchy ($f=1$).")
     st.markdown("---")
 
     col_f5, col_f1 = st.columns(2)
 
-    # UPDATED PATHS: Assumes files are in static/cad_viewer/
+    # PATHS: These must match where the .gltf and .bin files actually sit.
     with col_f5:
         render_3d_model(
             model_url="cad_viewer/yeshwantpur.gltf", 
@@ -55,7 +39,7 @@ def app():
             label="Proposed Redesign (f=1)", 
             color="#00D4FF"
         )
-
+    
     st.markdown("---")
 
     # --- BRIEFING & TABLE ---
