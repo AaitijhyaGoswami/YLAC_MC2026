@@ -23,11 +23,14 @@ try:
 except Exception as e:
     st.sidebar.error(f"agent_sim failed: {e}")
 
+# Inside your main app.py
 try:
-    from static.cad_viewer import viewer
+    # We now point Python to look inside the static folder
+    from static.cad_viewer import viewer 
     modules["What-If: Lighthouse Prototype"] = viewer
-except ImportError:
-    pass
+except ImportError as e:
+    # This will now tell you EXACTLY why it failed in the sidebar
+    st.sidebar.error(f"Module Discovery Error: {e}")
 
 try:
     from simulation import economic_impact
