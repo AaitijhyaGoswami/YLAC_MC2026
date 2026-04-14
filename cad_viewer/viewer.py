@@ -3,8 +3,6 @@ import pandas as pd
 import os
 
 def app():
-    # --- EXECUTIVE HEADER ---
-    st.write("## 🏗️ Lighthouse Prototype: Yeshwantpur-Mathikere Nexus")
     st.markdown("""
     **Objective:** This module provides a high-fidelity visual and mathematical audit of the 16m Bazaar Street 
     cross-section. It contrasts the current 'Containment' model with the **S.U.R.E. Standard** hierarchy.
@@ -20,7 +18,7 @@ def app():
         # Path kept exactly as requested
         st.image(f"cad_viewer/f=5.png", caption="Systemic Failure: Wall & Mesh Containment", use_container_width=True)
         
-        with st.expander("🚨 Spatial Diagnostics (Audit Log)"):
+        with st.expander("Spatial Diagnostics (Audit Log)"):
             st.error("**The Piping Effect:** 1.6m high barriers (base wall + mesh) create a high-pressure friction corridor.")
             st.error("**Colonization:** 3m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
 
@@ -29,14 +27,14 @@ def app():
         # Path kept exactly as requested
         st.image(f"cad_viewer/f=1.png", caption="Gold Standard: 3m Reclaimed Path", use_container_width=True)
         
-        with st.expander("✅ Remediation Strategy (Redesign)"):
+        with st.expander("Remediation Strategy (Redesign)"):
             st.success("**Reclaimed Clear Path:** Restoration of a continuous 3m unobstructed concrete walking zone.")
             st.success("**Integrated Ecosystem:** Vending shifted to a 1.5m curb-side 'Utility Zone' with organized stalls.")
 
     st.markdown("---")
 
     # --- 2. POLICY & ADVOCACY POINTERS ---
-    st.header("🛠️ Briefing Functionality")
+    st.header("Proposal Functionality")
     
     st.markdown(r"""
     1. **Macro-Economic Aggregation:** This design converts abstract 'pedestrian struggle' into a high-fidelity fiscal baseline. By scaling persona-weighted time loss against a hub volume of **100,000 daily commuters**, we anchor the argument in a **Crore-value productivity gain**.
@@ -51,7 +49,7 @@ def app():
     st.markdown("---")
 
     # --- 3. SPATIAL ALLOCATION TABLE ---
-    st.header("📊 Spatial Allocation Comparison (16m Section)")
+    st.header("Spatial Allocation Comparison (16m Section)")
     
     comparison_df = pd.DataFrame({
         "Infrastructure Element": ["Pedestrian Clear Path", "Vending/Utility Zone", "Vehicle Carriageway", "Segregation Barrier"],
@@ -61,7 +59,7 @@ def app():
     st.table(comparison_df)
 
     # --- 4. MATHEMATICAL JUSTIFICATION ---
-    with st.expander("🔬 View Physics Logic & Variable Definitions"):
+    with st.expander("View Mathematical Logic & Variable Definitions"):
         st.markdown("#### The Physics of Spatial Resistance")
         st.latex(r"W_{\text{eff}} = W_{\text{total}} - W_{\text{obstacles}} - W_{\text{buffer}}")
         st.write("""
@@ -77,5 +75,3 @@ def app():
             standard ($v_0$), eliminating the Time Tax recorded in the simulator.
         """)
 
-    st.markdown("---")
-    st.caption("Developed for YLAC Mobility Champions 2026 | Yeshwantpur Nexus Audit")
