@@ -28,9 +28,8 @@ try:
     # We now point Python to look inside the static folder
     from cad_viewer import viewer 
     modules["What-If: Lighthouse Prototype"] = viewer
-except ImportError as e:
-    # This will now tell you EXACTLY why it failed in the sidebar
-    st.sidebar.error(f"Module Discovery Error: {e}")
+except ImportError:
+    pass
 
 try:
     from simulation import economic_impact
