@@ -95,9 +95,9 @@ def render_3d_model(filename: str, label: str, color: str, height: int = 500):
         onerror="this.style.display='none'; document.getElementById('err_{filename.replace('.','_')}').style.display='flex';"
       ></model-viewer>
       <div id="err_{filename.replace('.','_')}" class="error-box" style="display:none;">
-        Model could not load. <br>
-        Check that <code>static/cad_viewer/{filename}</code> exists <br>
-        and <code>enableStaticServing = true</code> is set in <br>
+        Model could not load. <br \>
+        Check that <code>static/cad_viewer/{filename}</code> exists <br \>
+        and <code>enableStaticServing = true</code> is set in <br \>
         <code>.streamlit/config.toml </code>
       </div>
     </body>
