@@ -26,7 +26,7 @@ except Exception as e:
 # Inside your main app.py
 try:
     # We now point Python to look inside the static folder
-    from static.cad_viewer import viewer 
+    from cad_viewer import viewer 
     modules["What-If: Lighthouse Prototype"] = viewer
 except ImportError as e:
     # This will now tell you EXACTLY why it failed in the sidebar
