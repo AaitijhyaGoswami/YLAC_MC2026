@@ -28,7 +28,7 @@ def app():
     # PATHS: These must match where the .gltf and .bin files actually sit.
     with col_f5:
         render_3d_model(
-            model_url="cad_viewer/yeshwantpur.gltf", 
+            model_url="cad_viewer/yeshu.gltf", 
             label="Current Situation (f=5)", 
             color="#FF4B4B"
         )
