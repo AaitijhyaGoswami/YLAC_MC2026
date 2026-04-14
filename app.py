@@ -24,8 +24,8 @@ except Exception as e:
     st.sidebar.error(f"agent_sim failed: {e}")
 
 try:
-    from simulation import what_if
-    modules["What-If: Lighthouse Prototype"] = what_if
+    from cad_viewer import viewer
+    modules["What-If: Lighthouse Prototype"] = viewer
 except ImportError:
     pass
 
