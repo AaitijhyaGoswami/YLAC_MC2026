@@ -257,7 +257,7 @@ def app():
     st.write("4. **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
 
     st.markdown("---")
-    with st.expander("📋 View Raw Simulation Data Table"):
+    with st.expander("View Raw Simulation Data Table"):
         st.dataframe(pd.DataFrame({
             "Segment": range(1, len(f_array) + 1),
             "Friction (f)": f_array,
