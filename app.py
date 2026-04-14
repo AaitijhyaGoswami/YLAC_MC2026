@@ -82,7 +82,7 @@ if page == "Home":
     st.markdown("---")
 
     # --- MOTIVATION PARAGRAPH ---
-    st.header("🧠 Why are we using Physics to study a street?")
+    st.header("Why are we using Physics to study a street?")
     st.markdown("""
     When we complain about bad footpaths, it is often dismissed as a minor inconvenience. However, for a 
     commuter, a broken drain or an encroachment is a physical barrier that demands extra energy and steals 
@@ -95,7 +95,7 @@ if page == "Home":
     """)
 
     # --- THE MATHEMATICAL FRAMEWORK ---
-    with st.expander("📖 View Technical Methodology and Mathematical Definitions"):
+    with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. The Effective Path Length: Measuring the 'Felt' Distance")
         st.markdown("""
         If a road is smooth, a 900m walk feels like 900m. But if the road is filled with obstacles, your body 
@@ -156,7 +156,7 @@ if page == "Home":
     st.markdown("---")
 
     # --- MODULE OVERVIEW (Numbered List) ---
-    st.header("🛠️ Audit Modules")
+    st.header("Audit Modules")
     st.markdown("Select a module from the sidebar to explore the individual data layers:")
 
     m_col1, m_col2 = st.columns(2)
