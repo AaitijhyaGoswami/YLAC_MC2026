@@ -52,7 +52,7 @@ def app():
     
     with col_f5:
         render_3d_model(
-            model_url="app/static/cad_viewer/yeshwantpur.gltf", 
+            model_url="app/cad_viewer/yeshwantpur.gltf", 
             label="Current: Systemic Failure (f=5)", 
             color="#F44336"
         )
@@ -62,7 +62,7 @@ def app():
 
     with col_f1:
         render_3d_model(
-            model_url="app/static/cad_viewer/fixed.gltf", 
+            model_url="app/cad_viewer/fixed.gltf", 
             label="Proposed: Gold Standard (f=1)", 
             color="#00D4FF"
         )
