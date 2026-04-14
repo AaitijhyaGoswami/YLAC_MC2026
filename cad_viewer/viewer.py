@@ -18,13 +18,13 @@ def app():
 
     with col_current:
         st.subheader("Current (f=5)")
-        st.image(f"{path}/f5_current.png", caption="Systemic Failure: Wall & Mesh Containment")
+        st.image(f"cad_viewer/f5_current.png", caption="Systemic Failure: Wall & Mesh Containment")
         with st.expander("Diagnostics"):
             st.error("Pedestrians piped into traffic due to 1.6m high barriers.")
 
     with col_fixed:
         st.subheader("Proposed (f=1)")
-        st.image(f"{path}/f1_design.png", caption="Gold Standard: 3m Reclaimed Path")
+        st.image(f"cad_viewer/f1_design.png", caption="Gold Standard: 3m Reclaimed Path")
         with st.expander("Remediation"):
             st.success("Unobstructed flow restored; vending integrated into utility zone.")
 
