@@ -68,7 +68,7 @@ def app():
             "3.0 m (Unorganized/Encroached)",
             "1 m High Wall",
             "Open/Broken Drains",
-            "10.0 m (Amorphous/Unmarked)",
+            "4.0 m central region for 3/4 wheelers and 3 m + 3 m side paths on both sides for 2 wheelers (Amorphous/Unmarked)",
             "2.2 m (Dirt/Obstacles)",
             "**16.0 m**"
         ],
