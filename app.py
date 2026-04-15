@@ -177,7 +177,7 @@ if page == "Home":
     with m_col2:
         st.markdown("#### 🏗️ 3. What-If: Lighthouse Prototype")
         st.write("1. **3D Engineering View:** A static 3D cross-section of a 20-30m segment redesigned to Tender S.U.R.E. standards.")
-        st.write("2. **Streets of Hope:** Visualizes a 3m wide clear path, flush drainage, and kerb ramps exported via glTF.")
+        st.write("2. **Streets of Hope:** Visualizes a 3m wide clear path, flush drainage, and kerb ramps, shown as different perspective shots of the CAD design.")
         st.write("3. **Blueprint Spec:** Provides a measurable visual for policymakers to understand exactly what a 'fix' looks like.")
 
         st.markdown("#### 💰 4. Economic Impact")
