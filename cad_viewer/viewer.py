@@ -16,6 +16,7 @@ def app():
     with col_current:
         st.subheader("Current: Systemic Failure ($f=5$)")
         # Path kept exactly as requested
+        st.image(f"cad_viewer/top_f=5.jpeg")
         st.image(f"cad_viewer/f=5.png", caption="Systemic Failure: Wall & Mesh Containment", use_container_width=True)
         
         with st.expander("Spatial Diagnostics (Audit Log)"):
@@ -25,6 +26,7 @@ def app():
     with col_fixed:
         st.subheader("Proposed: Gold Standard ($f=1$)")
         # Path kept exactly as requested
+        st.image(f"cad_viewer/top_f=1.jpeg")
         st.image(f"cad_viewer/f=1.png", caption="Gold Standard: 3m Reclaimed Path", use_container_width=True)
         
         with st.expander("Remediation Strategy (Redesign)"):
