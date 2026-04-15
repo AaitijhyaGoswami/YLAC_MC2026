@@ -7,7 +7,6 @@ def app():
     **Objective:** This module provides a high-fidelity visual and mathematical audit of the 16m Bazaar Street 
     cross-section. It contrasts the current 'Containment' model with the **S.U.R.E. Standard** hierarchy.
     """)
-    st.markdown("---")
 
     # --- 1. SPATIAL VISUALIZATION ---
     col_current, col_fixed = st.columns(2)
