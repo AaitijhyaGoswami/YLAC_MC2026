@@ -64,7 +64,7 @@ def app():
             "Opposite Utility/Buffer Zone",
             "**Total Cross-Sectional Width**"
         ],
-        "Current ($f=5$) Spec": [
+        "Current Spec": [
             "0.0 m (Colonized by vendors)",
             "3.0 m (Unorganized/Encroached)",
             "1 m High Wall",
@@ -73,7 +73,7 @@ def app():
             "2.2 m (Dirt/Obstacles)",
             "**16.0 m**"
         ],
-        "Proposed ($f=1$) Spec": [
+        "Proposed Spec": [
             "3.0 m (RCC Paver/Concrete)",
             "1.5 m (Granite/Cobble finish)",
             "150 mm High Mountable Kerb",
@@ -82,7 +82,7 @@ def app():
             "4.2 m (Multi-use: Park/Vending)",
             "**19.0 m**"
         ],
-        "Physics/Engineering Rationale": [
+        "Rationale": [
             "Restores free-flow velocity ($v_0$)",
             "Organizes informal trade geometries",
             "Eliminates psychological 'Pipe' friction",
