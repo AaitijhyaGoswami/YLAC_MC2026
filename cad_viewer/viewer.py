@@ -4,8 +4,9 @@ import os
 
 def app():
     st.markdown("""
-    **Objective:** This module provides a high-fidelity visual and mathematical audit of the 16m Bazaar Street 
-    cross-section. It contrasts the current 'Containment' model with the **S.U.R.E. Standard** hierarchy.
+    The **Lighthouse Prototype** serves as the definitive visual and mathematical audit of the urban cross-section, providing a high-fidelity contrast between systemic failure and gold-standard remediation. By benchmarking the current "Containment" model—characterized by restrictive barriers and spatial colonization—against a **[S.U.R.E. Standard](https://www.janausp.org/portfolio/tender-sure)** hierarchy, the module transforms abstract infrastructure complaints into a rigorous engineering diagnostic. It provides a tangible proof-of-concept for the physical removal of modal friction, demonstrating how the reconfiguration of a 16m street segment can restore the primary function of the corridor: the safe and efficient movement of people.
+
+Beyond its visual impact, the prototype specifies the granular redistribution of space required to achieve modal equilibrium, featuring a **continuous 3.0m "Clear Path"** and an integrated **1.5m Utility Zone**. This design ensures that the informal economy and utility requirements no longer sabotage pedestrian throughput, but instead coexist within a structured ecosystem. For advocacy and policy synthesis, this module provides the technical baseline needed for DULT or BBMP project approval, anchoring municipal investment in a data-driven justification that prioritizes recovered mobility and high Benefit-Cost Ratios over reactive maintenance.
     """)
 
     # --- 1. SPATIAL VISUALIZATION ---
