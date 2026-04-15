@@ -13,7 +13,7 @@ def app():
     col_current, col_fixed = st.columns(2)
 
     with col_current:
-        st.subheader("Current: Systemic Failure ($f=5$)")
+        st.subheader("Current Condition")
         # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=5.jpeg")
         st.image(f"cad_viewer/f=5.png", caption="Systemic Failure: Wall & Mesh Containment", use_container_width=True)
@@ -23,7 +23,7 @@ def app():
             st.error("**Colonization:** 3m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
 
     with col_fixed:
-        st.subheader("Proposed: Gold Standard ($f=1$)")
+        st.subheader("After Proposed Changes")
         # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=1.jpeg")
         st.image(f"cad_viewer/f=1.png", caption="Gold Standard: 3m Reclaimed Path", use_container_width=True)
