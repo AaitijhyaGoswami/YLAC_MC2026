@@ -34,30 +34,65 @@ def app():
     st.markdown("---")
 
     # --- 2. POLICY & ADVOCACY POINTERS ---
-    st.header("Proposal Functionality")
+    # --- 2. DETAILED BRIEFING FUNCTIONALITY ---
+    st.header("Prototype Functionality")
     
     st.markdown(r"""
-    1. **Macro-Economic Aggregation:** This design converts abstract 'pedestrian struggle' into a high-fidelity fiscal baseline. By scaling persona-weighted time loss against a hub volume of **100,000 daily commuters**, we anchor the argument in a **Crore-value productivity gain**.
-    
-    2. **Strategic Investment Prioritization:** The 'Lighthouse' approach identifies non-linear returns on spending. Remediation of this specific high-friction node (Bazaar St) recovers nearly **38% of the total potential economic benefit** of the entire corridor.
-    
-    3. **Equity-Weighted Productivity Valuation:** Using population share weights ($w_\phi$), the model ensures the fiscal drain on the city’s essential workers—delivery partners and daily laborers—is central to the design. Universal Design is presented as an economic imperative.
-    
-    4. **Standardized Proposal Synthesis:** Every metric is formatted for direct extraction into DULT or BBMP project approval templates. The **10:1 Benefit-Cost Ratio** provides the mathematical justification for immediate intervention.
+    1. **Geometric Contrast & Barrier Removal Analysis:** The visualizer provides a high-fidelity 'Before vs. After' delta between a containment-based geometry and an open-flow hierarchy. It highlights the systemic failure of the 1.6m high wall, which acts as a physical 'choke' on the corridor. The redesign demonstrates that removing this caging is the primary lever for eliminating the piping effect, where pedestrians are currently trapped in a narrow, high-pressure corridor with zero escape routes into the clear path.
+
+    2. **Unobstructed Capacity Restoration (3.0m Clear Path):** The prototype visualizes the restoration of a **continuous 3.0m 'Clear Path'**, which is the gold standard for high-density transit hubs like Yeshwantpur. This width is not arbitrary; it is mathematically optimized to ensure that even during peak hub volumes, the pedestrian density stays below the threshold of turbulence. This allows all personas (from delivery partners to the elderly) to maintain their natural free-walking speed ($v_0$) without the velocity decay caused by dodging obstacles.
+
+    3. **Economic Integration & Utility Zone Synergy:** A core feature of the Lighthouse Prototype is the **1.5m Curb-Side Utility Zone**. Rather than the current 'Colonization' model—where vendors occupy 100% of the footpath—the redesign integrates vending into a dedicated strip. This preserves the local informal economy while ensuring that vending geometries do not bleed into the pedestrian stream. This synergy recovers the **Effective Width ($W_{\text{eff}}$)** of the sidewalk, turning a contested space into a structured, dual-purpose ecosystem.
+
+    4. **DPR-Ready Scalability & Policy Synthesis:** Every spatial element presented here—from the flush drainage covers to the standardized kerb heights—is formatted for immediate extraction into DULT or BBMP project approval templates. By showcasing a 'Streets of Hope' baseline, the module provides policymakers with the necessary evidence to justify a **10:1 Benefit-Cost Ratio**, moving the conversation from anecdotal complaints to a data-driven capital expenditure (CAPEX) proposal.
     """)
 
     st.markdown("---")
 
     # --- 3. SPATIAL ALLOCATION TABLE ---
     st.header("Spatial Allocation Comparison (16m Section)")
+    st.write("Below are the granular component dimensions required to reconstruct the Bazaar Street section under S.U.R.E. guidelines.")
     
-    comparison_df = pd.DataFrame({
-        "Infrastructure Element": ["Pedestrian Clear Path", "Vending/Utility Zone", "Vehicle Carriageway", "Segregation Barrier"],
-        "Current ($f=5$)": ["0.0 m (None)", "3.0 m (Encroached)", "10.0 m (Piped)", "800mm Wall + 800mm Mesh"],
-        "Proposed ($f=1$)": ["3.0 m (Clear)", "1.5 m (Integrated)", "7.0 m (Standardized)", "None (Open Hierarchy)"]
-    })
-    st.table(comparison_df)
-
+    reconstruction_data = {
+        "Component Section": [
+            "Pedestrian Clear Path (Unobstructed)",
+            "Utility & Vending Zone (Buffer Strip)",
+            "Boundary/Segregation (Vertical)",
+            "Surface Drainage (Effective Surface)",
+            "Main Vehicle Carriageway",
+            "Opposite Utility/Buffer Zone",
+            "**Total Cross-Sectional Width**"
+        ],
+        "Current ($f=5$) Spec": [
+            "0.0 m (Colonized by vendors)",
+            "3.0 m (Unorganized/Encroached)",
+            "1 m High Wall",
+            "Open/Broken Drains",
+            "10.0 m (Amorphous/Unmarked)",
+            "2.2 m (Dirt/Obstacles)",
+            "**16.0 m**"
+        ],
+        "Proposed ($f=1$) Spec": [
+            "3.0 m (RCC Paver/Concrete)",
+            "1.5 m (Granite/Cobble finish)",
+            "150 mm High Mountable Kerb",
+            "Flush Covers (Integrated in Path)",
+            "10.0 m with Markings and Zebra Crossings (Standard 2-Lane Asphalt)",
+            "4.2 m (Multi-use: Park/Vending)",
+            "**19.0 m**"
+        ],
+        "Physics/Engineering Rationale": [
+            "Restores free-flow velocity ($v_0$)",
+            "Organizes informal trade geometries",
+            "Eliminates psychological 'Pipe' friction",
+            "Maximizes usable width ($W_{\text{eff}}$)",
+            "Standardizes vehicular throughput",
+            "Balances Modal Share Equity",
+            "**Equilibrium State**"
+        ]
+    }
+    
+    st.table(pd.DataFrame(reconstruction_data))
     # --- 4. MATHEMATICAL JUSTIFICATION ---
     with st.expander("View Mathematical Logic & Variable Definitions"):
         st.markdown("#### The Physics of Spatial Resistance")
