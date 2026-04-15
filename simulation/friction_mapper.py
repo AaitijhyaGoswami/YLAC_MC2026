@@ -224,7 +224,6 @@ def app():
     By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
     infrastructure repairs directly reduce the effort required for urban navigation.
     """)
-    st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
