@@ -18,8 +18,8 @@ def app():
         st.image(f"cad_viewer/f=5.png", caption="Systemic Failure: Wall & Mesh Containment", use_container_width=True)
         
         with st.expander("Spatial Diagnostics (Audit Log)"):
-            st.error("**The Piping Effect:** 1.6m high barriers (base wall + mesh) create a high-pressure friction corridor.")
-            st.error("**Colonization:** 3m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
+            st.error("**The Piping Effect:** 10 m high barriers (base wall + mesh) create a high-pressure friction corridor.")
+            st.error("**Colonization:** 3 m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
 
     with col_fixed:
         st.subheader("After Proposed Changes")
