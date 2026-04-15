@@ -155,8 +155,9 @@ def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int
 
 def app():
     st.markdown("""
-    This module identifies the economic cost of pedestrian friction along the 900m Yeshwantpur corridor. 
-    By converting weighted time loss into productivity figures, we quantify the hub's impact on Bengaluru's GDP.
+    The **Fiscal Impact Engine** serves as the definitive economic audit of the Yeshwantpur corridor, bridging the gap between urban friction and Bengaluru’s regional GDP. By aggregating persona-weighted Time Tax ($\Delta\tau(\phi)$) across a high-intensity hub volume of 100,000 daily commuters, this module converts individual transit resistance into a quantifiable Productivity Loss ($\mathcal{L}$). It demonstrates that infrastructural neglect is a direct fiscal drain, proving that the cumulative chronological delay imposed on the city's workforce represents a multi-crore annual deficit in total economic output.
+
+For municipal stakeholders and policy-makers, this module redefines urban infrastructure repair as a high-yield strategic investment rather than a reactive cost. By establishing a rigorous **Benefit-Cost Ratio (BCR)**, it provides the mathematical evidence needed to justify immediate capital expenditure (CAPEX) for corridor remediation. This data-driven approach positions the restoration of mobility not just as a social necessity, but as a critical lever for recovering lost economic value and enhancing the city’s overall competitiveness as a world-class transit-oriented metropolis.
     """)
 
     # --- TECHNICAL MATH SECTION ---
