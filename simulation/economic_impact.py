@@ -158,7 +158,6 @@ def app():
     This module identifies the economic cost of pedestrian friction along the 900m Yeshwantpur corridor. 
     By converting weighted time loss into productivity figures, we quantify the hub's impact on Bengaluru's GDP.
     """)
-    st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     # --- TECHNICAL MATH SECTION (Enhanced with all variable definitions) ---
