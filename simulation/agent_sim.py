@@ -157,7 +157,6 @@ def app():
     By applying a power-law friction-velocity model, we quantify the measurable seconds stolen from every trip 
     by non-compliant infrastructure versus a fully standardized route.
     """)
-    st.markdown("---")
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
