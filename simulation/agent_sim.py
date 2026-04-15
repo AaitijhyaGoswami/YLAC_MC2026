@@ -154,6 +154,7 @@ def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
 def app():
     st.markdown("""
     The Time Tax Simulator serves as the chronological heartbeat of the urban audit, translating static physical friction into the lived reality of systemic delay. By computing the Time Tax $\Delta\tau(\phi)$ for diverse commuter personas across the 900m Yeshwantpur corridor, this module moves beyond simple distance measurements to quantify the hidden chronological penalty imposed by design neglect. Using a rigorous **Power-Law Friction-Velocity model**, the simulator proves that infrastructure failure is not just an inconvenience but a kinetic drain that "steals" measurable seconds from every trip, effectively turning individual micro-struggles into a macro-economic data point.
+    
     For advocacy and policy-making, this module is essential in highlighting Mobility Equity by demonstrating that poor design disproportionately taxes the most vulnerable users. By modeling specific personas—ranging from high-velocity delivery partners to friction-sensitive elderly commuters—the simulator proves that the Time Tax is a regressive burden that falls hardest on those with the least mobility. This provides the empirical evidence needed for municipal authorities to reframe urban repair as a "time-recovery" mission, ensuring that infrastructure investment is prioritized based on recovered productivity and the fundamental right to a dignified, seamless commute.
     """)
 
