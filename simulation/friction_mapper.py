@@ -220,9 +220,9 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
 
 def app():
     st.markdown("""
-    This module identifies the physical resistance encountered by pedestrians along the 900m Yeshwantpur corridor. 
-    By quantifying geotagged obstacles as friction values, we measure the corridor quality and model how 
-    infrastructure repairs directly reduce the effort required for urban navigation.
+    The Friction Mapper module represents a paradigm shift in urban auditing, moving from subjective complaints to a rigorous, physics-based diagnostic of the 900m Yeshwantpur corridor. By meticulously geotagging and quantifying infrastructure failures—ranging from broken pavements and open drains to systemic encroachments—this module assigns a discrete "Friction Index" to the urban environment. It treats the pedestrian journey as a traversal through a resistive field, allowing for the precise modeling of the "Time Tax" and physical energy expenditure imposed on commuters by design neglect.
+
+    For municipal authorities and policymakers, this data transforms infrastructure maintenance from a reactive expense into a strategic investment. By simulating the impact of specific remediation efforts, the module demonstrates how targeted repairs directly reduce urban resistance, recover lost economic productivity, and ensure compliance with universal accessibility standards. This methodology provides a scalable blueprint for auditing high-intensity transit hubs across the city, ensuring that the right to a seamless, dignified commute is anchored in hard evidence and predictive engineering.
     """)
 
     # --- TECHNICAL MATH SECTION ---
