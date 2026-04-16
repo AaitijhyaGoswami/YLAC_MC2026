@@ -82,6 +82,7 @@ if page == "Home":
         st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost ratio exceeding 10:1.")
 
     st.markdown("---")
+    st.header("What We Saw")
 
     cola, colb, colc = st.columns(3)
 
@@ -100,10 +101,10 @@ if page == "Home":
       st.image("data/survey8.jpg", use_container_width=True)
       st.image("data/survey8.jpg", use_container_width=True)
 
-    
+    st.markdown("---")
 
     # --- MOTIVATION PARAGRAPH ---
-    st.header("Why are we using Physics to study a street?")
+    st.header("Why We Planned to Do")
     st.markdown("""
     When we complain about bad footpaths, it is often dismissed as a minor inconvenience. However, for a 
     commuter, a broken drain or an encroachment is a physical barrier that demands extra energy and steals 
