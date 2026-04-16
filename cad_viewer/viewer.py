@@ -9,6 +9,25 @@ def app():
 Beyond its visual impact, the prototype specifies the granular redistribution of space required to achieve modal equilibrium, featuring a **continuous 3.0m "Clear Path"** and an integrated **1.5m Utility Zone**. This design ensures that the informal economy and utility requirements no longer sabotage pedestrian throughput, but instead coexist within a structured ecosystem. For advocacy and policy synthesis, this module provides the technical baseline needed for DULT or BBMP project approval, anchoring municipal investment in a data-driven justification that prioritizes recovered mobility and high Benefit-Cost Ratios over reactive maintenance.
     """)
 
+   st.header("What It Looks Like Right Now")
+
+# 1. Create three equal-width columns
+   col1, col2, col3 = st.columns(3)
+
+# 2. Place an image in each column
+# Use use_container_width=True to ensure they scale to the column size
+   with col1:
+     st.image("bazaar1.jpg", use_container_width=True)
+
+   with col2:
+     st.image("bazaar2.jpg", use_container_width=True)
+
+   with col3:
+     st.image("bazaar3.jpg", use_container_width=True)
+
+# Alternatively, use the built-in caption function (left-aligned by default)
+# st.caption("This is a common caption for the images above.")
+
     # --- 1. SPATIAL VISUALIZATION ---
     col_current, col_fixed = st.columns(2)
 
@@ -51,7 +70,7 @@ Beyond its visual impact, the prototype specifies the granular redistribution of
     st.markdown("---")
 
     # --- 3. SPATIAL ALLOCATION TABLE ---
-    st.header("Spatial Allocation Comparison (16m Section)")
+    st.header("Spatial Allocation Comparison")
     st.write("Below are the granular component dimensions required to reconstruct the Bazaar Street section under S.U.R.E. guidelines.")
     
     reconstruction_data = {
@@ -71,16 +90,16 @@ Beyond its visual impact, the prototype specifies the granular redistribution of
             "Open/Broken Drains",
             "4.0 m central region for 3/4 wheelers and 3 m + 3 m side paths on both sides for 2 wheelers (Amorphous/Unmarked)",
             "2.2 m (Dirt/Obstacles)",
-            "**16.0 m**"
+            "16.0 m"
         ],
         "Proposed Spec": [
             "3.0 m (RCC Paver/Concrete)",
-            "1.5 m (Granite/Cobble finish)",
+            "2.5 m (Granite/Cobble finish)",
             "150 mm High Mountable Kerb",
             "Flush Covers (Integrated in Path)",
             "10.0 m with Markings and Zebra Crossings (Standard 2-Lane Asphalt)",
             "4.2 m (Multi-use: Park/Vending)",
-            "**19.0 m**"
+            "21.0 m"
         ],
         "Rationale": [
             "Restores free-flow velocity ($v_0$)",
