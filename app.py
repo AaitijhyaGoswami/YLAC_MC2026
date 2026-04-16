@@ -92,7 +92,6 @@ if page == "Home":
       st.image("data/survey3.jpg", use_container_width=True)
 
     with colb:
-      st.image("data/survey4.jpg", use_container_width=True)
       st.image("data/survey5.jpg", use_container_width=True)
       st.image("data/survey6.jpg", use_container_width=True)
 
