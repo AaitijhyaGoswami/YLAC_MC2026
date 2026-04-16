@@ -83,44 +83,25 @@ if page == "Home":
 
     st.markdown("---")
 
-    st.markdown("""
-    <style>
-    /* Targets images within the main block to have a uniform height */
-    [data-testid="stHorizontalBlock"] img {
-        height: 250px; /* Adjust this height as needed */
-        object-fit: cover;
-        width: 100%;
-        border-radius: 8px;
-    }
-    </style>
-    """, unsafe_html=True)
-
-# 2. Create three columns
-    col1, col2, col3 = st.columns(3)
+    cola, colb, colc = st.columns(3)
 
 # 3. Add images to columns
-    with col1:
+    with cola:
       st.image("data/survey1.jpg", use_container_width=True)
       st.image("data/survey2.jpg", use_container_width=True)
       st.image("data/survey3.jpg", use_container_width=True)
 
-    with col2:
+    with colb:
       st.image("data/survey4.jpg", use_container_width=True)
       st.image("data/survey5.jpg", use_container_width=True)
       st.image("data/survey6.jpg", use_container_width=True)
 
-    with col3:
+    with colc:
       st.image("data/survey7.jpg", use_container_width=True)
       st.image("data/survey8.jpg", use_container_width=True)
       st.image("data/survey8.jpg", use_container_width=True)
 
-# 4. Add a common, centered caption for the entire row
-    st.markdown(
-    "<div style='text-align: center; color: #888; margin-top: 10px; font-style: italic;'>"
-    "Common Caption: Comparative visual audit of the 16m cross-section showing spatial redistribution."
-    "</div>", 
-    unsafe_html=True
-    )
+    
 
     # --- MOTIVATION PARAGRAPH ---
     st.header("Why are we using Physics to study a street?")
