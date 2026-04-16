@@ -12,17 +12,17 @@ Beyond its visual impact, the prototype specifies the granular redistribution of
    st.header("What It Looks Like Right Now")
 
 # 1. Create three equal-width columns
-   col1, col2, col3 = st.columns(3)
+   colx, coly, colz = st.columns(3)
 
 # 2. Place an image in each column
 # Use use_container_width=True to ensure they scale to the column size
-   with col1:
+   with colx:
      st.image("bazaar1.jpg", use_container_width=True)
 
-   with col2:
+   with coly:
      st.image("bazaar2.jpg", use_container_width=True)
 
-   with col3:
+   with colz:
      st.image("bazaar3.jpg", use_container_width=True)
 
 # Alternatively, use the built-in caption function (left-aligned by default)
