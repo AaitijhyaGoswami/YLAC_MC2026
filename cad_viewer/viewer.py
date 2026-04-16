@@ -18,7 +18,7 @@ def app():
     with coly:
         st.image("bazaar2.jpg", use_container_width=True)
 
-    with coly:
+    with colz:
         st.image("bazaar3.jpg", use_container_width=True)
 
     # --- 1. SPATIAL VISUALIZATION ---
