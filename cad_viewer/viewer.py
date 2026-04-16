@@ -8,8 +8,6 @@ def app():
 
 Beyond its visual impact, the prototype specifies the granular redistribution of space required to achieve modal equilibrium, featuring a **continuous 3.0m "Clear Path"** and an integrated **1.5m Utility Zone**. This design ensures that the informal economy and utility requirements no longer sabotage pedestrian throughput, but instead coexist within a structured ecosystem. For advocacy and policy synthesis, this module provides the technical baseline needed for DULT or BBMP project approval, anchoring municipal investment in a data-driven justification that prioritizes recovered mobility and high Benefit-Cost Ratios over reactive maintenance.
     """)
-
-   st.header("What It Looks Like Right Now")
     
 
     # --- 1. SPATIAL VISUALIZATION ---
