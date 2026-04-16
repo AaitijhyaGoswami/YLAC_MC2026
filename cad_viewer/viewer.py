@@ -10,23 +10,7 @@ Beyond its visual impact, the prototype specifies the granular redistribution of
     """)
 
    st.header("What It Looks Like Right Now")
-
-# 1. Create three equal-width columns
-    colx, coly, colz = st.columns(3)
-
-# 2. Place an image in each column
-# Use use_container_width=True to ensure they scale to the column size
-    with colx:
-        st.image("bazaar1.jpg", use_container_width=True)
-
-    with coly:
-        st.image("bazaar2.jpg", use_container_width=True)
-
-    with colz:
-        st.image("bazaar3.jpg", use_container_width=True)
-
-# Alternatively, use the built-in caption function (left-aligned by default)
-# st.caption("This is a common caption for the images above.")
+    
 
     # --- 1. SPATIAL VISUALIZATION ---
     col_current, col_fixed = st.columns(2)
