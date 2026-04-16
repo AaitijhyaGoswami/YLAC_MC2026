@@ -17,13 +17,13 @@ Beyond its visual impact, the prototype specifies the granular redistribution of
 # 2. Place an image in each column
 # Use use_container_width=True to ensure they scale to the column size
    with colx:
-     st.image("bazaar1.jpg", use_container_width=True)
+       st.image("bazaar1.jpg", use_container_width=True)
 
    with coly:
-     st.image("bazaar2.jpg", use_container_width=True)
+       st.image("bazaar2.jpg", use_container_width=True)
 
    with colz:
-     st.image("bazaar3.jpg", use_container_width=True)
+       st.image("bazaar3.jpg", use_container_width=True)
 
 # Alternatively, use the built-in caption function (left-aligned by default)
 # st.caption("This is a common caption for the images above.")
