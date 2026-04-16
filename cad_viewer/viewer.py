@@ -13,13 +13,13 @@ def app():
     colx, coly, colz = st.columns(3)
 
     with colx:
-        st.image("bazaar1.jpg", use_container_width=True)
+        st.image(f"bazaar1.jpg", use_container_width=True)
 
     with coly:
-        st.image("bazaar2.jpg", use_container_width=True)
+        st.image(f"bazaar2.jpg", use_container_width=True)
 
     with colz:
-        st.image("bazaar3.jpg", use_container_width=True)
+        st.image(f"bazaar3.jpg", use_container_width=True)
 
     # --- 1. SPATIAL VISUALIZATION ---
     col_current, col_fixed = st.columns(2)
