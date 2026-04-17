@@ -99,7 +99,7 @@ if page == "Home":
     with colc:
       st.image("data/survey7.jpg", use_container_width=True)
       st.image("data/survey8.jpg", use_container_width=True)
-      st.image("data/survey8.jpg", use_container_width=True)
+      st.image("data/survey9.jpg", use_container_width=True)
 
     st.markdown("---")
 
