@@ -15,7 +15,7 @@ def app():
 
     with colx:
         st.image(f"cad_viewer/bazaar1.jpg", use_container_width=True)
-        st.caption("In all the images taken throughout the 600 m Bazaar Street stretch, it is evident that there has been a system enchroachment of the footways originally meant for pedestrian commute, over several years. The authorities have set up wall + mesh barricades, limiting free space for vehicular travel, as an easy fix alternative to removing the encroachment")
+        st.caption("In all the images taken along the 600 m stretch of Bazaar Street, it is evident that there has been a system-wide encroachment of the footways originally meant for pedestrian commutes over several years. The authorities have set up wall-and-mesh barricades, limiting vehicular travel space, as an easy fix alternative to removing the encroachment. Several of the vendors who have set up stalls on the footpath for many years were unaware that they were encroaching on areas meant for pedestrian traffic.")
 
     with coly:
         st.image(f"cad_viewer/bazaar2.jpg", use_container_width=True)
