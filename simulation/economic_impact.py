@@ -267,7 +267,7 @@ For municipal stakeholders and policy-makers, this module redefines urban infras
         min_value=0, max_value=len(df), value=3, step=1,
         help=(
             "Nodes ranked highest-f first. Each fix sets that node to f=1. "
-            "BCR is only shown when n_fixes > 0."
+            "BCR is only shown when $n_fixes > 0$."
         )
     )
 
