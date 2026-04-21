@@ -65,8 +65,8 @@ if page == "Home":
     
     The policies that define the reference standards for our evaluations are:
     
-    *[The Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
-    +[Tender S.U.R.E. (Sustainable Urban Road Engineering)](https://www.janausp.org/portfolio/tender-sure)
+    * [The Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
+    * [Tender S.U.R.E. (Sustainable Urban Road Engineering)](https://www.janausp.org/portfolio/tender-sure)
     """)
     
     st.markdown("---")
