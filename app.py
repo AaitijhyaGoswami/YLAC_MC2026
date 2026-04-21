@@ -67,6 +67,11 @@ if page == "Home":
     
     * [The Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
     * [Tender S.U.R.E. (Sustainable Urban Road Engineering)](https://www.janausp.org/portfolio/tender-sure)
+    * [IRC:103-2022 (Indian Roads Congress)](https://www.anjleeagarwal.co.in/books/IRC-103-2022.pdf)
+    * [Harmonised Guidelines and Space Standards (2021)](https://niua.in/intranet/sites/default/files/2262.pdf)
+    * [DULT Urban Street Design Guidelines](https://dult.karnataka.gov.in/89/policies-and-guidelines/en)
+
+    This audit anchors academic rigor in the lived experience of the street, providing an engineering blueprint for Modal Equilibrium. It turns the “Streets of Hope” vision from a legislative dream into a data-based demand for swift remediation.
     """)
     
     st.markdown("---")
