@@ -57,11 +57,14 @@ st.sidebar.info(
 if page == "Home":
     st.title("🚶 Escape the Knot: The Yeshwantpur Nexus")
     st.markdown("### A Physics-Based Audit of the Yeshwantpur-Mathikere Region")
+
+    st.header("Why Do This?")
     
     st.markdown("""
-    This project quantifies the **infrastructural tax** imposed on pedestrians at the Yeshwantpur intermodal hub. 
-    By treating the urban environment as a physical system, we measure the 'Time Tax' stolen from every commuter by 
-    systemic design failures and physical barriers.
+    This project comes out of the need to connect the high-level urban policy with the lived experience of the commuters who traverse the Yeshwantpur-Mathikere nexus every day. While policy frameworks provide a strong theoretical base for urban reform, they are frequently too abstract and too distant from the very citizens they are meant to serve. This module is a stakeholder-first translation tool. It uses a physics-based diagnostic. It goes beyond the heavy legalese of policy documents to show exactly how a reclaimed clear recovers lost minutes, restores human dignity, and pumps economic value back into the lives of delivery partners, students and elderly residents alike.
+    
+    The policies that define the reference standards for our evaluations are:
+    *[The Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
     """)
     
     st.markdown("---")
