@@ -55,7 +55,7 @@ st.sidebar.info(
 
 # MAIN ROUTING
 if page == "Home":
-    st.title("🚶 Escape the Knot: The Yeshwantpur Nexus")
+    st.title("🚶 Escape the Knot")
     st.markdown("### A Physics-Based Audit of the Yeshwantpur-Mathikere Region")
 
     st.header("Why Do This?")
@@ -77,7 +77,7 @@ if page == "Home":
     st.markdown("---")
 
     # --- UPFRONT: SCALE, IMPACT, SOLUTION ---
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         st.subheader("📊 The Scale")
@@ -86,8 +86,6 @@ if page == "Home":
     with col2:
         st.subheader("📉 The Impact")
         st.write("Poor infrastructure acts as a resistive force field, making the corridor 4.65x more difficult to navigate than a compliant path. This results in 170 million minutes lost annually, equivalent to a ₹14.2 Crore productivity loss.")
-
-    with col3:
         st.subheader("💡 The Solution")
         st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost ratio exceeding 10:1.")
 
