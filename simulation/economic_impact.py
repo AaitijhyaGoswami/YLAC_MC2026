@@ -261,7 +261,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
 
     # --- SIDEBAR CONTROLS (Restored to Exact Original) ---
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### Rs Economic Impact Controls")
+    st.sidebar.markdown("### Economic Impact Controls")
     n_fixes = st.sidebar.slider(
         "Hotspots fixed (top-N by f-value):",
         min_value=0, max_value=len(df), value=3, step=1,
