@@ -282,6 +282,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         "Bazaar Street (600m) modelled as:",
         options=list(sure_standards.keys()),
         index=0,
+        help="Simulates gradual remediation of the continuous failure zone"
     )
     bazaar_f = sure_standards[bazaar_label]
 
