@@ -196,7 +196,7 @@ This module is important for advocacy and policy-making on the topic of Mobility
 
     # --- SIDEBAR CONTROLS ---
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### ⏱️ Time Tax Simulator Controls")
+    st.sidebar.markdown("### Time Tax Simulator Controls")
     
     selected_key = st.sidebar.selectbox("Commuter persona:", options=list(personas.keys()), 
                                         format_func=lambda k: personas[k]["label"])
