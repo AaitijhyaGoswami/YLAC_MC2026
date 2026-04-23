@@ -171,7 +171,7 @@ if page == "Home":
         calculate the total economic value of this wasted time by looking at the average daily wage in 
         Bengaluru. This proves that a 'walking problem' is actually a 'money problem' for the city.
         """)
-        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot WAGE")
+        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot \text{WAGE}")
         st.latex(r"""
             \begin{aligned}
             \mathcal{T}_{\text{year}} &: \text{Total annual economic productivity loss for the city in INR} \\
@@ -187,7 +187,7 @@ if page == "Home":
 
     # --- MODULE OVERVIEW (Numbered List) ---
     st.header("Audit Modules")
-    st.markdown("Select a module from the sidebar to explore the individual data layers:")
+    st.markdown("The app contains the following modules for users to visualise the current state of the route and simulate how it would approximately look after fixes:")
 
     m_col1, m_col2 = st.columns(2)
 
