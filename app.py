@@ -23,6 +23,12 @@ try:
 except Exception as e:
     st.sidebar.error(f"agent_sim failed: {e}")
 
+try:
+    from simulation import economic_impact
+    modules["Economic Impact"] = economic_impact
+except ImportError:
+    pass
+
 # Inside your main app.py
 try:
     # We now point Python to look inside the static folder
@@ -30,13 +36,6 @@ try:
     modules["What-If: Lighthouse Prototype"] = viewer
 except ImportError:
     pass
-
-try:
-    from simulation import economic_impact
-    modules["Economic Impact"] = economic_impact
-except ImportError:
-    pass
-
 
 # SIDEBAR NAVIGATION
 st.sidebar.title("Advocacy Modules")
