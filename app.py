@@ -171,7 +171,7 @@ if page == "Home":
         calculate the total economic value of this wasted time by looking at the average daily wage in 
         Bengaluru. This proves that a 'walking problem' is actually a 'money problem' for the city.
         """)
-        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi}")
+        st.latex(r"\mathcal{T}_{\text{year}} = M \cdot W \cdot \frac{\sum w_\phi \Delta\tau(\phi)}{\sum w_\phi} \cdot WAGE")
         st.latex(r"""
             \begin{aligned}
             \mathcal{T}_{\text{year}} &: \text{Total annual economic productivity loss for the city in INR} \\
@@ -198,20 +198,20 @@ if page == "Home":
         st.write("* **Evidence Export:** Links technical friction indices to photographic logs and timestamps from the audit.")
 
         st.markdown("#### ⏳ 2. Time Tax Simulator")
-        st.write("1. **Human Journeys:** Runs persona-specific simulations to show how individuals move through the audit zone.")
-        st.write("2. **Equity Gap:** Quantifies the disproportionate burden placed on the elderly and disabled by broken ground.")
-        st.write("3. **Danger Tracking:** Calculates the risk when pedestrians are forced into the road to avoid obstacles.")
+        st.write("* **Human Journeys:** Runs persona-specific simulations to show how individuals move through the audit zone.")
+        st.write("* **Equity Gap:** Quantifies the disproportionate burden placed on the elderly and disabled by broken ground.")
+        st.write("* **Danger Tracking:** Calculates the risk when pedestrians are forced into the road to avoid obstacles.")
 
     with m_col2:
         st.markdown("#### 🏗️ 3. What-If: Lighthouse Prototype")
-        st.write("1. **3D Engineering View:** A static 3D cross-section of a 20-30m segment redesigned to Tender S.U.R.E. standards.")
-        st.write("2. **Streets of Hope:** Visualizes a 3m wide clear path, flush drainage, and kerb ramps, shown as different perspective shots of the CAD design.")
-        st.write("3. **Blueprint Spec:** Provides a measurable visual for policymakers to understand exactly what a 'fix' looks like.")
+        st.write("* **3D Engineering View:** A static 3D cross-section of a 20-30m segment redesigned to Tender S.U.R.E. standards.")
+        st.write("* **Streets of Hope:** Visualizes a 3m wide clear path, flush drainage, and kerb ramps, shown as different perspective shots of the CAD design.")
+        st.write("* **Blueprint Spec:** Provides a measurable visual for policymakers to understand exactly what a 'fix' looks like.")
 
         st.markdown("#### 💰 4. Economic Impact")
-        st.write("1. **Monetary Valuation:** Converts lost seconds into Crore-value figures based on benchmarked wage rates.")
-        st.write("2. **Spending Strategy:** Demonstrates the 10:1 return on investment for targeted municipal repairs.")
-        st.write("3. **Policy Ready:** Synthesizes data into the specific formats required for government budget approval.")
+        st.write("* **Monetary Valuation:** Converts lost seconds into Crore-value figures based on benchmarked wage rates.")
+        st.write("* **Spending Strategy:** Demonstrates the 10:1 return on investment for targeted municipal repairs.")
+        st.write("* **Policy Ready:** Synthesizes data into the specific formats required for government budget approval.")
 
     st.info("👈 **Please select a module from the sidebar to begin. Every second counts!**")
 
