@@ -193,9 +193,9 @@ if page == "Home":
 
     with m_col1:
         st.markdown("#### 📍 1. Friction Mapper")
-        st.write("1. **Geotagged Database:** An interactive map of 24 specific infrastructure failures with precise coordinates.")
-        st.write("2. **Zonal Analysis:** Differentiates the 600m Bazaar Street failure zone from the Constitution Circle stretch.")
-        st.write("3. **Evidence Export:** Links technical friction indices to photographic logs and timestamps from the audit.")
+        st.write("* **Geotagged Database:** An interactive map of 24 specific infrastructure failures with precise coordinates.")
+        st.write("* **Zonal Analysis:** Differentiates the 600m Bazaar Street failure zone from the Constitution Circle stretch.")
+        st.write("* **Evidence Export:** Links technical friction indices to photographic logs and timestamps from the audit.")
 
         st.markdown("#### ⏳ 2. Time Tax Simulator")
         st.write("1. **Human Journeys:** Runs persona-specific simulations to show how individuals move through the audit zone.")
@@ -213,12 +213,10 @@ if page == "Home":
         st.write("2. **Spending Strategy:** Demonstrates the 10:1 return on investment for targeted municipal repairs.")
         st.write("3. **Policy Ready:** Synthesizes data into the specific formats required for government budget approval.")
 
-    st.markdown("---")
     st.info("👈 **Please select a module from the sidebar to begin. Every second counts!**")
 
     st.caption(
-        "Developed for [Bengawalk](https://bengawalk.com) · YLAC Mobility Champions 2026 · "
-        "Audit Dates: March 7–8, 2026"
+        "Developed for [Bengawalk](https://bengawalk.com) · YLAC Mobility Champions 2026"
     )
 
 else:
