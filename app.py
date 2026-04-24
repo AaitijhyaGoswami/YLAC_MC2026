@@ -64,7 +64,7 @@ if page == "Home":
     
     The policies that define the reference standards for our evaluations are:
     
-    * [The Active Mobility Bill](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
+    * [Active Mobility Bill (2022)](https://dult.karnataka.gov.in/121/active-mobility-bill/en)
     * [Tender S.U.R.E. (Sustainable Urban Road Engineering)](https://www.janausp.org/portfolio/tender-sure)
     * [IRC:103-2022 (Indian Roads Congress)](https://www.anjleeagarwal.co.in/books/IRC-103-2022.pdf)
     * [Harmonised Guidelines and Space Standards (2021)](https://niua.in/intranet/sites/default/files/2262.pdf)
@@ -80,15 +80,15 @@ if page == "Home":
     
     with col1:
         st.subheader("Why Yeshwantpur of All Places?")
-        st.write("Established back in 1881 by the Maharaja of Mysuru, the Yeshwantpur Railway Station and the adjacent Bazaar Street are one of the oldest regions in the city, which developed on an infrastructure where there was no consideration for accessible pedestrian commute. Unplanned systemic enchroachments over several decades worsened the situation further.")
+        st.write("Established in 1881 by the Maharaja of Mysuru, the Yeshwantpur Railway Station and the adjacent Bazaar Street are among the oldest areas in the city, which developed on an infrastructure that lacked consideration for accessible pedestrian travel and equitable distribution of vehicular traffic. Unplanned, systemic encroachments over several decades, along with negligence by local self-governing authorities, further worsened the situation.")
         st.subheader("📊 The Scale")
-        st.write("The audit covered a high-intensity 900 m corridor serving over 100,000 daily commuters. Our data indicates that **90.3%** of the pedestrian route fails to meet national Active Mobility standards, with about **96%** of it being inaccessible to persons with disabilities.")
+        st.write("The audit covered a high-intensity 900 m corridor serving over 100,000 daily commuters. Our data indicates that **90.3%** of the pedestrian route fails to meet national Active Mobility standards, with about **96%** of it being inaccessible to persons with disabilities. This systemic failure is no longer just a minor inconvenience; it is the denial of access to a section of the population at one of the busiest railway stations in South India.")
 
     with col2:
         st.subheader("📉 The Impact")
-        st.write("Poor infrastructure acts as a resistive force field, making the corridor 4.65x more difficult to navigate than a compliant path, i.e. the 900 m pedestrian route feels like a 4.5 km commute due to the obstacles. This results in 170 million minutes lost annually, equivalent to a ₹14.2 Crore productivity loss just for physically fit individuals.")
+        st.write("Poor infrastructure acts as a resistive force field, making the corridor 4.65x more difficult to navigate than a compliant path, i.e. the 900 m pedestrian route feels like a 4.5 km commute due to the obstacles. This results in 170 million minutes lost annually, equivalent to a productivity loss of ₹14.2 Crore for physically fit individuals alone.")
         st.subheader("💡 The Solution")
-        st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost Ratio (BCR) exceeding 10:1. The only piece missing is the initiative and response of the local authorities to the public grievances, as corroborated by stakeholder interviews")
+        st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost Ratio (BCR) exceeding 10:1. The only piece missing is the initiative and response of the local authorities to the public grievances, as corroborated by stakeholder interviews.")
 
     st.markdown("---")
     st.header("What We Saw")
@@ -98,6 +98,7 @@ if page == "Home":
 # 3. Add images to columns
     with cola:
       st.image("data/survey1.jpg", use_container_width=True)
+      st.caption("A carpentry shop encroaching on the area meant for pedestrian commute. The obstacle may make it difficult for individuals in wheelchairs or visually impaired individuals to commute.")
       st.image("data/survey2.jpg", use_container_width=True)
       st.image("data/survey3.jpg", use_container_width=True)
 
