@@ -80,7 +80,7 @@ if page == "Home":
     
     with col1:
         st.subheader("Why Yeshwantpur of All Places?")
-        st.write("Established in 1881 by the Maharaja of Mysuru, the Yeshwantpur Railway Station and the adjacent Bazaar Street are among the oldest areas in the city, which developed on an infrastructure that lacked consideration for accessible pedestrian travel and equitable distribution of vehicular traffic. Unplanned, systemic encroachments over several decades, along with negligence by local self-governing authorities, further worsened the situation.")
+        st.write("Established in 1881 by the Maharaja of Mysuru, the Yeshwantpur Railway Station and the adjacent Bazaar Street are among the oldest areas in the city, which developed on an infrastructure that lacked consideration for accessible pedestrian travel and equitable distribution of vehicular traffic. Unplanned, systemic encroachments over several decades further worsened the situation.")
         st.subheader("📊 The Scale")
         st.write("The audit covered a high-intensity 900 m corridor serving over 100,000 daily commuters. Our data indicates that **90.3%** of the pedestrian route fails to meet national Active Mobility standards, with about **96%** of it being inaccessible to persons with disabilities. This systemic failure is no longer just a minor inconvenience; it is the denial of access to a section of the population at one of the busiest railway stations in South India.")
 
