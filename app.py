@@ -128,7 +128,7 @@ if page == "Home":
 
     # --- THE MATHEMATICAL FRAMEWORK ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("#### 1. The Effective Path Length: Measuring the 'Felt' Distance")
+        st.markdown("#### The Effective Path Length: Measuring the 'Felt' Distance")
         st.markdown("""
         If a road is smooth, a 900m walk feels like 900m. But if the road is filled with obstacles, your body 
         spends so much energy navigating them that the walk 'feels' much longer. We call this the **Effective 
@@ -149,7 +149,7 @@ if page == "Home":
             \end{aligned}
         """)
 
-        st.markdown("#### 2. Power-Law Velocity and the Time Tax")
+        st.markdown("#### Power-Law Velocity and the Time Tax")
         st.markdown("""
         Bad roads don't just slow you down; they penalize you. We use a 'Power-Law' to show that as the road 
         gets worse, your speed drops exponentially. The **Time Tax** is the total amount of life-minutes the 
@@ -167,7 +167,7 @@ if page == "Home":
             \end{aligned}
         """)
 
-        st.markdown("#### 3. Macro-Economic Aggregation")
+        st.markdown("#### Macro-Economic Aggregation")
         st.markdown("""
         When 100,000 people lose a few minutes every day, those minutes add up to years of lost life. We 
         calculate the total economic value of this wasted time by looking at the average daily wage in 
@@ -180,8 +180,9 @@ if page == "Home":
             M &: \text{The total number of people who walk this path every day (100,000)} \\
             W &: \text{Standardized working days per year (250 days)} \\
             w_\phi &: \text{The percentage weight of each persona in the total pedestrian population} \\
-            \Delta\tau(\phi) &: \text{The calculated Time Tax for that specific group of people} \\
-            \sum w_\phi &: \text{The sum of all population weights (ensuring the average is balanced)}
+            \Delta\tau(\phi) &: \text{The calculated Time Tax for that specific group of people (in mins)} \\
+            \sum w_\phi &: \text{The sum of all population weights (ensuring the average is balanced)} \\
+            \text{WAGE} &: \text{Economic value of time (RBI Informal rate } \approx \text{ ₹0.83/min)}
             \end{aligned}
         """)
 
