@@ -20,8 +20,8 @@ except ImportError:
 try:
     from simulation import agent_sim
     modules["Time Tax Simulator"] = agent_sim
-except Exception as e:
-    st.sidebar.error(f"agent_sim failed: {e}")
+except ImportError:
+    pass
 
 try:
     from simulation import economic_impact
@@ -79,14 +79,16 @@ if page == "Home":
     col1, col2 = st.columns(2)
     
     with col1:
+        st.subheader("Why Yeshwantpur of All Places?")
+        st.write("Established back in 1881 by the Maharaja of Mysuru, the Yeshwantpur Railway Station and the adjacent Bazaar Street are one of the oldest regions in the city, which developed on an infrastructure where there was no consideration for accessible pedestrian commute. Unplanned systemic enchroachments over several decades worsened the situation further.")
         st.subheader("📊 The Scale")
-        st.write("The audit covered a high-intensity 900m corridor serving over 100,000 daily commuters. Our data indicates that 90.3% of the route fails to meet national Active Mobility standards, creating a systemic bottleneck at a major transit interchange.")
+        st.write("The audit covered a high-intensity 900 m corridor serving over 100,000 daily commuters. Our data indicates that **90.3%** of the pedestrian route fails to meet national Active Mobility standards, with about **96%** of it being inaccessible to persons with disabilities.")
 
     with col2:
         st.subheader("📉 The Impact")
-        st.write("Poor infrastructure acts as a resistive force field, making the corridor 4.65x more difficult to navigate than a compliant path. This results in 170 million minutes lost annually, equivalent to a ₹14.2 Crore productivity loss.")
+        st.write("Poor infrastructure acts as a resistive force field, making the corridor 4.65x more difficult to navigate than a compliant path, i.e. the 900 m pedestrian route feels like a 4.5 km commute due to the obstacles. This results in 170 million minutes lost annually, equivalent to a ₹14.2 Crore productivity loss just for physically fit individuals.")
         st.subheader("💡 The Solution")
-        st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost ratio exceeding 10:1.")
+        st.write("The 'Lighthouse' proposal identifies the top 3 high-friction hotspots. Remediating these specific nodes via the S.U.R.E. prototype recovers 38% of the total lost time, delivering a Benefit-to-Cost Ratio (BCR) exceeding 10:1. The only piece missing is the initiative and response of the local authorities to the public grievances, as corroborated by stakeholder interviews")
 
     st.markdown("---")
     st.header("What We Saw")
@@ -191,23 +193,23 @@ if page == "Home":
     m_col1, m_col2 = st.columns(2)
 
     with m_col1:
-        st.markdown("#### 📍 1. Friction Mapper")
+        st.markdown("#### 📍 Friction Mapper")
         st.write("* **Geotagged Database:** An interactive map of 24 specific infrastructure failures with precise coordinates.")
         st.write("* **Zonal Analysis:** Differentiates the 600m Bazaar Street failure zone from the Constitution Circle stretch.")
         st.write("* **Evidence Export:** Links technical friction indices to photographic logs and timestamps from the audit.")
 
-        st.markdown("#### ⏳ 2. Time Tax Simulator")
+        st.markdown("#### ⏳ Time Tax Simulator")
         st.write("* **Human Journeys:** Runs persona-specific simulations to show how individuals move through the audit zone.")
         st.write("* **Equity Gap:** Quantifies the disproportionate burden placed on the elderly and disabled by broken ground.")
         st.write("* **Danger Tracking:** Calculates the risk when pedestrians are forced into the road to avoid obstacles.")
 
     with m_col2:
-        st.markdown("#### 🏗️ 3. What-If: Lighthouse Prototype")
+        st.markdown("#### 🏗️ What-If: Lighthouse Prototype")
         st.write("* **3D Engineering View:** A static 3D cross-section of a 20-30m segment redesigned to Tender S.U.R.E. standards.")
         st.write("* **Streets of Hope:** Visualizes a 3m wide clear path, flush drainage, and kerb ramps, shown as different perspective shots of the CAD design.")
         st.write("* **Blueprint Spec:** Provides a measurable visual for policymakers to understand exactly what a 'fix' looks like.")
 
-        st.markdown("#### 💰 4. Economic Impact")
+        st.markdown("#### 💰 Economic Impact")
         st.write("* **Monetary Valuation:** Converts lost seconds into Crore-value figures based on benchmarked wage rates.")
         st.write("* **Spending Strategy:** Demonstrates the 10:1 return on investment for targeted municipal repairs.")
         st.write("* **Policy Ready:** Synthesizes data into the specific formats required for government budget approval.")
