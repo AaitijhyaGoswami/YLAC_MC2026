@@ -124,7 +124,7 @@ def app():
         st.markdown("#### The Physics of Spatial Resistance")
         st.latex(r"W_{\text{eff}} = W_{\text{total}} - W_{\text{obstacles}} - W_{\text{buffer}}")
         st.write("""
-            The half-wall and mesh cage impose a psychological 'Buffer Zone' ($W_{\text{buffer}}$) that further reduces 
+            The half-wall and mesh cage impose a psychological 'Buffer Zone' that further reduces 
             effective width. Pedestrians avoid walking close to the jagged mesh, effectively narrowing the 3m lane 
             even further. Remediation restores this width and eliminates the resistive force.
         """)
