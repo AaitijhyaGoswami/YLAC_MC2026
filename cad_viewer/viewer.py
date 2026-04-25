@@ -41,7 +41,7 @@ def app():
             st.error("**Colonization:** 3 m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
             st.error("**Exclusion:** The systemic failure prevents individuals with disability and elderly citizens from using the route without severe difficulties.")
             st.error("**Congestion:** The 4 m vehicle corridor restricts the incoming traffic from the entire Yeshwantpur region into a single lane, causing frequent jams.")
-            st.error("**Fatal Flaws:** The loose overhead wire lines and damaged streetlamps can cause fatal accidents during thunderstorms.)
+            st.error("**Fatal Flaws:** The loose overhead wire lines and damaged streetlamps can cause fatal accidents during thunderstorms.")
 
     with col_fixed:
         st.subheader("After Proposed Changes")
