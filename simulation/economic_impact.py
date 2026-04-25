@@ -305,7 +305,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
               delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse", help="Annual loss and amount recovered after simulated fixes")
     c5.metric("Time Tax Change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
               delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse", help="Minutes recovered from the simulated fixes")
-    c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
+    c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A", help="Calculated considering the expenses for each fix to be approximately Rs 5 - 10 lakhs")
 
 
     # --- CHARTS (Exact Original Style) ---
