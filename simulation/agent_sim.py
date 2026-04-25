@@ -160,7 +160,7 @@ This module is important for advocacy and policy-making on the topic of Mobility
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("#### 1. Fundamental Equations")
+        st.markdown("#### Fundamental Equations")
         st.markdown("We model effective velocity ($v_{\\text{eff}}$) as a non-linear decay function of infrastructure friction.")
         st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
         st.latex(r"""
@@ -174,7 +174,7 @@ This module is important for advocacy and policy-making on the topic of Mobility
             \end{aligned}
         """)
 
-        st.markdown("#### 2. Detailed Sample Calculation")
+        st.markdown("#### Detailed Sample Calculation")
         st.markdown("""
         To demonstrate the impact of the **Sensitivity Exponent ($k$)**, we compare an Able-Bodied Adult 
         against a Wheelchair User at a single $f=5$ systemic failure segment.
