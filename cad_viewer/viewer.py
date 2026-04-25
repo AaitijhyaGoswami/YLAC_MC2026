@@ -39,9 +39,9 @@ def app():
         with st.expander("Spatial Diagnostics (Audit Log)"):
             st.error("**The Piping Effect:** 6 m high barriers (base wall + mesh) create a high-pressure friction corridor.")
             st.error("**Colonization:** 3 m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
-            st.error("**Exclusion:** The systemic failure prevents individuals with disability and elderly citizens from using the route without severe difficulties.")
-            st.error("**Congestion:** The 4 m vehicle corridor restricts the incoming traffic from the entire Yeshwantpur region into a single lane, causing frequent jams.")
-            st.error("**Fatal Flaws:** The loose overhead wire lines and damaged streetlamps can cause fatal accidents during thunderstorms.")
+            st.error("**Exclusion:** Systemic failures prevent individuals with disability and elderly citizens from using the route without severe difficulties.")
+            st.error("**Congestion:** 4 m vehicle corridor restricts the incoming traffic from the entire Yeshwantpur region into a single lane, causing frequent jams.")
+            st.error("**Fatal Flaws:** Loose overhead wire lines and damaged streetlamps can cause fatal accidents during thunderstorms.")
 
     with col_fixed:
         st.subheader("After Proposed Changes")
@@ -53,6 +53,9 @@ def app():
         with st.expander("Remediation Strategy (Redesign)"):
             st.success("**Reclaimed Clear Path:** Restoration of a continuous 3m unobstructed concrete walking zone.")
             st.success("**Integrated Ecosystem:** Vending shifted to a 1.5m curb-side 'Utility Zone' with organized stalls.")
+            st.success("**Inclusion:** 3 m tactile paving footpaths with benches at regular intervals make the pathways accessible to all commuters")
+            st.success("**Redistribution:** Division of the 10 m road into 2 lanes reduces the congestion and consequent pollution in the region to a large extent.")
+            st.success("**Illumination:** Fixing of existing streetlights and installations at regular intervals make the pathway more navigable at night.")
 
     st.markdown("---")
 
