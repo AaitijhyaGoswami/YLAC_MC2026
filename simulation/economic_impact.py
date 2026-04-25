@@ -291,6 +291,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     improved = econ["pct_recovered"] >= 0
 
     # --- HEADLINE METRICS (Exact Original Style) ---
+    st.markdown("---")
     st.markdown("#### Baseline: Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
     c1.metric("Annual Person-Minutes Lost", f"{econ['annual_pm_b']/1e6:.2f}M")
