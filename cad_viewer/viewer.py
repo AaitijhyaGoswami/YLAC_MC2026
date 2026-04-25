@@ -34,7 +34,7 @@ def app():
         st.subheader("Current Condition")
         # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=5.jpeg")
-        st.image(f"cad_viewer/f=5.png", caption="Systemic Failure: Wall & Mesh Containment", use_container_width=True)
+        st.image(f"cad_viewer/f=5.png", use_container_width=True)
         
         with st.expander("Spatial Diagnostics (Audit Log)"):
             st.error("**The Piping Effect:** 10 m high barriers (base wall + mesh) create a high-pressure friction corridor.")
@@ -44,7 +44,8 @@ def app():
         st.subheader("After Proposed Changes")
         # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=1.jpeg")
-        st.image(f"cad_viewer/f=1.png", caption="Gold Standard: 3m Reclaimed Path", use_container_width=True)
+        st.caption("The 3D CAD reconstruction has been made in accordance with the urban street design guidelines of the Directorate of Urban Land Transport and the Indian Roads Congress, along with recommendations from the Tender S.U.R.E. Standards and the National Institute of Urban Affairs") 
+        st.image(f"cad_viewer/f=1.png", use_container_width=True)
         
         with st.expander("Remediation Strategy (Redesign)"):
             st.success("**Reclaimed Clear Path:** Restoration of a continuous 3m unobstructed concrete walking zone.")
