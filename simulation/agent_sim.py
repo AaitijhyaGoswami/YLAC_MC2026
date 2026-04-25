@@ -202,7 +202,6 @@ This module is important for advocacy and policy-making on the topic of Mobility
                                         format_func=lambda k: personas[k]["label"])
     p = personas[selected_key]
 
-    st.sidebar.markdown("**Scenario settings**")
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
                                 help="Simulates fixing obstacles in the 300m stretch ranked by severity")
     
