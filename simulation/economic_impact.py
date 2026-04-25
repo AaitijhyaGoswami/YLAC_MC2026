@@ -165,7 +165,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     # --- TECHNICAL MATH SECTION (Standardized to LaTeX Block Style) ---
     # --- TECHNICAL MATH SECTION (Standardized Block Style with Worked Example) ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
-        st.markdown("#### 1. Fundamental Equations")
+        st.markdown("#### Fundamental Equations")
         st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
         st.latex(r"""
             \begin{aligned}
@@ -175,7 +175,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             \end{aligned}
         """)
 
-        st.markdown("#### 2. Variable Definitions")
+        st.markdown("#### Variable Definitions")
         st.latex(r"""
             \begin{aligned}
             f_i &: \text{Friction Index of segment } i \text{ (Discrete nodes or Bazaar St)} \\
@@ -190,7 +190,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             \end{aligned}
         """)
 
-        st.markdown("#### 3. Piecewise Segmental Traversal")
+        st.markdown("#### Piecewise Segmental Traversal")
         st.markdown("The model accounts for 'Impassability' where friction exceeds a persona's barrier threshold ($f_{\text{max}}$), forcing a vehicular Right-of-Way (ROW) detour.")
         st.latex(r"""
             \tau_i(\phi) = 
@@ -208,7 +208,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             \end{aligned}
         """)
 
-        st.markdown("#### 4. Fiscal Aggregation and Efficiency")
+        st.markdown("#### Fiscal Aggregation and Efficiency")
         st.markdown("The final metrics quantify the baseline drain and the efficiency of the proposed capital expenditure.")
         st.latex(r"""
             \begin{aligned}
@@ -218,7 +218,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             \end{aligned}
         """)
 
-        st.markdown("#### 5. Worked Unit Example: The Cost of One Failed Node")
+        st.markdown("#### Worked Unit Example: The Cost of One Failed Node")
         st.markdown("""
         Consider a single segment ($d = 12.5\text{m}$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
         specifically on the **Able-bodied Persona** ($\phi_{A}$) who makes up 45% of the hub volume.
@@ -291,23 +291,21 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     improved = econ["pct_recovered"] >= 0
 
     # --- HEADLINE METRICS (Exact Original Style) ---
-    st.markdown("#### Baseline — Surveyed Conditions")
+    st.markdown("#### Baseline: Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
-    c1.metric("Annual person-minutes lost", f"{econ['annual_pm_b']/1e6:.2f}M")
-    c2.metric("Annual productivity loss", f"Rs {econ['annual_loss_cr_b']:.2f} Cr")
-    c3.metric("Weighted mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip")
+    c1.metric("Annual Person-Minutes Lost", f"{econ['annual_pm_b']/1e6:.2f}M")
+    c2.metric("Annual Productivity Loss", f"Rs {econ['annual_loss_cr_b']:.2f} Cr")
+    c3.metric("Weighted Mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip")
 
-    st.markdown("---")
-    st.markdown("#### Scenario — After Fixes & Bazaar Adjustment")
+    st.markdown("#### Scenario: After Fixes & Bazaar Adjustment")
     c4, c5, c6 = st.columns(3)
     delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
-    c4.metric("Annual loss — scenario", f"Rs {econ['annual_loss_cr_s']:.2f} Cr", 
+    c4.metric("Annual Loss", f"Rs {econ['annual_loss_cr_s']:.2f} Cr", 
               delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
-    c5.metric("Time Tax change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
+    c5.metric("Time Tax Change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
               delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
-    c6.metric("Benefit-cost ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
+    c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
 
-    st.markdown("---")
 
     # --- CHARTS (Exact Original Style) ---
     col_l, col_r = st.columns(2)
@@ -328,10 +326,10 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     # --- POINTWISE DESCRIPTION (Numbered Style) ---
     st.markdown("---")
     st.header("Model Functionality")
-    st.write("1. **Macro-Economic Aggregation:** This module converts abstract 'pedestrian struggle' into a high-fidelity fiscal baseline. By scaling persona-weighted time loss against a hub volume of 100,000 daily commuters, it anchors policy arguments in a Crore-value productivity loss figure that represents the literal economic cost of systemic infrastructure neglect.")
-    st.write("2. **Strategic Investment Prioritization:** The tool identifies the non-linear returns on infrastructure spending. It demonstrates that a targeted 'Lighthouse Pilot' (fixing just the top three nodes) recovers nearly 40% of the total potential economic benefit, allowing municipal planners to achieve maximum impact with minimal capital expenditure.")
-    st.write("3. **Equity-Weighted Productivity Valuation:** By utilizing population share weights ($w_\\phi$), the model ensures that the fiscal drain on the city’s most essential workers (delivery partners and daily laborers) is not erased by 'average' walking speeds. It frames universal design as an economic imperative rather than just a social welfare goal.")
-    st.write("4. **Standardized Proposal Synthesis:** Every metric and visualization is formatted for direct extraction into DULT or BBMP project approval templates. The 10:1 Benefit-Cost Ratio provides a 'bulletproof' mathematical justification for immediate intervention, moving the conversation from anecdotal complaints to data-driven governance.")
+    st.write("* **Macro-Economic Aggregation:** This module converts abstract 'pedestrian struggle' into a high-fidelity fiscal baseline. By scaling persona-weighted time loss against a hub volume of 100,000 daily commuters, it anchors policy arguments in a Crore-value productivity loss figure that represents the literal economic cost of systemic infrastructure neglect.")
+    st.write("* **Strategic Investment Prioritization:** The tool identifies the non-linear returns on infrastructure spending. It demonstrates that a targeted 'Lighthouse Pilot' (fixing just the top three nodes) recovers nearly 40% of the total potential economic benefit, allowing municipal planners to achieve maximum impact with minimal capital expenditure.")
+    st.write("* **Equity-Weighted Productivity Valuation:** By utilizing population share weights ($w_\\phi$), the model ensures that the fiscal drain on the city’s most essential workers (delivery partners and daily laborers) is not erased by 'average' walking speeds. It frames universal design as an economic imperative rather than just a social welfare goal.")
+    st.write("* **Standardized Proposal Synthesis:** Every metric and visualization is formatted for direct extraction into DULT or BBMP project approval templates. The 10:1 Benefit-Cost Ratio provides a 'bulletproof' mathematical justification for immediate intervention, moving the conversation from anecdotal complaints to data-driven governance.")
     st.markdown("---")
     st.markdown("#### Per-Persona Breakdown")
     rows = [{"Persona": p["label"], "Weight": f"{p['weight']*100:.0f}%", "Baseline Loss": f"Rs{econ['persona_losses'][k]['baseline']:.2f} Cr", "Scenario Loss": f"Rs{econ['persona_losses'][k]['scenario']:.2f} Cr"} for k, p in personas.items()]
