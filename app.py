@@ -105,7 +105,7 @@ if page == "Home":
 
     with colb:
       st.image("data/survey5.jpg", use_container_width=True)
-      st.capton("Garbage dumps, wrongly placed streetlamps, and encroachment by street vendors make the footpaths almost inaccessible to persons with disabilities.")
+      st.caption("Garbage dumps, wrongly placed streetlamps, and encroachment by street vendors make the footpaths almost inaccessible to persons with disabilities.")
       st.image("data/survey6.jpg", use_container_width=True)
 
     with colc:
