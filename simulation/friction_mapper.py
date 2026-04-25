@@ -225,6 +225,35 @@ def app():
     And for city officials and policy makers, this data enables infrastructure maintenance to be a strategic investment rather than a reactive cost. The module models the effects of particular remediation efforts and shows how targeted repairs directly lower urban resistance, recover lost economic productivity, and meet universal accessibility standards. The methodology offers a scalable blueprint for auditing high-intensity transit hubs across the city, ensuring the right to a seamless, dignified commute is rooted in hard evidence and predictive engineering.
     """)
 
+    st.markdown("#### Friction Rubric")
+    rubric = pd.DataFrame({
+        "f": [1, 2, 3, 4, 5],
+        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
+                  "Physical Barrier", "Systemic Failure"],
+        "Infrastructure State": [
+            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
+            "Minor cracks, unlevelled slabs, low-hanging cables",
+            "Broken slabs, rubble, utility excavation",
+            "Missing drain cover, high kerb, partial blockage",
+            "Footpath ends — transformer, encroachment, construction",
+        ],
+        "Wheelchair Access": [
+            "Full",
+            "Partial — discomfort",
+            "Severely restricted",
+            "Effectively impassable",
+            "Fully impassable",
+        ],
+        "S.U.R.E. compliant?": [
+            "✅ Yes — reference standard",
+            "⚠️ Marginal",
+            "❌ No",
+            "❌ No",
+            "❌ No",
+        ],
+    })
+    st.dataframe(rubric, hide_index=True, use_container_width=True)
+
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### 1. Fundamental Equations")
@@ -337,7 +366,6 @@ def app():
     st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
 
-    st.markdown("---")
     st.markdown("#### Friction Rubric")
     rubric = pd.DataFrame({
         "f": [1, 2, 3, 4, 5],
