@@ -224,15 +224,16 @@ This module is important for advocacy and policy-making on the topic of Mobility
     results = {k: run_simulation(f_array, v) for k, v in personas.items()}
     res     = results[selected_key]
 
+    st.markdown("---")
+
     # --- HEADLINE METRICS ---
-    st.markdown(f"#### {p['label']} — Traversal Summary")
+    st.markdown(f"#### {p['label']}: Traversal Summary")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Ideal Time", f"{res['T_ideal'] / 60:.1f} min", help="Time taken if f=1 throughout")
-    col2.metric("Actual Time", f"{res['T_actual'] / 60:.1f} min", delta=f"+{res['delta_tau'] / 60:.1f} min", delta_color="inverse")
-    col3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse")
+    col2.metric("Actual Time", f"{res['T_actual'] / 60:.1f} min", delta=f"+{res['delta_tau'] / 60:.1f} min", delta_color="inverse", help="Time taken in simulated conditions")
+    col3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse", help="Tome lost due to simulated obstacles")
     col4.metric("ROW Detours", f"{res['n_detours']} segments", help="Segments forcing pedestrians into traffic")
 
-    st.markdown("---")
 
     # --- CHARTS ---
     c_left, c_right = st.columns([1, 1.8])
@@ -250,10 +251,10 @@ This module is important for advocacy and policy-making on the topic of Mobility
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
     st.header("Simulator Functionality")
-    st.write("1. **Agent-Based Path Simulation:** This module uses individual persona parameters (base speed $v_0$ and sensitivity $k$) to simulate how different citizens experience the same physical corridor. This moves beyond 'average' walking speeds to capture the reality of diverse commuters.")
-    st.write("2. **Power-Law Friction Scaling:** Unlike linear models, our simulator penalizes speed exponentially as infrastructure degrades. This accurately models how a 'doubling' of ground roughness leads to more than a doubling of traversal difficulty for vulnerable groups.")
-    st.write("3. **Vehicular Risk Quantification:** The simulator identifies 'Impassable' segments ($f > f_{max}$) where agents are forced into the vehicular Right-of-Way. It calculates the associated safety multiplier $\\alpha$, highlighting the direct correlation between poor footpaths and high-risk pedestrian-vehicle mixing.")
-    st.write("4. **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
+    st.write("* **Agent-Based Path Simulation:** This module uses individual persona parameters (base speed $v_0$ and sensitivity $k$) to simulate how different citizens experience the same physical corridor. This moves beyond 'average' walking speeds to capture the reality of diverse commuters.")
+    st.write("* **Power-Law Friction Scaling:** Unlike linear models, our simulator penalizes speed exponentially as infrastructure degrades. This accurately models how a 'doubling' of ground roughness leads to more than a doubling of traversal difficulty for vulnerable groups.")
+    st.write("* **Vehicular Risk Quantification:** The simulator identifies 'Impassable' segments ($f > f_{max}$) where agents are forced into the vehicular Right-of-Way. It calculates the associated safety multiplier $\\alpha$, highlighting the direct correlation between poor footpaths and high-risk pedestrian-vehicle mixing.")
+    st.write("* **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
 
     st.markdown("---")
     with st.expander("View Raw Simulation Data Table"):
