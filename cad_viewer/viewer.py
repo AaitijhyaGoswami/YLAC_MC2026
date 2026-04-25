@@ -57,13 +57,13 @@ def app():
     st.header("Prototype Functionality")
     
     st.markdown(r"""
-    1. **Geometric Contrast & Barrier Removal Analysis:** The visualizer provides a high-fidelity 'Before vs. After' delta between a containment-based geometry and an open-flow hierarchy. The redesign demonstrates that removing this caging is the primary step for eliminating the piping effect, where pedestrians are currently trapped in a narrow, high-pressure corridor.
+    * **Geometric Contrast & Barrier Removal Analysis:** The visualizer provides a high-fidelity 'Before vs. After' delta between a containment-based geometry and an open-flow hierarchy. The redesign demonstrates that removing this caging is the primary step for eliminating the piping effect, where pedestrians are currently trapped in a narrow, high-pressure corridor.
 
-    2. **Unobstructed Capacity Restoration (3.0m Clear Path):** The prototype visualizes the restoration of a continuous 3.0m clear path, which is the gold standard for high-density transit hubs like Yeshwantpur. This allows all personas to maintain their natural free-walking speed ($v_0$) without the velocity decay caused by dodging obstacles.
+    * **Unobstructed Capacity Restoration (3.0m Clear Path):** The prototype visualizes the restoration of a continuous 3.0m clear path, which is the gold standard for high-density transit hubs like Yeshwantpur. This allows all personas to maintain their natural free-walking speed ($v_0$) without the velocity decay caused by dodging obstacles.
 
-    3. **Economic Integration & Utility Zone Synergy:** A core feature of the Lighthouse Prototype is the **1.5m Curb-Side Utility Zone**. Rather than the current 'Colonization' model, where vendors occupy 100% of the footpath, the redesign integrates vending into a dedicated strip. This preserves the local informal economy while ensuring that vending geometries do not bleed into the pedestrian stream.
+    * **Economic Integration & Utility Zone Synergy:** A core feature of the Lighthouse Prototype is the **1.5m Curb-Side Utility Zone**. Rather than the current 'Colonization' model, where vendors occupy 100% of the footpath, the redesign integrates vending into a dedicated strip. This preserves the local informal economy while ensuring that vending geometries do not bleed into the pedestrian stream.
 
-    4. **DPR-Ready Scalability & Policy Synthesis:** Every spatial element presented here, from the flush drainage covers to the standardized kerb heights, is formatted for immediate extraction into DULT or BBMP project approval templates. By showcasing a 'Streets of Hope' baseline, the module provides policymakers with the necessary evidence to justify a **10:1 Benefit-Cost Ratio** proposal.
+    * **DPR-Ready Scalability & Policy Synthesis:** Every spatial element presented here, from the flush drainage covers to the standardized kerb heights, is formatted for immediate extraction into DULT or BBMP project approval templates. By showcasing a 'Streets of Hope' baseline, the module provides policymakers with the necessary evidence to justify a **10:1 Benefit-Cost Ratio** proposal.
     """)
 
     st.markdown("---")
