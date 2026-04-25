@@ -206,7 +206,6 @@ This module is important for advocacy and policy-making on the topic of Mobility
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
                                 help="Simulates fixing obstacles in the 300m stretch ranked by severity")
     
-    st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
         "Current — f=5 (Systemic Failure)": 5,
