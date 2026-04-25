@@ -1,5 +1,5 @@
 able_bodied:
-  label: "Able-bodied adult"
+  label: "Able-bodied Adult"
   v0: 1.4        # free-walking speed (m/s)
   k: 0.6         # friction sensitivity exponent
   f_max: 4       # impassability threshold — no node is impassable
@@ -9,7 +9,7 @@ able_bodied:
   color: "#2196F3"
 
 elderly:
-  label: "Elderly commuter"
+  label: "Elderly Commuter"
   v0: 0.9
   k: 0.9
   f_max: 3       # f=5 nodes force ROW detour
@@ -19,7 +19,7 @@ elderly:
   color: "#FF9800"
 
 wheelchair:
-  label: "Wheelchair user"
+  label: "Wheelchair User"
   v0: 0.8
   k: 1.2
   f_max: 3       # f=4 and f=5 nodes force ROW detour
@@ -29,7 +29,7 @@ wheelchair:
   color: "#9C27B0"
 
 delivery:
-  label: "Delivery partner"
+  label: "Delivery Partner"
   v0: 1.2
   k: 0.75
   f_max: 4       # f=5 nodes force ROW detour
