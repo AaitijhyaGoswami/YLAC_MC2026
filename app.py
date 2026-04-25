@@ -100,6 +100,7 @@ if page == "Home":
       st.image("data/survey1.jpg", use_container_width=True)
       st.caption("A carpentry shop encroaching on the area meant for pedestrian commute. The obstacle may make it difficult for individuals in wheelchairs or visually impaired individuals to commute.")
       st.image("data/survey2.jpg", use_container_width=True)
+      st.caption("Loose wires from underground power lines and street lamps, along with broken/removed sewage covers, can be fatal during rainy weathers for pedestrians")
       st.image("data/survey3.jpg", use_container_width=True)
 
     with colb:
