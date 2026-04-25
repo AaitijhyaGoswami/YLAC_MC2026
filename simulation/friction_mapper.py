@@ -273,22 +273,22 @@ def app():
             \end{aligned}
         """)
 
-        st.markdown("#### 2. Detailed Baseline Calculation")
+        st.markdown("#### Detailed Baseline Calculation")
         st.markdown("""
         To arrive at the baseline difficulty multiplier of **4.653**, we aggregate the audit data from two structurally 
         distinct zones of the Yeshwantpur corridor.
         """)
         
-        st.markdown("**Step A: The 300m Constitution Circle Zone**")
+        st.markdown("**The 300m Constitution Circle Zone**")
         st.markdown("This stretch contains 24 discrete geotagged nodes. The sum of friction values is as follows:")
         st.latex(r"\sum f_i = (9 \times f_5) + (8 \times f_4) + (4 \times f_3) + (3 \times f_2) = 45 + 32 + 12 + 6 = 95")
         st.latex(r"L_{\text{eff}}^{300} = 95 \times 12.5\text{m} = 1187.5\text{m}")
 
-        st.markdown("**Step B: The 600m Bazaar Street Zone**")
+        st.markdown("**The 600m Bazaar Street Zone**")
         st.markdown("This stretch is modeled as a continuous systemic failure ($f=5$) as audited in March 2026.")
         st.latex(r"L_{\text{eff}}^{600} = 600\text{m} \times 5 = 3000\text{m}")
 
-        st.markdown("**Step C: Final Aggregation**")
+        st.markdown("**Final Aggregation**")
         st.markdown("Combining both zones yields the total effective effort distance and the mean index.")
         st.latex(r"L_{\text{eff}}^{Total} = 1187.5\text{m} + 3000\text{m} = 4187.5\text{m}")
         st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
@@ -305,7 +305,6 @@ def app():
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
                                help="Simulates the fixing of each of the obstacles which make the footways most inaccessible")
     
-    st.sidebar.markdown("---")
     st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
         "Current — f=5 (Systemic Failure)": 5,
@@ -329,6 +328,7 @@ def app():
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
     # --- HEADLINE METRICS ---
+    st.sidebar.markdown("---")
     st.markdown("#### The State of the Corridor")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Fails Active Mobility Bill", "90.3%",
@@ -339,7 +339,6 @@ def app():
                help="Nodes rated f=4 or f=5 force pedestrians into vehicular Right-of-Way.")
     col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x",
                help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
-    st.markdown("---")
 
     # --- MAP & GRADIENT ---
     st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
@@ -365,35 +364,6 @@ def app():
     st.write("2. **Standardized Severity Coding:** The color-coded logic is directly aligned with the Active Mobility Bill and DULT rubrics. By assigning a Friction Value $f$, the mapper provides an objective diagnostic of segment compliance.")
     st.write("3. **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("4. **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
-
-    st.markdown("#### Friction Rubric")
-    rubric = pd.DataFrame({
-        "f": [1, 2, 3, 4, 5],
-        "Label": ["Gold Standard", "Distracted Walk", "Obstacle Course",
-                  "Physical Barrier", "Systemic Failure"],
-        "Infrastructure State": [
-            "Continuous, unobstructed 3m+ footpath (Tender S.U.R.E. standard)",
-            "Minor cracks, unlevelled slabs, low-hanging cables",
-            "Broken slabs, rubble, utility excavation",
-            "Missing drain cover, high kerb, partial blockage",
-            "Footpath ends — transformer, encroachment, construction",
-        ],
-        "Wheelchair Access": [
-            "Full",
-            "Partial — discomfort",
-            "Severely restricted",
-            "Effectively impassable",
-            "Fully impassable",
-        ],
-        "S.U.R.E. compliant?": [
-            "✅ Yes — reference standard",
-            "⚠️ Marginal",
-            "❌ No",
-            "❌ No",
-            "❌ No",
-        ],
-    })
-    st.dataframe(rubric, hide_index=True, use_container_width=True)
 
 if __name__ == "__main__":
     app()
