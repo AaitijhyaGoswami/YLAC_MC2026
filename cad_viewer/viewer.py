@@ -108,7 +108,7 @@ def app():
             "Restores free-flow velocity ($v_0$)",
             "Organizes informal trade geometries",
             "Eliminates psychological 'Pipe' friction",
-            "Maximizes usable width ($W_{\text{eff}}$)",
+            "Maximizes usable width for commuters",
             "Standardizes vehicular throughput",
             "Balances Modal Share Equity",
             "**Equilibrium State**"
