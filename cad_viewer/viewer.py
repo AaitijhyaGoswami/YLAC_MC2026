@@ -37,14 +37,17 @@ def app():
         st.image(f"cad_viewer/f=5.png", use_container_width=True)
         
         with st.expander("Spatial Diagnostics (Audit Log)"):
-            st.error("**The Piping Effect:** 10 m high barriers (base wall + mesh) create a high-pressure friction corridor.")
+            st.error("**The Piping Effect:** 6 m high barriers (base wall + mesh) create a high-pressure friction corridor.")
             st.error("**Colonization:** 3 m existing footpaths are 100% occupied; pedestrians are physically 'piped' into vehicular traffic.")
+            st.error("**Exclusion:** The systemic failure prevents individuals with disability and elderly citizens from using the route without severe difficulties.")
+            st.error("**Congestion:** The 4 m vehicle corridor restricts the incoming traffic from the entire Yeshwantpur region into a single lane, causing frequent jams.")
+            st.error("**Fatal Flaws:** The loose overhead wire lines and damaged streetlamps can cause fatal accidents during thunderstorms.)
 
     with col_fixed:
         st.subheader("After Proposed Changes")
         # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=1.jpeg")
-        st.caption("The 3D CAD reconstruction has been made in accordance with the urban street design guidelines of the Directorate of Urban Land Transport, the Indian Roads Congress, the Tender S.U.R.E. Standards and the National Institute of Urban Affairs") 
+        st.caption("The 3D CAD reconstruction has been made in accordance with the urban street design guidelines of the Directorate of Urban Land Transport (DULT), the Indian Roads Congress (IRC), the Tender S.U.R.E. Standards and the National Institute of Urban Affairs (NIUA)") 
         st.image(f"cad_viewer/f=1.png", use_container_width=True)
         
         with st.expander("Remediation Strategy (Redesign)"):
