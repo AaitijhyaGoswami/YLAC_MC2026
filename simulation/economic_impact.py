@@ -248,7 +248,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
 
         st.markdown("""
         **The Result:** A single 12.5m stretch of broken footpath costs the city **₹22.6 Lakhs per year** in lost productivity 
-        for just one demographic. When aggregated across all 72 segments and all four personas, this produces the baseline 
+        for just one demographic. When aggregated across all 72 segments, this produces the baseline 
         drain of **₹14.2 Crore/Year**.
         """)
 
@@ -294,17 +294,17 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     st.markdown("---")
     st.markdown("#### Baseline: Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
-    c1.metric("Annual Person-Minutes Lost", f"{econ['annual_pm_b']/1e6:.2f}M")
-    c2.metric("Annual Productivity Loss", f"Rs {econ['annual_loss_cr_b']:.2f} Cr")
-    c3.metric("Weighted Mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip")
+    c1.metric("Annual Person-Minutes Lost", f"{econ['annual_pm_b']/1e6:.2f}M", help="Minutes lost by the total commuter volume")
+    c2.metric("Annual Productivity Loss", f"Rs {econ['annual_loss_cr_b']:.2f} Cr", help="Annual loss in income of pedestrian commuters aggregated over all 4 personas")
+    c3.metric("Weighted Mean Time Tax", f"{econ['dtau_bar_b']:.1f} s/trip", help="Time lost by an average commuter while traversing the 900 m stretch")
 
     st.markdown("#### Scenario: After Fixes & Bazaar Adjustment")
     c4, c5, c6 = st.columns(3)
     delta_loss = abs(econ["annual_loss_cr_b"] - econ["annual_loss_cr_s"])
     c4.metric("Annual Loss", f"Rs {econ['annual_loss_cr_s']:.2f} Cr", 
-              delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse")
+              delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse", help="Annual loss and amount recovered after simulated fixes")
     c5.metric("Time Tax Change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
-              delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse")
+              delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse", help="Minutes recovered from the simulated fixes")
     c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A")
 
 
