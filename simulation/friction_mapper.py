@@ -328,7 +328,8 @@ def app():
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
     # --- HEADLINE METRICS ---
-    st.sidebar.markdown("---")
+    st.markdown("---")
+    
     st.markdown("#### The State of the Corridor")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Fails Active Mobility Bill", "90.3%",
