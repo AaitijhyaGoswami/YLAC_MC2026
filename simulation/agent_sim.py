@@ -198,18 +198,23 @@ This module is important for advocacy and policy-making on the topic of Mobility
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Time Tax Simulator Controls")
     
-    selected_key = st.sidebar.selectbox(
+    curr_p = personas[st.session_state.get("persona_sel", list(personas.keys())[0])]
+
+selected_key = st.sidebar.selectbox(
     "Commuter persona:", 
     options=list(personas.keys()), 
     format_func=lambda k: personas[k]["label"],
-    help=f"**{personas[selected_key]['label']} Specs:**\n"
-         f"* Base Speed ($v_0$): {personas[selected_key]['v0']} m/s\n"
-         f"* Sensitivity ($k$): {personas[selected_key]['k']}\n"
-         f"* Friction Ceiling ($f_{{max}}$): {personas[selected_key]['f_max']}\n"
-         f"* Risk Multiplier ($\\alpha$): {personas[selected_key]['alpha']}\n"
-         f"* Detour Penalty ($\\delta$): {personas[selected_key]['delta']}m"
-    )
-    p = personas[selected_key]
+    key="persona_sel",
+    help=rf"""
+    Persona Calibration Metrics (from personas.yaml):
+    - $v_0$ = {curr_p['v0']} m/s
+    - $k$ = {curr_p['k']}
+    - $f_{{max}}$ = {curr_p['f_max']}
+    - $\alpha$ = {curr_p['alpha']}
+    - $\delta$ = {curr_p['delta']} m
+    """
+)
+p = personas[selected_key]
 
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
                                 help="Simulates fixing obstacles in the 300m stretch ranked by severity")
