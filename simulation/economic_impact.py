@@ -185,7 +185,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             M &: \text{Daily Hub Volume (100,000 commuters at Yeshwantpur hub)} \\
             W &: \text{Annual Cycle (250 standardized working days per year)} \\
             w_\phi &: \text{Weighting factor (Proportional share of persona in the population)} \\
-            \text{WAGE} &: \text{Economic value of time (RBI Informal rate } \approx \text{ ₹0.83/min)} \\
+            \text{WAGE} &: \text{Economic value of time (RBI Informal Rate } \approx \text{ ₹0.83/min)} \\
             \mathcal{L} &: \text{Annual Economic Productivity Loss (Expressed in Crore INR)}
             \end{aligned}
         """)
@@ -220,7 +220,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
 
         st.markdown("#### Worked Unit Example: The Cost of One Failed Node")
         st.markdown("""
-        Consider a single segment ($d = 12.5\text{m}$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
+        Consider a single segment ($d = 12.5 m$) rated at **$f=5$ (Systemic Failure)**. We calculate the fiscal drain imposed 
         specifically on the **Able-bodied Persona** ($\phi_{A}$) who makes up 45% of the hub volume.
         """)
 
