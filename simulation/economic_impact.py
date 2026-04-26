@@ -252,7 +252,8 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         drain of **₹14.2 Crore/Year**.
         """)
 
-    # --- WORKED EXAMPLE SECTION (To be included in the expander or as a new section) ---
+    st.info("""
+    The informal rate """)
     
     try:
         df = load_audit_data(); personas = load_personas()
