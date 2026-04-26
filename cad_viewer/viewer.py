@@ -36,9 +36,9 @@ def app():
 
          At the policy-making and implementation level, these CAD models would aid authorities who are responsible the development of the Yeshwantpur-Mathikere region with recommendations that imply towards an immediate course of action:
          * **[Directorate of Urban Land Transport (Urban Development Department, Govt. of Karnataka)](https://dult.karnataka.gov.in/en)**
-         * **[Greater Bengaluru Authority](https://bbmp.gov.in/home)**
-         * **[Bengaluru Metropolitan Transport Corporation](https://mybmtc.karnataka.gov.in/en)**
-         * **[City and Traffic Police, Yeshwantapura Police Station}(https://share.google/KVWDmUcxVPSpulf9K)**
+         * **[Greater Bengaluru Authority](https://bbmp.gov.in/home)** //
+         * **[Bengaluru Metropolitan Transport Corporation](https://mybmtc.karnataka.gov.in/en)** //
+         * **[City and Traffic Police, Yeshwantapura Police Station}(https://share.google/KVWDmUcxVPSpulf9K)** //
          * **[Kasaba Yeshwantapura Administration](https://bengaluruurban.nic.in/en/divisions/deputy-commissioner/)**
          """)
 
