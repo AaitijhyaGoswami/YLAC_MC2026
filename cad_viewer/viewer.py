@@ -9,7 +9,9 @@ def app():
     In addition to its visual effect on pedestrians, the prototype provides a detailed specification of the granular redistribution of space needed to establish modal equilibrium, including a **continuous 3.0 m "Clear Path"** and an integrated **1.5 m Utility Zone**. By supporting both informal economies and repair/utilities, pedestrian traffic flow will no longer be deleteriously impacted; instead, they will be part of a more organized ecosystem. This module establishes the technical basis for DULT or BBMP project approvals and thereby supports local investments based on data-driven rationales that emphasize restored mobility rates and high benefit-cost ratios over reactive maintenance, filling the void for effective advocacy for and synthesis of policy.
     """)
 
-    st.header("What the Problem Is")
+    
+
+    st.header("What The Problem Is")
     
     colx, coly, colz = st.columns(3)
 
@@ -22,6 +24,16 @@ def app():
 
     with colz:
         st.image(f"cad_viewer/bazaar3.jpg", use_container_width=True)
+
+    st.header("Who Are The Stakeholders In This Plan?")
+    st.markdown("""
+        The redesigns proposed in this prototype will be beneficial for the entire population which traverses this highly congested and inaccessible section of Yeshwantpur on a daily basis. At the ground level, the benefitors would largely comprise of:
+         * **Local Residents**, who use the pathways several times each day to get to the Yeshwantpur market or to go to work.
+         * **Public Transport Commuters** arriving from the Yeshwantpur Metro and Railway Stations.
+         * **Persons with Disabilities** and **Senior Citizens**, who currently face severe discomfort in traveling through the bottleneck.
+         * **Students** from local schools and colleges (e.g. IISc, Ramaiah Group of Institutions, Raman Research Institute wtc.)
+         * **Truck/Tractor Drivers** and **Delivery Executives**, who need a fast vehicle corridor for timely deliveries.
+         """)
 
     st.markdown("---")
 
