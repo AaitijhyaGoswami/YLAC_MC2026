@@ -253,7 +253,12 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         """)
 
     st.info("""
-    The informal rate """)
+    The informal rate of **₹0.83/min** corresponds to a daily wage of about **₹600** for a 12-hour work day (average for unskilled workers doing several jobs at once in the region).
+    The estimate has been made after on-ground interactions with daily-wage workers commuting through the stretch, and taking the average of wages across various professions from following documentations by the **[Labour Commissioner Office, Govt. of Karnataka](https://karmikaspandana.karnataka.gov.in/en)**.
+    * **[Minimum Wage Rates for the Year 2026-27](https://karmikaspandana.karnataka.gov.in/64/minimum-wages-rates-for-the-year-2026-27/en)**
+    * **[Minimum Wage Rates for the Year 2025-26](https://karmikaspandana.karnataka.gov.in/62/minimum-wages-rates-for-the-year-2025-26/en)**
+    **Caution**: The per-minute economic loss is just an educated estimate, since no extensive survey has been conducted by urban authorities specifically in the region of interest. Considering the importance of the stretch, further efforts can be made to persuade local authroities to conduct extensive fiscal audits to get moore accurate figures. 
+    """)
     
     try:
         df = load_audit_data(); personas = load_personas()
@@ -306,7 +311,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
               delta=f"{'−' if improved else '+'}Rs {delta_loss:.2f} Cr", delta_color="normal" if improved else "inverse", help="Annual loss and amount recovered after simulated fixes")
     c5.metric("Time Tax Change", f"{abs(econ['pct_recovered']):.1f}% {'recovered' if improved else 'worsened'}", 
               delta=f"{econ['pct_recovered']:+.1f}%", delta_color="normal" if improved else "inverse", help="Minutes recovered from the simulated fixes")
-    c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A", help="Calculated considering the expenses for each fix to be approximately Rs 5 - 10 lakhs")
+    c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A", help="Calculated considering the expenses for each fix to be approximately ₹5 - 10 lakhs")
 
 
     # --- CHARTS (Exact Original Style) ---
