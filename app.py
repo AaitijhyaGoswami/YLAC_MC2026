@@ -2,7 +2,7 @@ import streamlit as st
 
 # PAGE CONFIGURATION
 st.set_page_config(
-    page_title="Escape the Knot | Yeshwantpur",
+    page_title="Escape the Knot | Yeshwantapura",
     page_icon="🚶",
     layout="wide",
     initial_sidebar_state="expanded"
