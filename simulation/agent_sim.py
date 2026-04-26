@@ -207,10 +207,15 @@ This module is important for advocacy and policy-making on the topic of Mobility
        key="persona_sel",
        help=rf"""
        Persona Calibration Metrics:
+       
        $v_0$ = {curr_p['v0']} m/s
+       
        $k$ = {curr_p['k']}
+       
        $f_{{max}}$ = {curr_p['f_max']}
+       
        $\alpha$ = {curr_p['alpha']}
+       
        $\delta$ = {curr_p['delta']} m
        """
        )
