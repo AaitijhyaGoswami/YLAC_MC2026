@@ -343,8 +343,7 @@ def app():
 
     # --- MAP & GRADIENT ---
     st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
-    st.markdown("---")
-    st.markdown("#### Friction Gradient — Full 900m Route")
+    st.markdown("#### Friction Gradient: Full 900m Route")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
     st.markdown("---")
 
