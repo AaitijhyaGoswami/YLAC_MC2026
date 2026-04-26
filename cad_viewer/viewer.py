@@ -32,7 +32,7 @@ def app():
          * **Public Transport Commuters** arriving from the Yeshwantpur Metro and Railway Stations.
          * **Persons with Disabilities** and **Senior Citizens**, who currently face severe discomfort in traveling through the bottleneck.
          * **Students** from local schools and colleges (e.g. IISc, Ramaiah Group of Institutions, Raman Research Institute wtc.)
-         * **Truck/Tractor Drivers** and **Delivery Executives**, who need a fast vehicle corridor for timely deliveries.
+         * **Truck/Tractor Drivers** and **Courier Executives**, who need a fast vehicle corridor for timely deliveries.
          """)
 
     st.markdown("---")
