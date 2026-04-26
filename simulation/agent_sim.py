@@ -199,7 +199,13 @@ This module is important for advocacy and policy-making on the topic of Mobility
     st.sidebar.markdown("### Time Tax Simulator Controls")
     
     selected_key = st.sidebar.selectbox("Commuter persona:", options=list(personas.keys()), 
-                                        format_func=lambda k: personas[k]["label"])
+                                        format_func=lambda k: personas[k]["label"],
+                                       help=f"**{personas[selected_key]['label']} Specs:**\n"
+         f"* Base Speed ($v_0$): {personas[selected_key]['v0']} m/s\n"
+         f"* Sensitivity ($k$): {personas[selected_key]['k']}\n"
+         f"* Friction Ceiling ($f_{{max}}$): {personas[selected_key]['f_max']}\n"
+         f"* Risk Multiplier ($\\alpha$): {personas[selected_key]['alpha']}\n"
+         f"* Detour Penalty ($\\delta$): {personas[selected_key]['delta']}m")
     p = personas[selected_key]
 
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
