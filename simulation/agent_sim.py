@@ -200,21 +200,21 @@ This module is important for advocacy and policy-making on the topic of Mobility
     
     curr_p = personas[st.session_state.get("persona_sel", list(personas.keys())[0])]
 
-selected_key = st.sidebar.selectbox(
-    "Commuter persona:", 
-    options=list(personas.keys()), 
-    format_func=lambda k: personas[k]["label"],
-    key="persona_sel",
-    help=rf"""
-    Persona Calibration Metrics (from personas.yaml):
-    - $v_0$ = {curr_p['v0']} m/s
-    - $k$ = {curr_p['k']}
-    - $f_{{max}}$ = {curr_p['f_max']}
-    - $\alpha$ = {curr_p['alpha']}
-    - $\delta$ = {curr_p['delta']} m
-    """
-)
-p = personas[selected_key]
+    selected_key = st.sidebar.selectbox(
+       "Commuter persona:", 
+       options=list(personas.keys()), 
+       format_func=lambda k: personas[k]["label"],
+       key="persona_sel",
+       help=rf"""
+       Persona Calibration Metrics (from personas.yaml):
+       - $v_0$ = {curr_p['v0']} m/s
+       - $k$ = {curr_p['k']}
+       - $f_{{max}}$ = {curr_p['f_max']}
+       - $\alpha$ = {curr_p['alpha']}
+       - $\delta$ = {curr_p['delta']} m
+       """
+       )
+    p = personas[selected_key]
 
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
                                 help="Simulates fixing obstacles in the 300m stretch ranked by severity")
