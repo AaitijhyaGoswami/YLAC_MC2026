@@ -33,6 +33,13 @@ def app():
          * **Persons with Disabilities** and **Senior Citizens**, who currently face severe discomfort in traveling through the bottleneck.
          * **Students** from local schools and colleges (e.g. IISc, Ramaiah Group of Institutions, Raman Research Institute wtc.)
          * **Truck/Tractor Drivers** and **Courier Executives**, who need a fast vehicle corridor for timely deliveries.
+
+         At the policy-making and implementation level, these CAD models would aid authorities who are responsible the development of the Yeshwantpur-Mathikere region with recommendations that imply towards an immediate course of action:
+         * **[Directorate of Urban Land Transport (Urban Development Department, Govt. of Karnataka)](https://dult.karnataka.gov.in/en)**
+         * **[Greater Bengaluru Authority](https://bbmp.gov.in/home)**
+         * **[Bengaluru Metropolitan Transport Corporation](https://mybmtc.karnataka.gov.in/en)**
+         * **[City and Traffic Police, Yeshwantapura Police Station}(https://share.google/KVWDmUcxVPSpulf9K)**
+         * **[Kasaba Yeshwantapura Administration](https://bengaluruurban.nic.in/en/divisions/deputy-commissioner/)**
          """)
 
     st.markdown("---")
