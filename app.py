@@ -139,8 +139,8 @@ if page == "Home":
         st.latex(r"L_{\text{eff}}(\phi) = \int_0^D f(x, \phi)\, dx \;\approx\; d\sum_{i=1}^{N} f_i(\phi)")
         st.latex(r"""
             \begin{aligned}
-            L_{\text{eff}} &: \text{Effective Path Length—the 'felt' distance in terms of physical effort} \\
-            \phi &: \text{The Commuter Persona—adjusts difficulty based on specific mobility needs} \\
+            L_{\text{eff}} &: \text{Effective Path Length (the 'felt' distance in terms of physical effort)} \\
+            \phi &: \text{The Commuter Persona (adjusts difficulty based on specific mobility needs)} \\
             D &: \text{The total physical distance of the corridor measured on a map (900 meters)} \\
             f(x, \phi) &: \text{The Local Friction Index at position } x \text{ (1 = Perfect, 5 = Impassable)} \\
             dx &: \text{An infinitesimal change in position along the corridor length} \\
@@ -162,8 +162,8 @@ if page == "Home":
             \begin{aligned}
             v_{\text{eff}} &: \text{Actual velocity achieved by persona } \phi \text{ across segment } i \\
             v_0 &: \text{The 'Ideal' speed of a persona on a perfect, standard-compliant footpath} \\
-            k &: \text{Friction Sensitivity—how much the persona's speed is impacted by broken ground} \\
-            \Delta\tau &: \text{The Time Tax—the cumulative seconds of life-time stolen per trip} \\
+            k &: \text{Friction Sensitivity (how much the persona's speed is impacted by broken ground)} \\
+            \Delta\tau &: \text{The Time Tax (the cumulative seconds of life-time stolen per trip)} \\
             f_i^{k} &: \text{The local friction raised to the sensitivity power of the commuter} \\
             \sum_{i=1}^{N} &: \text{The sum of all travel times across every individual segment } i
             \end{aligned}
@@ -184,7 +184,7 @@ if page == "Home":
             w_\phi &: \text{The percentage weight of each persona in the total pedestrian population} \\
             \Delta\tau(\phi) &: \text{The calculated Time Tax for that specific group of people (in mins)} \\
             \sum w_\phi &: \text{The sum of all population weights (ensuring the average is balanced)} \\
-            \text{WAGE} &: \text{Economic value of time (RBI Informal rate } \approx \text{ ₹0.83/min)}
+            \text{WAGE} &: \text{Economic value of time (RBI Informal Rate } \approx \text{ ₹0.83/min)}
             \end{aligned}
         """)
 
