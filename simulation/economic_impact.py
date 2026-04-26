@@ -255,8 +255,10 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     st.info("""
     The informal rate of **₹0.83/min** corresponds to a daily wage of about **₹600** for a 12-hour work day (average for unskilled workers doing several jobs at once in the region).
     The estimate has been made after on-ground interactions with daily-wage workers commuting through the stretch, and taking the average of wages across various professions from following documentations by the **[Labour Commissioner Office, Govt. of Karnataka](https://karmikaspandana.karnataka.gov.in/en)**.
+    
     * **[Minimum Wage Rates for the Year 2026-27](https://karmikaspandana.karnataka.gov.in/64/minimum-wages-rates-for-the-year-2026-27/en)**
     * **[Minimum Wage Rates for the Year 2025-26](https://karmikaspandana.karnataka.gov.in/62/minimum-wages-rates-for-the-year-2025-26/en)**
+    
     **Caution**: The per-minute economic loss is just an educated estimate, since no extensive survey has been conducted by urban authorities specifically in the region of interest. Considering the importance of the stretch, further efforts can be made to persuade local authroities to conduct extensive fiscal audits to get moore accurate figures. 
     """)
     
