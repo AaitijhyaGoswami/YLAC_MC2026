@@ -2,7 +2,7 @@ import streamlit as st
 
 # PAGE CONFIGURATION
 st.set_page_config(
-    page_title="Escape the Knot | Yeshwantapura",
+    page_title="Escape The Knot | Yeshwantapura",
     page_icon="🚶",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -54,7 +54,7 @@ st.sidebar.info(
 
 # MAIN ROUTING
 if page == "Home":
-    st.title("🚶 Escape the Knot")
+    st.title("🚶 Escape The Knot")
     st.markdown("### A Physics-Based Audit of the Yeshwantpur-Mathikere Region")
 
     st.header("Why Do This?")
