@@ -47,8 +47,8 @@ page = st.sidebar.radio("Navigate:", options)
 st.sidebar.markdown("---")
 st.sidebar.caption("Project Team:")
 st.sidebar.info(
-    "**Aaitijhya Goswami**\n*Indian Institute of Science, Bengaluru*\n\n"
-    "**Prajwal Kagalgomb**\n*Indian Institute of Management, Bengaluru*"
+    "**Aaitijhya Goswami**  *Indian Institute of Science, Bengaluru*\n\n"
+    "**Prajwal Kagalgomb**  *Indian Institute of Management, Bengaluru*"
 )
 
 
