@@ -259,7 +259,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     * **[Minimum Wage Rates for the Year 2026-27](https://karmikaspandana.karnataka.gov.in/64/minimum-wages-rates-for-the-year-2026-27/en)**
     * **[Minimum Wage Rates for the Year 2025-26](https://karmikaspandana.karnataka.gov.in/62/minimum-wages-rates-for-the-year-2025-26/en)**
     
-    **Caution**: The per-minute economic loss is just an educated estimate, since no extensive survey has been conducted by urban authorities specifically in the region of interest. Considering the importance of the stretch, further efforts can be made to persuade local authroities to conduct extensive fiscal audits to get moore accurate figures. 
+    **Caution**: The per-minute economic loss is just an educated estimate, since no extensive survey has been conducted by urban authorities specifically in the region of interest. Considering the importance of the stretch, further efforts can be made to persuade local authroities to conduct extensive fiscal audits to get more accurate figures. 
     """)
     
     try:
