@@ -48,7 +48,7 @@ st.sidebar.markdown("---")
 st.sidebar.caption("Project Team:")
 st.sidebar.info(
     "**Aaitijhya Goswami**  \n*Indian Institute of Science, Bengaluru*\n\n"
-    "**Prajwal Kagalgomb**  \n*Indian Institute of Management, Bengaluru*"
+    "**Prajwal Kagalagomb**  \n*Indian Institute of Management, Bengaluru*"
 )
 
 
