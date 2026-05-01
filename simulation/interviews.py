@@ -1,63 +1,45 @@
 import streamlit as st
-import streamlit.components.v1 as components  # Required for robust HTML rendering
-import base64
+from streamlit_pdf_viewer import pdf_viewer
 import os
 
-def display_pdf(file_path):
-    """Uses Streamlit components to force-render the PDF and provides a download button."""
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            pdf_data = f.read()
-            base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-        
-        # Using st.components.v1.html creates an isolated sandbox for the PDF
-        pdf_display = f"""
-        <embed
-            src="data:application/pdf;base64,{base64_pdf}"
-            width="100%"
-            height="1000"
-            type="application/pdf"
-        >
-        """
-        components.html(pdf_display, height=1010)
-        
-        # Use Streamlit's native download button for the fallback
-        st.download_button(
-            label=f"📥 Download {os.path.basename(file_path)}",
-            data=pdf_data,
-            file_name=os.path.basename(file_path),
-            mime="application/pdf"
-        )
-    else:
-        st.error(f"File not found: {os.path.basename(file_path)} at path: {file_path}")
+def render_interview(filename, title):
+    """Helper to display a specific interview PDF using the viewer library."""
+    base_folder = "interviews"
+    full_path = os.path.join(base_folder, filename)
+    
+    with st.expander(f"View {title}"):
+        if os.path.exists(full_path):
+            # The library handles binary reading and base64 internally
+            pdf_viewer(input=full_path, width=700)
+            
+            # Providing a native download button for accessibility
+            with open(full_path, "rb") as f:
+                st.download_button(
+                    label=f"Download {filename}",
+                    data=f,
+                    file_name=filename,
+                    mime="application/pdf"
+                )
+        else:
+            st.error(f"File not found: {filename} in directory '{base_folder}'")
 
 def app():
     st.title("Qualitative Evidence: Stakeholder Interviews")
     st.markdown("""
-    These transcripts document the 'human friction' experienced by the Yeshwantpur-Mathikere community. 
-    They serve as the qualitative backbone for the data in **Escape the Knot.pdf**.
+    This section archives the human narratives of the Yeshwantpur-Mathikere corridor. 
+    Select a stakeholder to view their bilingual or English transcript as recorded 
+    during the 2026 mobility audit.
     """)
     st.markdown("---")
 
-    # Mapping your specific root-level filenames
-    interview_mapping = [
-        ("Interview 01: Street Vendor (Bazaar Street)", "street_vendor.pdf"),
-        ("Interview 02: Restaurant Owner (Constitution Circle)", "rest_owner.pdf"),
-        ("Interview 03: Hotel Owner (Bazaar Circle)", "hotel_owner.pdf"),
-        ("Interview 04: Ticket Collector (Administrative Inquiry)", "tc_ysp.pdf"),
-        ("Interview 05: Kiosk Operator (Main Concourse)", "shop_ypr.pdf"),
-        ("Interview 06: Elderly Pedestrian (Mathikere Resident)", "elderly.pdf"),
-        ("Interview 07: Student at KV IISc (Mathikere Resident)", "student.pdf"),
-        ("Interview 08: PhD Research Scholar (IISc Bengaluru)", "scholar.pdf"),
-        ("Interview 09: Swiggy Delivery Executive (Mathikere - IISc)", "delivery.pdf"),
-        ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "auto.pdf")
-    ]
-
-    # Ensure this folder is at the root level of your project
-    base_folder = "interviews"
-
-    for title, filename in interview_mapping:
-        st.header(title)
-        full_path = os.path.join(base_folder, filename)
-        display_pdf(full_path)
-        st.markdown("---")
+    # Mapping files directly to their audited roles
+    render_interview("street_vendor.pdf", "Interview 01: Street Vendor (Bazaar Street)")[cite: 8]
+    render_interview("rest_owner.pdf", "Interview 02: Restaurant Owner (Constitution Circle)")[cite: 7]
+    render_interview("hotel_owner.pdf", "Interview 03: Hotel Owner (Bazaar Circle)")[cite: 6]
+    render_interview("tc_ysp.pdf", "Interview 04: Ticket Collector (Administrative Inquiry)")[cite: 5]
+    render_interview("shop_ypr.pdf", "Interview 05: Kiosk Operator (Main Concourse)")[cite: 4]
+    render_interview("elderly.pdf", "Interview 06: Elderly Pedestrian (Mathikere Resident)")[cite: 2]
+    render_interview("student.pdf", "Interview 07: Student (KV IISc Resident)")[cite: 3]
+    render_interview("scholar.pdf", "Interview 08: PhD Research Scholar (IISc Bengaluru)")[cite: 11]
+    render_interview("delivery.pdf", "Interview 09: Swiggy Delivery Executive (Mathikere - IISc)")[cite: 9]
+    render_interview("auto.pdf", "Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)")[cite: 10]
