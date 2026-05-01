@@ -24,7 +24,6 @@ def render_interview(filename, title):
             st.error(f"File not found: {filename} in directory '{base_folder}'")
 
 def app():
-    st.title("Qualitative Evidence: Stakeholder Interviews")
     st.markdown("""
     This section archives the human narratives of the Yeshwantpur-Mathikere corridor. 
     Select a stakeholder to view their bilingual or English transcript as recorded 
