@@ -1,14 +1,16 @@
 import streamlit as st
+import streamlit.components.v1 as components  # Required for robust HTML rendering
 import base64
 import os
 
 def display_pdf(file_path):
-    """Encodes the PDF and embeds it using an <embed> tag for stability."""
+    """Uses Streamlit components to force-render the PDF and provides a download button."""
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            pdf_data = f.read()
+            base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
         
-        # Embed tag is often more reliable for PDFs than iframes
+        # Using st.components.v1.html creates an isolated sandbox for the PDF
         pdf_display = f"""
         <embed
             src="data:application/pdf;base64,{base64_pdf}"
@@ -17,15 +19,17 @@ def display_pdf(file_path):
             type="application/pdf"
         >
         """
-        st.markdown(pdf_display, unsafe_allow_html=True)
+        components.html(pdf_display, height=1010)
         
-        # Direct download link as a safety fallback
-        st.markdown(
-            f'<div style="text-align: right;"><a href="data:application/pdf;base64,{base64_pdf}" download="{os.path.basename(file_path)}" style="color: #4CAF50; text-decoration: none; font-size: 0.8em;">📥 Download Transcript PDF</a></div>', 
-            unsafe_allow_html=True
+        # Use Streamlit's native download button for the fallback
+        st.download_button(
+            label=f"📥 Download {os.path.basename(file_path)}",
+            data=pdf_data,
+            file_name=os.path.basename(file_path),
+            mime="application/pdf"
         )
     else:
-        st.error(f"File not found: {os.path.basename(file_path)} (Path tried: {file_path})")
+        st.error(f"File not found: {os.path.basename(file_path)} at path: {file_path}")
 
 def app():
     st.title("Qualitative Evidence: Stakeholder Interviews")
@@ -35,7 +39,7 @@ def app():
     """)
     st.markdown("---")
 
-    # Clean list with no citation markers
+    # Mapping your specific root-level filenames
     interview_mapping = [
         ("Interview 01: Street Vendor (Bazaar Street)", "street_vendor.pdf"),
         ("Interview 02: Restaurant Owner (Constitution Circle)", "rest_owner.pdf"),
@@ -49,12 +53,11 @@ def app():
         ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "auto.pdf")
     ]
 
-    # Relies on the 'interviews' folder being in the project root
+    # Ensure this folder is at the root level of your project
     base_folder = "interviews"
 
     for title, filename in interview_mapping:
         st.header(title)
         full_path = os.path.join(base_folder, filename)
         display_pdf(full_path)
-        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("---")
