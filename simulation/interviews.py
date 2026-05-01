@@ -20,23 +20,23 @@ def app():
     """)
     st.markdown("---")
 
-    # Mapping headers to your specific filenames
+    # Mapping headers to your specific filenames in the root 'interviews' folder
     interview_mapping = [
-        ("Interview 01: Street Vendor (Bazaar Street)", "street_vendor.pdf"),
-        ("Interview 02: Restaurant Owner (Constitution Circle)", "rest_owner.pdf"),
-        ("Interview 03: Hotel Owner (Bazaar Circle)", "hotel_owner.pdf"),
-        ("Interview 04: Ticket Collector (Administrative Inquiry)", "tc_ysp.pdf"),
-        ("Interview 05: Kiosk Operator (Main Concourse)", "shop_ypr.pdf"),
-        ("Interview 06: Elderly Pedestrian (Mathikere Resident)", "elderly.pdf"),
-        ("Interview 07: Student at KV IISc (Mathikere Resident)", "student.pdf"),
-        ("Interview 08: PhD Research Scholar (IISc Bengaluru)", "scholar.pdf"),
-        ("Interview 09: Swiggy Delivery Executive (Mathikere - IISc)", "delivery.pdf"),
-        ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "auto.pdf")
+        ("Interview 01: Street Vendor (Bazaar Street)", "street_vendor.pdf"),[cite: 8]
+        ("Interview 02: Restaurant Owner (Constitution Circle)", "rest_owner.pdf"),[cite: 7]
+        ("Interview 03: Hotel Owner (Bazaar Circle)", "hotel_owner.pdf"),[cite: 6]
+        ("Interview 04: Ticket Collector (Administrative Inquiry)", "tc_ysp.pdf"),[cite: 5]
+        ("Interview 05: Kiosk Operator (Main Concourse)", "shop_ypr.pdf"),[cite: 4]
+        ("Interview 06: Elderly Pedestrian (Mathikere Resident)", "elderly.pdf"),[cite: 2]
+        ("Interview 07: Student at KV IISc (Mathikere Resident)", "student.pdf"),[cite: 3]
+        ("Interview 08: PhD Research Scholar (IISc Bengaluru)", "scholar.pdf"),[cite: 11]
+        ("Interview 09: Swiggy Delivery Executive (Mathikere - IISc)", "delivery.pdf"),[cite: 9]
+        ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "auto.pdf")[cite: 10]
     ]
 
+    # Path relative to the root where the app is run
     base_folder = "interviews"
 
-    # Dynamic loop to render all PDFs
     for title, filename in interview_mapping:
         st.header(title)
         full_path = os.path.join(base_folder, filename)
