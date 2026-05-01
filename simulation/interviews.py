@@ -33,13 +33,13 @@ def app():
     st.markdown("---")
 
     # Mapping files directly to their audited roles
-    render_interview("street_vendor.pdf", "Interview 01: Street Vendor (Bazaar Street)")[cite: 8]
-    render_interview("rest_owner.pdf", "Interview 02: Restaurant Owner (Constitution Circle)")[cite: 7]
-    render_interview("hotel_owner.pdf", "Interview 03: Hotel Owner (Bazaar Circle)")[cite: 6]
-    render_interview("tc_ysp.pdf", "Interview 04: Ticket Collector (Administrative Inquiry)")[cite: 5]
-    render_interview("shop_ypr.pdf", "Interview 05: Kiosk Operator (Main Concourse)")[cite: 4]
-    render_interview("elderly.pdf", "Interview 06: Elderly Pedestrian (Mathikere Resident)")[cite: 2]
-    render_interview("student.pdf", "Interview 07: Student (KV IISc Resident)")[cite: 3]
-    render_interview("scholar.pdf", "Interview 08: PhD Research Scholar (IISc Bengaluru)")[cite: 11]
-    render_interview("delivery.pdf", "Interview 09: Swiggy Delivery Executive (Mathikere - IISc)")[cite: 9]
-    render_interview("auto.pdf", "Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)")[cite: 10]
+    render_interview("street_vendor.pdf", "Interview 01: Street Vendor (Bazaar Street)")
+    render_interview("rest_owner.pdf", "Interview 02: Restaurant Owner (Constitution Circle)")
+    render_interview("hotel_owner.pdf", "Interview 03: Hotel Owner (Bazaar Circle)")
+    render_interview("tc_ysp.pdf", "Interview 04: Ticket Collector (Administrative Inquiry)")
+    render_interview("shop_ypr.pdf", "Interview 05: Kiosk Operator (Main Concourse)")
+    render_interview("elderly.pdf", "Interview 06: Elderly Pedestrian (Mathikere Resident)")
+    render_interview("student.pdf", "Interview 07: Student (KV IISc Resident)")
+    render_interview("scholar.pdf", "Interview 08: PhD Research Scholar (IISc Bengaluru)")
+    render_interview("delivery.pdf", "Interview 09: Swiggy Delivery Executive (Mathikere - IISc)")
+    render_interview("auto.pdf", "Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)")
