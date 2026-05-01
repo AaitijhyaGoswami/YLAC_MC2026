@@ -22,16 +22,16 @@ def app():
 
     # Mapping headers to your specific filenames
     interview_mapping = [
-        ("Interview 01: Street Vendor (Bazaar Street)", "interviews/street_vendor.pdf"),
-        ("Interview 02: Restaurant Owner (Constitution Circle)", "interviews/rest_owner.pdf"),
-        ("Interview 03: Hotel Owner (Bazaar Circle)", "interviews/hotel_owner.pdf"),
-        ("Interview 04: Ticket Collector (Administrative Inquiry)", "interviews/tc_ysp.pdf"),
-        ("Interview 05: Kiosk Operator (Main Concourse)", "interviews/shop_ypr.pdf"),
-        ("Interview 06: Elderly Pedestrian (Mathikere Resident)", "interviews/elderly.pdf"),
-        ("Interview 07: Student at KV IISc (Mathikere Resident)", "interviews/student.pdf"),
-        ("Interview 08: PhD Research Scholar (IISc Bengaluru)", "interviews/scholar.pdf"),
-        ("Interview 09: Swiggy Delivery Executive (Mathikere - IISc)", "interviews/delivery.pdf"),
-        ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "interviews/auto.pdf")
+        ("Interview 01: Street Vendor (Bazaar Street)", "street_vendor.pdf"),
+        ("Interview 02: Restaurant Owner (Constitution Circle)", "rest_owner.pdf"),
+        ("Interview 03: Hotel Owner (Bazaar Circle)", "hotel_owner.pdf"),
+        ("Interview 04: Ticket Collector (Administrative Inquiry)", "tc_ysp.pdf"),
+        ("Interview 05: Kiosk Operator (Main Concourse)", "shop_ypr.pdf"),
+        ("Interview 06: Elderly Pedestrian (Mathikere Resident)", "elderly.pdf"),
+        ("Interview 07: Student at KV IISc (Mathikere Resident)", "student.pdf"),
+        ("Interview 08: PhD Research Scholar (IISc Bengaluru)", "scholar.pdf"),
+        ("Interview 09: Swiggy Delivery Executive (Mathikere - IISc)", "delivery.pdf"),
+        ("Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)", "auto.pdf")
     ]
 
     base_folder = "interviews"
