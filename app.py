@@ -37,6 +37,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from simulation import interviews
+    modules["Stakeholder Interviews"] = interviews
+except ImportError:
+    pass
+
 # SIDEBAR NAVIGATION
 st.sidebar.title("Advocacy Modules")
 st.sidebar.caption("Yeshwantpur Mobility Audit 2026")
