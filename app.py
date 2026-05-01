@@ -29,6 +29,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from simulation import interviews
+    modules["Stakeholder Interviews"] = interviews
+except ImportError:
+    pass
+
 # Inside your main app.py
 try:
     # We now point Python to look inside the static folder
@@ -37,11 +43,7 @@ try:
 except ImportError:
     pass
 
-try:
-    from simulation import interviews
-    modules["Stakeholder Interviews"] = interviews
-except ImportError:
-    pass
+
 
 # SIDEBAR NAVIGATION
 st.sidebar.title("Advocacy Modules")
