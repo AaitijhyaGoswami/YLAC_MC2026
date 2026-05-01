@@ -28,7 +28,9 @@ def app():
     st.markdown("""
     This section archives the human narratives of the Yeshwantpur-Mathikere corridor. 
     Select a stakeholder to view their bilingual or English transcript as recorded 
-    during the 2026 mobility audit.
+    during the March 2026 mobility audit. These interactions provide a raw insight in 
+    the issues in the daily commute and the perceptions developed due to them among the 
+    populace of the Yeshwantpur-Mathikere region.
     """)
     st.markdown("---")
 
@@ -39,7 +41,7 @@ def app():
     render_interview("tc_ysp.pdf", "Interview 04: Ticket Collector (Administrative Inquiry)")
     render_interview("shop_ypr.pdf", "Interview 05: Kiosk Operator (Main Concourse)")
     render_interview("elderly.pdf", "Interview 06: Elderly Pedestrian (Mathikere Resident)")
-    render_interview("student.pdf", "Interview 07: Student (KV IISc Resident)")
+    render_interview("student.pdf", "Interview 07: Student (Grade 10, KV IISc)")
     render_interview("scholar.pdf", "Interview 08: PhD Research Scholar (IISc Bengaluru)")
     render_interview("delivery.pdf", "Interview 09: Swiggy Delivery Executive (Mathikere - IISc)")
     render_interview("auto.pdf", "Interview 10: Auto-Rickshaw Driver (Yeshwantpur Stand)")
