@@ -5,4 +5,4 @@ matplotlib
 folium
 streamlit-folium
 pyyaml
-reportlab
+streamlit-pdf-viewer
