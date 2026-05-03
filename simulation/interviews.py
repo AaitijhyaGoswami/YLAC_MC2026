@@ -27,8 +27,8 @@ def app():
     st.markdown("""
     This section archives the human narratives of the Yeshwantpur-Mathikere corridor. 
     Select a stakeholder to view their bilingual or English transcript as recorded 
-    during the March 2026 mobility audit. These interactions provide a raw insight in 
-    the issues in the daily commute and the perceptions developed due to them among the 
+    during the March 2026 mobility audit. These interactions provide a raw insight into 
+    **the issues in the daily commute and the perceptions developed due to them** among the 
     populace of the Yeshwantpur-Mathikere region.
     """)
     st.markdown("---")
