@@ -350,7 +350,7 @@ Contributions are welcome, particularly extensions of the friction rubric to new
 
 ## License
 
-MIT — see `LICENSE` for details.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
