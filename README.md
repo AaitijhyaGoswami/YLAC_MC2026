@@ -14,7 +14,9 @@
 
 ## Overview
 
-This project is a **multi-module Streamlit application** that quantifies the infrastructural burden imposed on pedestrians at the Yeshwantpur transit hub. The core idea is to treat a broken pedestrian corridor as a physical system: encroachments, missing drain covers, and footpath failures act as a resistive friction field, and a commuter's journey through it is analogous to work done against that field.
+This project is a **multi-module Streamlit application** that quantifies the infrastructural burden imposed on pedestrians at the Yeshwantpur transit hub. The core idea is to treat a broken pedestrian corridor as a physical system: encroachments, missing drain covers, and footpath failures act as a resistive friction field, and a commuter's journey through it is analogous to work done against that field — exactly as mechanical work scales with surface resistance:
+
+$$W = \int_0^D F(x)\, dx = \int_0^D \mu(x)\, mg\, dx$$
 
 The audit covered a **900 m corridor** split into two structurally distinct zones:
 - **300 m (Constitution Circle zone):** 24 discrete geotagged obstacle nodes
@@ -26,7 +28,7 @@ The audit covered a **900 m corridor** split into two structurally distinct zone
 |---|---|
 | Route failing Active Mobility Bill standards | 90.3% |
 | Route inaccessible to wheelchair users | 96.0% |
-| Mean Friction Index `f̄` | 4.653 |
+| Mean Friction Index $\bar{f}$ | 4.653 |
 | Effective felt distance of a 900 m walk | ~4,187 m |
 | Annual person-minutes lost (100,000 daily commuters) | ~170 million |
 | Annual productivity loss | ₹14.2 Crore |
@@ -36,7 +38,7 @@ The audit covered a **900 m corridor** split into two structurally distinct zone
 
 ## Application Structure
 
-The app (`app.py`) uses a sidebar radio to route between four modules. Each module is a self-contained Python file with an `app()` entry point, imported dynamically at startup with graceful fallback if a module fails to load.
+The app (`app.py`) uses a sidebar radio to route between five modules. Each module is a self-contained Python file with an `app()` entry point, imported dynamically at startup with graceful fallback if a module fails to load.
 
 ```
 escape-the-knot/
@@ -76,92 +78,140 @@ Converts the field audit into an interactive geospatial evidence layer.
 
 **What it does:**
 - Loads `data/audit_log.csv` (columns: `id`, `lat`, `lon`, `f_value`) and builds a `Folium` map centred on the corridor
-- Renders the **600 m Bazaar Street polyline** as a colour-coded route layer (colour varies with the sidebar-controlled `bazaar_f` scenario value)
-- Renders **24 discrete CircleMarkers** for the Constitution Circle zone, each with a rich popup (Node ID, friction, GPS coords, status)
-- Nodes set to `f = 1` by the sidebar slider are re-coloured to gold to visually confirm remediation
-- Produces three `Matplotlib` figures: a **friction gradient bar chart** (full 900 m), a **severity pie chart** (300 m zone only), and an **effective path length comparison** bar chart across three scenarios (Baseline / Modified / S.U.R.E. Target)
-- Computes the **S.U.R.E. Compliance Gauge** — a horizontal bar showing where the current `f̄` sits between 1.0 (target) and 5.0 (failure)
+- Renders the **600 m Bazaar Street polyline** as a colour-coded route layer, colour varying with the sidebar-controlled `bazaar_f` scenario value
+- Renders **24 discrete `CircleMarker`s** for the Constitution Circle zone, each with a rich popup (Node ID, friction, GPS coords, status); nodes remediated by the slider are re-coloured to confirm the fix
+- Produces three `Matplotlib` figures: a **friction gradient bar chart** (full 900 m), a **severity pie chart** (300 m zone only), and an **effective path length comparison** chart across Baseline / Modified / S.U.R.E. Target scenarios
+- Computes the **S.U.R.E. Compliance Gauge** — a horizontal bar showing where $\bar{f}$ sits between the target of 1.0 and the failure ceiling of 5.0
 
-**Core computation:**
+**Mathematical framework:**
 
-The mean friction index across the full 900 m corridor is:
+The corridor is treated as a piecewise-constant friction field. The **Effective Path Length** $L_\text{eff}$ — the felt distance in terms of physical effort — is the friction-weighted integral over the full route:
 
-```
-f̄ = (d × Σfᵢ + L_B × f_B) / D
-```
+$$L_\text{eff}(\phi) = \int_0^D f(x,\, \phi)\, dx \;\approx\; d \sum_{i=1}^{N} f_i(\phi)$$
 
-where `d = 12.5 m` (segment length), `D = 900 m`, `L_B = 600 m` (Bazaar Street length), and `f_B` is the sidebar-selected Bazaar Street scenario value.
+where $D = 900\,\text{m}$, $d = 12.5\,\text{m}$ (segment discretisation length), $N = 72$ (total segments), and $\phi$ denotes the commuter persona.
+
+The two zones are computed separately and summed. For the **300 m Constitution Circle zone** (24 nodes: 9 at $f=5$, 8 at $f=4$, 4 at $f=3$, 3 at $f=2$):
+
+$$L_\text{eff}^{300} = 12.5 \times \left(9 \cdot 5 + 8 \cdot 4 + 4 \cdot 3 + 3 \cdot 2\right) = 12.5 \times 95 = 1187.5\,\text{m}$$
+
+For the **600 m Bazaar Street zone** (continuous friction at the sidebar-selected value $f_B$):
+
+$$L_\text{eff}^{600} = 600 \times f_B$$
+
+At baseline ($f_B = 5$), this gives $L_\text{eff}^{600} = 3000\,\text{m}$. The total effective path length and **Mean Friction Index** across the corridor are:
+
+$$L_\text{eff} = L_\text{eff}^{300} + L_\text{eff}^{600} = 1187.5 + 3000 = 4187.5\,\text{m}$$
+
+$$\bar{f} = \frac{1}{D}\left[d\sum_{i=1}^{N} f_i + L_B \cdot f_B\right] = \frac{4187.5}{900} \approx 4.653$$
+
+The corridor imposes **4.65× the energetic cost** of a fully compliant S.U.R.E. footpath. When the slider remediates the top $n$ nodes to $f = 1$, $\bar{f}$ recalculates in real time and all three figures update.
 
 **Sidebar controls:**
-- Slider: nodes remediated to `f = 1` (0–24, ranked by descending `f_value`)
-- Selectbox: Bazaar Street scenario (`f = 5` through `f = 1`)
+- Slider: nodes remediated to $f = 1$ (0–24, ranked by descending `f_value`)
+- Selectbox: Bazaar Street scenario ($f = 5$ through $f = 1$)
 
 ---
 
 ### 2. Time Tax Simulator · `simulation/agent_sim.py`
 
-Simulates how each of four commuter personas traverses the friction array, and quantifies the time stolen per trip.
+Simulates how each of four commuter personas traverses the friction array and quantifies the time stolen per trip.
 
 **What it does:**
-- Builds a NumPy array of 72 friction values (24 discrete nodes + 48 Bazaar Street segments at `d = 12.5 m`)
+- Builds a NumPy array of 72 friction values (24 discrete nodes + 48 Bazaar Street segments at $d = 12.5\,\text{m}$)
 - Runs `run_simulation()` for each persona against the current friction array
-- For each segment `i`: if `f_i ≤ f_max(φ)`, applies the power-law velocity model; if `f_i > f_max(φ)`, triggers a **vehicular Right-of-Way detour** with a distance penalty `δ` and safety multiplier `α = 1.5`
-- Produces three `Matplotlib` figures: traversal time comparison (ideal vs. actual), cross-persona Time Tax bar chart, and a two-panel per-segment breakdown (friction gradient + per-segment `τᵢ`)
+- For each segment $i$: applies the power-law velocity model if $f_i \leq f_\text{max}(\phi)$, or triggers a vehicular Right-of-Way (ROW) detour if $f_i > f_\text{max}(\phi)$
+- Produces three `Matplotlib` figures: traversal time comparison (ideal vs. actual), cross-persona Time Tax bar chart, and a two-panel per-segment breakdown (friction gradient + per-segment $\tau_i$)
 - Exposes a raw simulation data table in an expander
 
 **Velocity model:**
 
-```
-v_eff(i, φ) = v₀(φ) / fᵢ^k(φ)          [path traversal, fᵢ ≤ f_max]
-τᵢ(φ)       = (d + δ) × α / v₀(φ)      [ROW detour,    fᵢ > f_max]
+Rather than a linear speed reduction — which underestimates the compounding penalty on vulnerable users — the simulator uses a **power-law friction-velocity relationship**. The sensitivity exponent $k(\phi)$ captures how super-linearly speed degrades for each persona:
 
-Δτ(φ) = T_actual - T_ideal
-       = (d / v₀) × (Σ fᵢ^k - N)       [traversal-only approximation]
-```
+$$v_\text{eff}(i,\, \phi) = \frac{v_0(\phi)}{f_i^{\,k(\phi)}}$$
+
+The traversal time for segment $i$ of length $d$ under normal path conditions is:
+
+$$\tau_i(\phi) = \frac{d}{v_\text{eff}(i,\,\phi)} = \frac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} \qquad \text{if } f_i \leq f_\text{max}(\phi)$$
+
+When $f_i > f_\text{max}(\phi)$, the segment is **impassable** for that persona. The agent is rerouted into vehicular ROW, incurring a geometric detour of length $\delta(\phi)$ and a safety speed-penalty multiplier $\alpha = 1.5$:
+
+$$\tau_i^\text{ROW}(\phi) = \frac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0(\phi)} \qquad \text{if } f_i > f_\text{max}(\phi)$$
+
+These two cases are unified in the piecewise traversal model:
+
+$$\tau_i(\phi) = \begin{cases} \dfrac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} & f_i \leq f_\text{max}(\phi) \\[10pt] \dfrac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0(\phi)} & f_i > f_\text{max}(\phi) \end{cases}$$
+
+The **total actual traversal time** and **ideal traversal time** across all $N = 72$ segments are:
+
+$$T_\text{actual}(\phi) = \sum_{i=1}^{N} \tau_i(\phi) \qquad\qquad T_\text{ideal}(\phi) = \frac{D}{v_0(\phi)}$$
+
+The **Time Tax** — cumulative seconds stolen from the commuter per trip — is therefore:
+
+$$\Delta\tau(\phi) = T_\text{actual}(\phi) - T_\text{ideal}(\phi) = \frac{d}{v_0(\phi)}\left(\sum_{i=1}^{N} f_i^{\,k(\phi)} - N\right)$$
+
+**What-if scenario:** when the top $n$ nodes (sorted by descending $f_i^{k(\phi)}$ to maximise impact first) are set to $f = 1$, the time recovered per persona is:
+
+$$\Delta\tau_\text{saved}(n,\,\phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left(f_j^{\,k(\phi)} - 1\right)$$
+
+This directly drives the sidebar node-fix slider — each increment shows the marginal gain of one more hotspot repair.
 
 **Persona configuration** (loaded from `data/personas.yaml`):
 
-| Persona | `v₀` (m/s) | `k` | `f_max` | `δ` (m) | Population weight |
+| Persona | $v_0$ (m/s) | $k$ | $f_\text{max}$ | $\delta$ (m) | Weight |
 |---|---|---|---|---|---|
 | Able-bodied Adult | 1.4 | 0.60 | 4 | 8 | 45% |
 | Elderly Commuter | 0.9 | 0.90 | 3 | 10 | 20% |
 | Wheelchair User | 0.8 | 1.20 | 3 | 15 | 10% |
 | Delivery Partner | 1.2 | 0.75 | 4 | 8 | 25% |
 
-**Sidebar controls:** Persona selector (with calibration metrics in help text), node-fix slider, Bazaar Street scenario selectbox.
+**Sidebar controls:** Persona selector (with $v_0$, $k$, $f_\text{max}$, $\alpha$, $\delta$ shown in help text), node-fix slider, Bazaar Street scenario selectbox.
 
 ---
 
 ### 3. Economic Impact · `simulation/economic_impact.py`
 
-Scales individual Time Tax values to a city-wide annual fiscal loss figure.
+Scales individual Time Tax values to a city-wide annual fiscal loss figure and computes the return on infrastructure investment.
 
 **What it does:**
-- Runs the full simulation for all four personas under both the **baseline** (`n_fixes = 0`, `bazaar_f = 5`) and the **current sidebar scenario**
-- Computes a **population-weighted mean Time Tax** `Δτ̄` across personas
-- Converts to annual person-minutes and then to INR using `WAGE = ₹50/hr` (RBI informal rate, Karnataka Labour Commissioner data 2025–27)
-- Computes the **Benefit-Cost Ratio (BCR)** for the selected number of fixes, using `₹8–12 Lakh` per node as the repair cost estimate
-- Produces: Time Tax comparison bar chart (baseline vs. scenario, per persona), annual loss waterfall chart (Δ per persona), and a **BCR curve** (efficiency vs. number of hotspots fixed)
-- Displays a per-persona breakdown table
+- Runs the full simulation for all four personas under both the **baseline** (`n_fixes = 0`, `bazaar_f = 5`) and the current sidebar scenario
+- Computes a population-weighted mean Time Tax, converts to annual person-minutes, then to INR
+- Wage rate validated against Karnataka Labour Commissioner minimum wage schedules 2025–26 and 2026–27
+- Computes the BCR for the selected number of fixes using ₹8–12 Lakh per node as the repair cost estimate
+- Produces: Time Tax comparison bar chart (baseline vs. scenario, per persona), annual loss waterfall chart ($\Delta$ per persona), and a **BCR curve** (investment efficiency vs. number of hotspots fixed, with a 10:1 threshold line)
 
-**Aggregation formula:**
+**Aggregation pipeline:**
 
-```
-L = M × W × (Δτ̄ / 60) × WAGE × 10⁻⁷   [Crore INR]
+The **population-weighted mean Time Tax** across all persona types $\Phi$, weighted by their share $w_\phi$ of the daily commuter population:
 
-BCR = (ΔL × 100) / Repair Cost (Lakhs)
-```
+$$\overline{\Delta\tau} = \frac{\displaystyle\sum_{\phi \in \Phi} w_\phi \cdot \Delta\tau(\phi)}{\displaystyle\sum_{\phi \in \Phi} w_\phi}$$
 
-where `M = 100,000` (daily commuters), `W = 250` (working days/year).
+The **total annual person-minutes lost** across $M$ daily commuters and $W$ working days:
 
-**Constants:**
+$$\mathcal{T}_\text{year} = M \cdot W \cdot \frac{\overline{\Delta\tau}}{60}$$
+
+Converted to annual economic loss in Crore INR, where $\text{WAGE} \approx \text{₹}0.83\,\text{min}^{-1}$:
+
+$$\mathcal{L} = \mathcal{T}_\text{year} \cdot \text{WAGE} \times 10^{-7}$$
+
+The **annual economic benefit** of a given remediation scenario relative to baseline:
+
+$$\Delta\mathcal{L} = \mathcal{L}_\text{baseline} - \mathcal{L}_\text{scenario}$$
+
+The **Benefit-Cost Ratio** for $n$ fixes at a repair cost range of ₹8–12 Lakh per node:
+
+$$\text{BCR} = \frac{\Delta\mathcal{L} \times 100}{\text{Repair Cost (Lakhs)}}$$
+
+At the Lighthouse Pilot ($n = 3$), $\Delta\mathcal{L} \approx \text{₹}5.4\,\text{Crore}$ against a repair cost of ₹24–36 Lakh, giving $\text{BCR} > 10:1$.
+
+**Model constants:**
 
 ```python
-M               = 100_000
-W               = 250
-WAGE            = 50 / 60          # Rs/min
-FIX_COST_LOW    = 8  # Lakh/node
-FIX_COST_HIGH   = 12 # Lakh/node
+M              = 100_000   # daily commuters at Yeshwantpur hub
+W              = 250       # working days per year
+WAGE           = 50 / 60   # Rs/min  (RBI informal rate)
+FIX_COST_LOW   = 8         # Lakh per node (lower estimate)
+FIX_COST_HIGH  = 12        # Lakh per node (upper estimate)
 ```
 
 **Sidebar controls:** Hotspot-fix slider (default: 3), Bazaar Street scenario selectbox.
@@ -173,10 +223,16 @@ FIX_COST_HIGH   = 12 # Lakh/node
 Presents the proposed S.U.R.E.-compliant redesign of the Bazaar Street cross-section.
 
 **What it does:**
-- Displays field photographs of the current corridor condition (Bazaar Street encroachment, barriers, blocked footpaths)
-- Shows static CAD renders of the current (`f = 5`) and proposed (`f = 1`) cross-sections as before/after image pairs
-- Lists the stakeholder groups affected (residents, transit commuters, students, vendors, persons with disabilities, freight operators) and the relevant administrative authorities (DULT, GBA/BBMP, BMTC, Traffic Police, MLA)
-- Renders a spatial allocation comparison table (current spec vs. proposed S.U.R.E. spec for each cross-sectional component)
+- Displays field photographs of the current corridor (Bazaar Street encroachment, wall-and-mesh barriers, blocked footpaths)
+- Shows static CAD renders of the current ($f = 5$) and proposed ($f = 1$) cross-sections as before/after image pairs
+- Lists stakeholder groups affected and the relevant administrative authorities (DULT, GBA/BBMP, BMTC, Traffic Police, MLA)
+- Renders the spatial allocation comparison table
+
+The physics motivation: the barricades and colonisation impose a psychological buffer zone that reduces usable pedestrian width below even the nominal footpath width. The effective passable width is:
+
+$$W_\text{eff} = W_\text{total} - W_\text{obstacles} - W_\text{buffer}$$
+
+Restoring the full $3\,\text{m}$ clear path eliminates the right-hand terms entirely, returning $v_\text{eff} \to v_0(\phi)$ for every persona — zero Time Tax, $\bar{f} \to 1$.
 
 **Proposed cross-section (Bazaar Street, S.U.R.E. compliant):**
 
@@ -216,7 +272,7 @@ Renders the full set of stakeholder interview transcripts collected during the M
 | 09 | `delivery.pdf` | Swiggy delivery executive, Mathikere–IISc route | English |
 | 10 | `auto.pdf` | Auto-rickshaw driver, Yeshwantpur stand (9 years) | English |
 
-Interviews 01–06 are bilingual: each question and answer appears in Kannada first, followed by the English translation, typeset with Lohit Kannada and DejaVu Sans respectively. Interviews 07–10 are English-only. All transcripts follow the same press-accurate Q&A format with a metadata header (role, location, interview method, date) and a closing observation note. Strict anonymity protocols were observed throughout — no names, designations, or identifying markers were recorded.
+Interviews 01–06 are bilingual: each question and answer appears in Kannada first, followed by the English translation. Interviews 07–10 are English-only. All transcripts follow a press-accurate Q&A format with a metadata header (role, location, interview method, date) and a closing observation note. Strict anonymity protocols were observed — no names, designations, or identifying markers were recorded.
 
 ---
 
