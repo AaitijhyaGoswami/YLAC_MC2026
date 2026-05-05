@@ -8,7 +8,7 @@
 
 > **Authors:** [Aaitijhya Goswami](https://www.linkedin.com/in/aaitijhya-goswami-553940280/) (IISc Bengaluru) · [Prajwal Kagalgomb](https://www.linkedin.com/in/prajwalkagalgomb/) (IIM Bengaluru)  
 > **Partner:** [Bengawalk](https://bengawalk.com/) · **Programme:** YLAC Mobility Champions 2026  
-> **Field Audit:** March 7–8, 2026 · **Survey Area:** 900 m, Yeshwantpur Railway Station → Constitution Circle
+> **Field Audit:** March 2026 · **Survey Area:** 900 m, Yeshwantpur Railway Station → Constitution Circle
 
 ---
 
