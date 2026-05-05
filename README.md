@@ -2,7 +2,7 @@
 ### A Physics-Based Pedestrian Accessibility Audit of the Yeshwantpur–Mathikere Corridor, Bengaluru
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.x-ff4b4b?style=flat-square)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-ff4b4b)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)
 
