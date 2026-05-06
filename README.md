@@ -233,7 +233,7 @@ The physics motivation: the barricades and colonisation impose a psychological b
 
 $$W_\text{eff} = W_\text{total} - W_\text{obstacles} - W_\text{buffer}$$
 
-Restoring the full $3\,\text{m}$ clear path eliminates the right-hand terms entirely, returning $v_\text{eff} \to v_0(\phi)$ for every persona — zero Time Tax, $\bar{f} \to 1$.
+Restoring the full $3 \text{m}$ clear path eliminates the right-hand terms entirely, returning $v_\text{eff} \to v_0(\phi)$ for every persona — zero Time Tax, $\bar{f} \to 1$.
 
 **Proposed cross-section (Bazaar Street, S.U.R.E. compliant):**
 
