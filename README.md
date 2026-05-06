@@ -140,7 +140,7 @@ $$\tau_i^\text{ROW}(\phi) = \frac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0
 
 These two cases are unified in the piecewise traversal model:
 
-$$\tau_i(\phi) = \begin{cases} \dfrac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} & f_i \leq f_\text{max}(\phi) 
+$$\tau_i(\phi) = \begin{cases} \dfrac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} & f_i \leq f_\text{max}(\phi) \\
 \dfrac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0(\phi)} & f_i > f_\text{max}(\phi) \end{cases}$$
 
 The **total actual traversal time** and **ideal traversal time** across all $N = 72$ segments are:
