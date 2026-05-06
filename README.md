@@ -14,7 +14,7 @@
 
 ## Overview
 
-This project is a **multi-module Streamlit application** that quantifies the infrastructural burden imposed on pedestrians at the Yeshwantpur transit hub. The core idea is to treat a broken pedestrian corridor as a physical system: encroachments, missing drain covers, and footpath failures act as a resistive friction field, and a commuter's journey through it is analogous to work done against that field — exactly as mechanical work scales with surface resistance:
+This project is a **multi-module Streamlit application** that quantifies the infrastructural burden imposed on pedestrians at the Yeshwantpur transit hub. The core idea is to treat a broken pedestrian corridor as a physical system: encroachments, missing drain covers, and footpath failures act as a resistive friction field, and a commuter's journey through it is analogous to work done against that field; exactly as mechanical work scales with surface resistance:
 
 $$W = \int_0^D F(x)\, dx = \int_0^D \mu(x)\, mg\, dx$$
 
@@ -55,16 +55,16 @@ escape-the-knot/
 │   ├── personas.yaml               # Agent config: v0, k, f_max, alpha, delta, weight
 │   └── survey[1–9].jpg             # Field audit photographs
 ├── interviews/
-│   ├── street_vendor.pdf           # Interview 01 — bilingual (Kannada / English)
-│   ├── rest_owner.pdf              # Interview 02 — bilingual (Kannada / English)
-│   ├── hotel_owner.pdf             # Interview 03 — bilingual (Kannada / English)
-│   ├── tc_ysp.pdf                  # Interview 04 — bilingual (Kannada / English)
-│   ├── shop_ypr.pdf                # Interview 05 — bilingual (Kannada / English)
-│   ├── elderly.pdf                 # Interview 06 — bilingual (Kannada / English)
-│   ├── student.pdf                 # Interview 07 — English
-│   ├── scholar.pdf                 # Interview 08 — English
-│   ├── delivery.pdf                # Interview 09 — English
-│   └── auto.pdf                    # Interview 10 — English
+│   ├── street_vendor.pdf           # Interview 01 
+│   ├── rest_owner.pdf              # Interview 02 
+│   ├── hotel_owner.pdf             # Interview 03
+│   ├── tc_ysp.pdf                  # Interview 04 
+│   ├── shop_ypr.pdf                # Interview 05 
+│   ├── elderly.pdf                 # Interview 06 
+│   ├── student.pdf                 # Interview 07 
+│   ├── scholar.pdf                 # Interview 08 
+│   ├── delivery.pdf                # Interview 09 
+│   └── auto.pdf                    # Interview 10
 └── requirements.txt
 ```
 
@@ -89,19 +89,19 @@ The corridor is treated as a piecewise-constant friction field. The **Effective 
 
 $$L_\text{eff}(\phi) = \int_0^D f(x,\, \phi)\, dx \;\approx\; d \sum_{i=1}^{N} f_i(\phi)$$
 
-where $D = 900\,\text{m}$, $d = 12.5\,\text{m}$ (segment discretisation length), $N = 72$ (total segments), and $\phi$ denotes the commuter persona.
+where $D = 900 \text{m}$, $d = 12.5 \text{m}$ (segment discretisation length), $N = 72$ (total segments), and $\phi$ denotes the commuter persona.
 
 The two zones are computed separately and summed. For the **300 m Constitution Circle zone** (24 nodes: 9 at $f=5$, 8 at $f=4$, 4 at $f=3$, 3 at $f=2$):
 
-$$L_\text{eff}^{300} = 12.5 \times \left(9 \cdot 5 + 8 \cdot 4 + 4 \cdot 3 + 3 \cdot 2\right) = 12.5 \times 95 = 1187.5\,\text{m}$$
+$$L_\text{eff}^{300} = 12.5 \times \left(9 \cdot 5 + 8 \cdot 4 + 4 \cdot 3 + 3 \cdot 2\right) = 12.5 \times 95 = 1187.5 \text{m}$$
 
 For the **600 m Bazaar Street zone** (continuous friction at the sidebar-selected value $f_B$):
 
 $$L_\text{eff}^{600} = 600 \times f_B$$
 
-At baseline ($f_B = 5$), this gives $L_\text{eff}^{600} = 3000\,\text{m}$. The total effective path length and **Mean Friction Index** across the corridor are:
+At baseline ($f_B = 5$), this gives $L_\text{eff}^{600} = 3000 \text{m}$. The total effective path length and **Mean Friction Index** across the corridor are:
 
-$$L_\text{eff} = L_\text{eff}^{300} + L_\text{eff}^{600} = 1187.5 + 3000 = 4187.5\,\text{m}$$
+$$L_\text{eff} = L_\text{eff}^{300} + L_\text{eff}^{600} = 1187.5 + 3000 = 4187.5 \text{m}$$
 
 $$\bar{f} = \frac{1}{D}\left[d\sum_{i=1}^{N} f_i + L_B \cdot f_B\right] = \frac{4187.5}{900} \approx 4.653$$
 
@@ -118,7 +118,7 @@ The corridor imposes **4.65× the energetic cost** of a fully compliant S.U.R.E.
 Simulates how each of four commuter personas traverses the friction array and quantifies the time stolen per trip.
 
 **What it does:**
-- Builds a NumPy array of 72 friction values (24 discrete nodes + 48 Bazaar Street segments at $d = 12.5\,\text{m}$)
+- Builds a NumPy array of 72 friction values (24 discrete nodes + 48 Bazaar Street segments at $d = 12.5 \text{m}$)
 - Runs `run_simulation()` for each persona against the current friction array
 - For each segment $i$: applies the power-law velocity model if $f_i \leq f_\text{max}(\phi)$, or triggers a vehicular Right-of-Way (ROW) detour if $f_i > f_\text{max}(\phi)$
 - Produces three `Matplotlib` figures: traversal time comparison (ideal vs. actual), cross-persona Time Tax bar chart, and a two-panel per-segment breakdown (friction gradient + per-segment $\tau_i$)
