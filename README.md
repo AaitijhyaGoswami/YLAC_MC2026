@@ -20,7 +20,7 @@ $$W = \int_0^D F(x) dx = \int_0^D \mu(x) mg dx$$
 
 The audit covered a **900 m corridor** split into two structurally distinct zones:
 - **300 m (Constitution Circle zone):** 24 discrete geotagged obstacle nodes
-- **600 m (Bazaar Street zone):** A continuous systemic failure — footpath fully colonised by vendors and wall-and-mesh barriers
+- **600 m (Bazaar Street zone):** A continuous systemic failure, footpath fully colonised by vendors and wall-and-mesh barriers
 
 **Key headline results:**
 
@@ -233,7 +233,7 @@ The physics motivation: the barricades and colonisation impose a psychological b
 
 $$W_\text{eff} = W_\text{total} - W_\text{obstacles} - W_\text{buffer}$$
 
-Restoring the full $3 \text{m}$ clear path eliminates the right-hand terms entirely, returning $v_\text{eff} \to v_0(\phi)$ for every persona — zero Time Tax, $\bar{f} \to 1$.
+Restoring the full $3 \text{m}$ clear path eliminates the right-hand terms entirely, returning $v_\text{eff} \to v_0(\phi)$ for every persona: zero Time Tax, $\bar{f} \to 1$.
 
 **Proposed cross-section (Bazaar Street, S.U.R.E. compliant):**
 
