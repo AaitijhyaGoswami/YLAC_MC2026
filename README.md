@@ -16,7 +16,7 @@
 
 This project is a **multi-module Streamlit application** that quantifies the infrastructural burden imposed on pedestrians at the Yeshwantpur transit hub. The core idea is to treat a broken pedestrian corridor as a physical system: encroachments, missing drain covers, and footpath failures act as a resistive friction field, and a commuter's journey through it is analogous to work done against that field; exactly as mechanical work scales with surface resistance:
 
-$$W = \int_0^D F(x)\, dx = \int_0^D \mu(x)\, mg\, dx$$
+$$W = \int_0^D F(x) dx = \int_0^D \mu(x) mg dx$$
 
 The audit covered a **900 m corridor** split into two structurally distinct zones:
 - **300 m (Constitution Circle zone):** 24 discrete geotagged obstacle nodes
@@ -87,7 +87,7 @@ Converts the field audit into an interactive geospatial evidence layer.
 
 The corridor is treated as a piecewise-constant friction field. The **Effective Path Length** $L_\text{eff}$ — the felt distance in terms of physical effort — is the friction-weighted integral over the full route:
 
-$$L_\text{eff}(\phi) = \int_0^D f(x,\, \phi)\, dx \;\approx\; d \sum_{i=1}^{N} f_i(\phi)$$
+$$L_\text{eff}(\phi) = \int_0^D f(x, \phi) dx \approx d \sum_{i=1}^{N} f_i(\phi)$$
 
 where $D = 900 \text{m}$, $d = 12.5 \text{m}$ (segment discretisation length), $N = 72$ (total segments), and $\phi$ denotes the commuter persona.
 
@@ -128,11 +128,11 @@ Simulates how each of four commuter personas traverses the friction array and qu
 
 Rather than a linear speed reduction — which underestimates the compounding penalty on vulnerable users — the simulator uses a **power-law friction-velocity relationship**. The sensitivity exponent $k(\phi)$ captures how super-linearly speed degrades for each persona:
 
-$$v_\text{eff}(i,\, \phi) = \frac{v_0(\phi)}{f_i^{\,k(\phi)}}$$
+$$v_\text{eff}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}}$$
 
 The traversal time for segment $i$ of length $d$ under normal path conditions is:
 
-$$\tau_i(\phi) = \frac{d}{v_\text{eff}(i,\,\phi)} = \frac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} \qquad \text{if } f_i \leq f_\text{max}(\phi)$$
+$$\tau_i(\phi) = \frac{d}{v_\text{eff}(i,\phi)} = \frac{d \cdot f_i^{k(\phi)}}{v_0(\phi)} \qquad \text{if } f_i \leq f_\text{max}(\phi)$$
 
 When $f_i > f_\text{max}(\phi)$, the segment is **impassable** for that persona. The agent is rerouted into vehicular ROW, incurring a geometric detour of length $\delta(\phi)$ and a safety speed-penalty multiplier $\alpha = 1.5$:
 
@@ -140,7 +140,7 @@ $$\tau_i^\text{ROW}(\phi) = \frac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0
 
 These two cases are unified in the piecewise traversal model:
 
-$$\tau_i(\phi) = \begin{cases} \dfrac{d \cdot f_i^{\,k(\phi)}}{v_0(\phi)} & f_i \leq f_\text{max}(\phi) \\
+$$\tau_i(\phi) = \begin{cases} \dfrac{d \cdot f_i^{k(\phi)}}{v_0(\phi)} & f_i \leq f_\text{max}(\phi) \\
 \dfrac{\bigl(d + \delta(\phi)\bigr) \cdot \alpha}{v_0(\phi)} & f_i > f_\text{max}(\phi) \end{cases}$$
 
 The **total actual traversal time** and **ideal traversal time** across all $N = 72$ segments are:
@@ -153,7 +153,7 @@ $$\Delta\tau(\phi) = T_\text{actual}(\phi) - T_\text{ideal}(\phi) = \frac{d}{v_0
 
 **What-if scenario:** when the top $n$ nodes (sorted by descending $f_i^{k(\phi)}$ to maximise impact first) are set to $f = 1$, the time recovered per persona is:
 
-$$\Delta\tau_\text{saved}(n,\,\phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left(f_j^{\,k(\phi)} - 1\right)$$
+$$\Delta\tau_\text{saved}(n,\phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left(f_j^{k(\phi)} - 1\right)$$
 
 This directly drives the sidebar node-fix slider — each increment shows the marginal gain of one more hotspot repair.
 
