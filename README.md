@@ -147,9 +147,9 @@ The **total actual traversal time** and **ideal traversal time** across all $N =
 
 $$T_\text{actual}(\phi) = \sum_{i=1}^{N} \tau_i(\phi) \qquad\qquad T_\text{ideal}(\phi) = \frac{D}{v_0(\phi)}$$
 
-The **Time Tax** — cumulative seconds stolen from the commuter per trip — is therefore:
+The **Time Tax** (cumulative seconds stolen from the commuter per trip) is therefore:
 
-$$\Delta\tau(\phi) = T_\text{actual}(\phi) - T_\text{ideal}(\phi) = \frac{d}{v_0(\phi)}\left(\sum_{i=1}^{N} f_i^{\,k(\phi)} - N\right)$$
+$$\Delta\tau(\phi) = T_\text{actual}(\phi) - T_\text{ideal}(\phi) = \frac{d}{v_0(\phi)}\left(\sum_{i=1}^{N} f_i^{k(\phi)} - N\right)$$
 
 **What-if scenario:** when the top $n$ nodes (sorted by descending $f_i^{k(\phi)}$ to maximise impact first) are set to $f = 1$, the time recovered per persona is:
 
