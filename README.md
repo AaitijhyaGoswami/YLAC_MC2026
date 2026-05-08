@@ -273,7 +273,7 @@ Renders the full set of stakeholder interview transcripts collected during the M
 | 09 | `delivery.pdf` | Swiggy delivery executive, Mathikere–IISc route | Kannada / English |
 | 10 | `auto.pdf` | Auto-rickshaw driver, Yeshwantpur stand (9 years) | Kannada / English |
 
-Interviews 01–06 are bilingual: each question and answer appears in Kannada first, followed by the English translation. Interviews 07–10 are English-only. All transcripts follow a press-accurate Q&A format with a metadata header (role, location, interview method, date) and a closing observation note. Strict anonymity protocols were observed — no names, designations, or identifying markers were recorded.
+Interviews 01–06 are bilingual: each question and answer appears in Kannada first, followed by the English translation. Interviews 07–10 are English-only. All transcripts follow a press-accurate Q&A format with a metadata header (role, location, interview method, date) and a closing observation note. Strict anonymity protocols were observed: no names, designations, or identifying markers were recorded.
 
 ---
 
