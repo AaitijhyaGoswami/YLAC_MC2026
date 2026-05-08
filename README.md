@@ -155,7 +155,7 @@ $$\Delta\tau(\phi) = T_\text{actual}(\phi) - T_\text{ideal}(\phi) = \frac{d}{v_0
 
 $$\Delta\tau_\text{saved}(n,\phi) = \frac{d}{v_0(\phi)} \sum_{j=1}^{n} \left(f_j^{k(\phi)} - 1\right)$$
 
-This directly drives the sidebar node-fix slider — each increment shows the marginal gain of one more hotspot repair.
+This directly drives the sidebar node-fix slider; each increment shows the marginal gain of one more hotspot repair.
 
 **Persona configuration** (loaded from `data/personas.yaml`):
 
