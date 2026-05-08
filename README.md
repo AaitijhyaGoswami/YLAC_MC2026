@@ -81,7 +81,7 @@ Converts the field audit into an interactive geospatial evidence layer.
 - Renders the **600 m Bazaar Street polyline** as a colour-coded route layer, colour varying with the sidebar-controlled `bazaar_f` scenario value
 - Renders **24 discrete `CircleMarker`s** for the Constitution Circle zone, each with a rich popup (Node ID, friction, GPS coords, status); nodes remediated by the slider are re-coloured to confirm the fix
 - Produces three `Matplotlib` figures: a **friction gradient bar chart** (full 900 m), a **severity pie chart** (300 m zone only), and an **effective path length comparison** chart across Baseline / Modified / S.U.R.E. Target scenarios
-- Computes the **S.U.R.E. Compliance Gauge** — a horizontal bar showing where $\bar{f}$ sits between the target of 1.0 and the failure ceiling of 5.0
+- Computes the **S.U.R.E. Compliance Gauge**, a horizontal bar showing where $\bar{f}$ sits between the target of 1.0 and the failure ceiling of 5.0
 
 **Mathematical framework:**
 
@@ -126,7 +126,7 @@ Simulates how each of four commuter personas traverses the friction array and qu
 
 **Velocity model:**
 
-Rather than a linear speed reduction — which underestimates the compounding penalty on vulnerable users — the simulator uses a **power-law friction-velocity relationship**. The sensitivity exponent $k(\phi)$ captures how super-linearly speed degrades for each persona:
+Rather than a linear speed reduction, which underestimates the compounding penalty on vulnerable users, the simulator uses a **power-law friction-velocity relationship**. The sensitivity exponent $k(\phi)$ captures how super-linearly speed degrades for each persona:
 
 $$v_\text{eff}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}}$$
 
