@@ -85,7 +85,7 @@ Converts the field audit into an interactive geospatial evidence layer.
 
 **Mathematical framework:**
 
-The corridor is treated as a piecewise-constant friction field. The **Effective Path Length** $L_\text{eff}$ — the felt distance in terms of physical effort — is the friction-weighted integral over the full route:
+The corridor is treated as a piecewise-constant friction field. The **Effective Path Length** $L_\text{eff}$ (the felt distance in terms of physical effort) is the friction-weighted integral over the full route:
 
 $$L_\text{eff}(\phi) = \int_0^D f(x, \phi) dx \approx d \sum_{i=1}^{N} f_i(\phi)$$
 
