@@ -178,7 +178,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.latex(r"""
             \begin{aligned}
             \Delta\tau(\phi) &: \text{Time Tax (Seconds stolen per trip) for a single persona} \\
-            \bar{\Delta\tau} &: \text{(Weighted Mean Time Tax)
+            \bar{\Delta\tau} &: \text{(Weighted Mean Time Tax) \\
             M &: \text{Daily Hub Volume (100,000 commuters at Yeshwantpur hub)} \\
             W &: \text{Annual Cycle (250 standardized working days per year)} \\
             w_\phi &: \text{Weighting factor (Proportional share of persona in the population)} \\
