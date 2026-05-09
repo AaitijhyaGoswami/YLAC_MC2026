@@ -170,7 +170,7 @@ This module is important for advocacy and policy-making on the topic of **Mobili
             f_i &: \text{Friction Index of the segment (1 = Standard, 5 = Failure)} \\
             k(\phi) &: \text{Persona-specific friction sensitivity exponent} \\
             d &: \text{Standard segment length used for discretization (12.5 meters)} \\
-            N &: \text{Total number of audited segments across the 900m corridor where $f_i <= f_{max}$}
+            N &: \text{Total number of audited segments across the 900m corridor where $f_i \leq f_{max}$}
             \end{aligned}
         """)
 
