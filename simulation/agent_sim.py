@@ -162,7 +162,7 @@ This module is important for advocacy and policy-making on the topic of **Mobili
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### Fundamental Equations")
         st.markdown("We model effective velocity ($v_{\\text{eff}}$) as a non-linear decay function of infrastructure friction.")
-        st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right)")
+        st.latex(r"v_{\text{eff}}(i, \phi) = \frac{v_0(\phi)}{f_i^{k(\phi)}} \implies \Delta\tau(\phi) = \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{k(\phi)} - N \right) & \text{if } f_i \leq f_{\text{max}} \quad \text{(Path Traversal)")
         st.latex(r"""
             \begin{aligned}
             \Delta\tau &: \text{The Time Tax (Cumulative seconds stolen per single trip)} \\
