@@ -187,24 +187,6 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
             \end{aligned}
         """)
 
-        st.markdown("#### Piecewise Segmental Traversal")
-        st.markdown("The model accounts for 'Impassability' where friction exceeds a persona's barrier threshold ($f_{\text{max}}$), forcing a vehicular Right-of-Way (ROW) detour.")
-        st.latex(r"""
-            \tau_i(\phi) = 
-            \begin{cases} 
-            \frac{d \cdot f_i^{k(\phi)}}{v_0(\phi)} & \text{if } f_i \leq f_{\text{max}} \quad \text{(Path Traversal)} \\ 
-            \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)} & \text{if } f_i > f_{\text{max}} \quad \text{(ROW Detour)} 
-            \end{cases}
-        """)
-        st.latex(r"""
-            \begin{aligned}
-            \tau_i &: \text{Time required to navigate segment } i \text{ (seconds)} \\
-            d &: \text{Unit segment length (12.5 meters)} \\
-            \delta(\phi) &: \text{Detour distance penalty incurred entering traffic} \\
-            \alpha &: \text{Safety penalty multiplier (1.5x speed reduction during detour)}
-            \end{aligned}
-        """)
-
         st.markdown("#### Fiscal Aggregation and Efficiency")
         st.markdown("The final metrics quantify the baseline drain and the efficiency of the proposed capital expenditure.")
         st.latex(r"""
