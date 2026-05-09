@@ -169,8 +169,6 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
         st.latex(r"""
             \begin{aligned}
-            v_{\text{eff}}(i, \phi) &= \frac{v_0(\phi)}{f_i^{\,k(\phi)}} \\
-            \Delta\tau(\phi) &= \frac{d}{v_0(\phi)} \left( \sum_{i=1}^{N} f_i^{\,k(\phi)} - N \right) \\
             \mathcal{L} &= M \cdot W \cdot \frac{\bar{\Delta\tau}}{60} \cdot \text{WAGE} \cdot 10^{-7}
             \end{aligned}
         """)
@@ -178,9 +176,6 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.markdown("#### Variable Definitions")
         st.latex(r"""
             \begin{aligned}
-            f_i &: \text{Friction Index of segment } i \text{ (Discrete nodes or Bazaar St)} \\
-            v_0(\phi) &: \text{Free-walking speed of persona } \phi \text{ (Standardized m/s)} \\
-            k(\phi) &: \text{Sensitivity exponent for persona } \phi \text{ (Rate of velocity decay)} \\
             \Delta\tau(\phi) &: \text{Time Tax (Seconds stolen per trip) for a single persona} \\
             M &: \text{Daily Hub Volume (100,000 commuters at Yeshwantpur hub)} \\
             W &: \text{Annual Cycle (250 standardized working days per year)} \\
