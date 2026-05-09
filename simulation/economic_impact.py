@@ -169,7 +169,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
         st.latex(r"""
             \begin{aligned}
-            \bar{\Delta\tau} &= \frac{\sum_{\phi} w_\phi \Delta\tau(\phi)}{\sum w_\phi}} \\
+            \bar{\Delta\tau} &= \frac{\sum_{\phi} w_\phi \Delta\tau(\phi)}{\sum w_\phi} \\
             \mathcal{L} &= M \cdot W \cdot \frac{\bar{\Delta\tau}}{60} \cdot \text{WAGE} \cdot 10^{-7}
             \end{aligned}
         """)
