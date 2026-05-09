@@ -176,7 +176,12 @@ This module is important for advocacy and policy-making on the topic of **Mobili
 
         st.markdown("#### Piecewise Segmental Traversal")
         st.markdown("The model accounts for 'Impassability' where friction exceeds a persona's barrier threshold ($f_{\text{max}}$), forcing a vehicular Right-of-Way (ROW) detour.")
-        st.latex(r"\tau_i(\phi) = \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)} & \text{if } f_i > f_{\text{max}} \quad \text{(ROW Detour)}")
+        st.latex(r"""
+            \tau_i(\phi) = 
+            \begin{cases} 
+            \frac{(d + \delta(\phi)) \cdot \alpha}{v_0(\phi)} & \text{if } f_i > f_{\text{max}} \quad \text{(ROW Detour)} 
+            \end{cases}
+        """)
         st.latex(r"""
             \begin{aligned}
             \tau_i &: \text{Time required to navigate segment } i \text{ (seconds)} \\
