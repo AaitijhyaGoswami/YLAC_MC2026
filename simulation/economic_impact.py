@@ -178,12 +178,12 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.latex(r"""
             \begin{aligned}
             \Delta\tau(\phi) &: \text{Time Tax (Seconds stolen per trip) for a single persona} \\
-            \bar{\Delta\tau} &: \text{(Weighted Mean Time Tax) \\
-            M &: \text{Daily Hub Volume (100,000 commuters at Yeshwantpur hub)} \\
-            W &: \text{Annual Cycle (250 standardized working days per year)} \\
-            w_\phi &: \text{Weighting factor (Proportional share of persona in the population)} \\
-            \text{WAGE} &: \text{Economic value of time (RBI Informal Rate } \approx \text{ ₹0.83/min)} \\
-            \mathcal{L} &: \text{Annual Economic Productivity Loss (Expressed in Crore INR)}
+            \bar{\Delta\tau} &: \text{Weighted Mean Time Tax} \\
+            M &: \text{Daily Hub Volume (100,000 commuters)} \\
+            W &: \text{Annual Cycle (250 standardized working days)} \\
+            w_\phi &: \text{Weighting factor (Proportional share of persona)} \\
+            \text{WAGE} &: \text{Economic value of time (RBI Informal Rate } \approx \text{ INR 0.83/min)} \\
+            \mathcal{L} &: \text{Annual Economic Productivity Loss (Crore INR)}
             \end{aligned}
         """)
 
