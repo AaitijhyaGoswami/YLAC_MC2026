@@ -191,7 +191,7 @@ The **total annual person-minutes lost** across $M$ daily commuters and $W$ work
 
 $$\mathcal{T}_\text{year} = M \cdot W \cdot \frac{\overline{\Delta\tau}}{60}$$
 
-Converted to annual economic loss in Crore INR, where $\text{WAGE} \approx \text{₹}0.83\,\text{min}^{-1}$:
+Converted to annual economic loss in Crore INR, where $\text{WAGE} \approx \text{₹}0.83 \text{min}^{-1}$:
 
 $$\mathcal{L} = \mathcal{T}_\text{year} \cdot \text{WAGE} \times 10^{-7}$$
 
