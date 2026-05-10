@@ -286,7 +286,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The app handles missing modules gracefully — if any simulation file fails to import, it is silently excluded from the sidebar and an "under development" message is shown for that route.
+The app handles missing modules gracefully. If any simulation file fails to import, it is silently excluded from the sidebar and an "under development" message is shown for that route.
 
 ---
 
