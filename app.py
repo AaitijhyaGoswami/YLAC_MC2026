@@ -66,7 +66,7 @@ if page == "Home":
     st.header("Why Do This?")
     
     st.markdown("""
-    This project comes out of the need to connect the high-level urban policy with the lived experience of the commuters who traverse the Yeshwantpur-Mathikere nexus every day. While policy frameworks provide a strong theoretical base for urban reform, they are frequently too abstract and too distant from the very citizens they are meant to serve. This module is a stakeholder-first translation tool. It uses a physics-based diagnostic. It goes beyond the heavy legalese of policy documents to show exactly how a reclaimed clear recovers lost minutes, restores human dignity, and pumps economic value back into the lives of delivery partners, students and elderly residents alike.
+    This project comes out of the need to connect the high-level urban policy with the lived experience of the commuters who traverse the Yeshwantpur-Mathikere nexus every day. While policy frameworks provide a strong theoretical base for urban reform, they are frequently too abstract and distant from the very citizens they are meant to serve. This module is a stakeholder-first translation tool. It uses a physics-based diagnostic to go beyond the heavy legalese of policy documents to show exactly how a reclaimed clear recovers lost minutes, restores human dignity, and pumps economic value back into the lives of delivery partners, students and elderly residents alike.
     
     The policies that define the reference standards for our evaluations are:
     
