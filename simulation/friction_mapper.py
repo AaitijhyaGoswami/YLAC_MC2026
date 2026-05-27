@@ -463,7 +463,7 @@ f_{\max}(\phi) &: \text{Impassability threshold — above this, ROW detour is tr
             st.latex(r"T_{\text{route}}(\phi) = \sum_{e \in \text{path}} \tau_e(\phi)")
             st.markdown("**Why all personas follow the same geometric path:**")
             st.markdown("""
-Dijkstra minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
+Dijkstra's algorithm minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
 The Yeshwantpur–Bazaar Street corridor has no bypass street shorter than the
 break-even threshold below, so the optimal path is topologically identical for
 all personas; only the cost of traversing it differs.
