@@ -185,12 +185,14 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
 
     # --- 1. THE 600m BAZAAR STREET STRETCH ---
     b_popup_html = f"""
-        <div style="font-family: sans-serif; font-size: 12px; width: 180px;">
-            <b style="color: #F44336; font-size: 14px;">Bazaar Street Zone</b><br>
+        <div style="font-family: sans-serif; font-size: 12px; width: 200px; background: #111; color: #eee; border-radius: 4px; padding: 8px;">
+            <b style="color: #F44336; font-size: 13px;">Bazaar Street Zone</b><br>
+            <span style="font-size: 10px; color: #aaa;">600m continuous failure stretch</span>
+            <hr style="margin: 5px 0; border-color: #333;">
             <b>Type:</b> Systemic Failure Area<br>
-            <b>Modeled</b> f: {bazaar_f}<br>
-            <hr style="margin: 5px 0;">
-            <i>600m stretch of missing or completely blocked footway.</i>
+            <b>Modelled f:</b> {bazaar_f}<br>
+            <hr style="margin: 5px 0; border-color: #333;">
+            <span style="font-size: 10px; color: #777;">Footway fully colonised — pedestrians enter vehicular ROW.</span>
         </div>
     """
     
@@ -214,13 +216,15 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
         status = "REMEDIATED" if is_fixed else F_SHORT.get(f)
         
         n_popup_html = f"""
-            <div style="font-family: sans-serif; font-size: 12px; width: 200px;">
+            <div style="font-family: sans-serif; font-size: 12px; width: 200px; background: #111; color: #eee; border-radius: 4px; padding: 8px;">
                 <b style="color: {color}; font-size: 13px;">Node ID: {int(row['id'])}</b><br>
+                <span style="font-size: 10px; color: #aaa;">{F_SHORT.get(f, "Unknown")}</span>
+                <hr style="margin: 5px 0; border-color: #333;">
                 <b>Friction:</b> f={f}<br>
                 <b>Status:</b> {status}<br>
                 <b>GPS:</b> {row['lat']:.5f}, {row['lon']:.5f}<br>
-                <hr style="margin: 5px 0;">
-                <p style="font-size: 10px; color: #555;">Potential energy barrier identified via physical audit.</p>
+                <hr style="margin: 5px 0; border-color: #333;">
+                <span style="font-size: 10px; color: #777;">Potential energy barrier identified via physical audit.</span>
             </div>
         """
 
@@ -592,8 +596,7 @@ all personas — only the **cost** of traversing it differs.
                         )
 
                     route_popup_html = (
-                        '<div style="font-family:sans-serif;font-size:12px;width:320px;' +
-                        'background:#111;color:#eee;border-radius:4px;padding:8px">' +
+                        '<div style="font-family:sans-serif;font-size:12px;width:260px;background:#111;color:#eee;border-radius:4px;padding:8px;">' +
                         '<b style="color:#4CAF50;font-size:13px;">OSM Pedestrian Route</b><br>' +
                         '<span style="color:#aaa;font-size:10px">Station Exit → Constitution Circle · 900m corridor</span>' +
                         '<hr style="margin:6px 0;border-color:#333">' +
