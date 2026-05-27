@@ -20,10 +20,8 @@ try:
 except ImportError:
     HAVE_OSM = False
 
-# -------------------------------------------------------------------------
-# CONSTANTS
-# -------------------------------------------------------------------------
 
+# CONSTANTS
 F_COLORS = {
     1: "#9E9E9E",
     2: "#4CAF50",
@@ -78,10 +76,8 @@ PERSONA_LABELS = {
     "delivery":    "Delivery Partner",
 }
 
-# -------------------------------------------------------------------------
-# DATA LOADER
-# -------------------------------------------------------------------------
 
+# DATA LOADER
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
@@ -91,10 +87,8 @@ def load_audit_data() -> pd.DataFrame:
     return df
 
 
-# -------------------------------------------------------------------------
-# LAYER 1: OSMnx NETWORK ROUTING
-# -------------------------------------------------------------------------
 
+# OSMnx NETWORK ROUTING
 @st.cache_data(show_spinner="Downloading pedestrian street graph…")
 def load_osm_graph():
     centre = (
