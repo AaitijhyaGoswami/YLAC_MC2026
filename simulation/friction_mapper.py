@@ -8,6 +8,15 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+try:
+    import osmnx as ox
+    import networkx as nx
+    HAVE_OSM = True
+except ImportError:
+    HAVE_OSM = False
 
 # -------------------------------------------------------------------------
 # CONSTANTS
@@ -37,6 +46,9 @@ F_SHORT = {
     5: "Systemic Failure",
 }
 
+# Friction → edge traversal cost multiplier (Layer 1)
+F_COST = {1: 1.0, 2: 1.2, 3: 1.8, 4: 3.0, 5: 5.0}
+
 ROUTE_600M = [
     [13.02007, 77.55546], [13.0201,  77.55547], [13.02011, 77.55546],
     [13.02053, 77.55475], [13.02063, 77.55458], [13.02102, 77.55398],
@@ -48,7 +60,22 @@ ROUTE_600M = [
     [13.02383, 77.55187],
 ]
 
-MAP_CENTRE = [13.0215, 77.5555]
+MAP_CENTRE      = [13.0215, 77.5555]
+STATION_EXIT    = (13.02383, 77.55187)
+CONSTITUTION_CL = (13.02007, 77.55546)
+
+PERSONA_COLORS = {
+    "able_bodied": "#2196F3",
+    "elderly":     "#FF9800",
+    "wheelchair":  "#9C27B0",
+    "delivery":    "#F44336",
+}
+PERSONA_LABELS = {
+    "able_bodied": "Able-bodied Adult",
+    "elderly":     "Elderly Commuter",
+    "wheelchair":  "Wheelchair User",
+    "delivery":    "Delivery Partner",
+}
 
 # -------------------------------------------------------------------------
 # DATA LOADER
@@ -64,10 +91,65 @@ def load_audit_data() -> pd.DataFrame:
 
 
 # -------------------------------------------------------------------------
+# LAYER 1: OSMnx NETWORK ROUTING
+# -------------------------------------------------------------------------
+
+@st.cache_data(show_spinner="Downloading pedestrian street graph…")
+def load_osm_graph():
+    centre = (
+        (STATION_EXIT[0] + CONSTITUTION_CL[0]) / 2,
+        (STATION_EXIT[1] + CONSTITUTION_CL[1]) / 2,
+    )
+    return ox.graph_from_point(centre, dist=650, network_type="walk", retain_all=True)
+
+
+@st.cache_data(show_spinner="Snapping audit nodes to street network…")
+def build_friction_graph(_G, audit_df: pd.DataFrame, bazaar_f: int):
+    G         = _G
+    audit_pts = audit_df[["lat", "lon", "f_value"]].values
+
+    def nearest_f(mid_lat, mid_lon):
+        dlat = np.radians(audit_pts[:, 0] - mid_lat)
+        dlon = np.radians(audit_pts[:, 1] - mid_lon)
+        a = (np.sin(dlat / 2) ** 2
+             + np.cos(np.radians(mid_lat))
+             * np.cos(np.radians(audit_pts[:, 0]))
+             * np.sin(dlon / 2) ** 2)
+        dist = 6371000 * 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+        return int(audit_pts[np.argmin(dist), 2])
+
+    for u, v, k, data in G.edges(keys=True, data=True):
+        nu, nv  = G.nodes[u], G.nodes[v]
+        mid_lat = (nu["y"] + nv["y"]) / 2
+        mid_lon = (nu["x"] + nv["x"]) / 2
+        length  = data.get("length", 10.0)
+        f       = nearest_f(mid_lat, mid_lon)
+        G[u][v][k]["f_value"]       = f
+        G[u][v][k]["friction_cost"] = length * F_COST.get(f, F_COST[bazaar_f])
+    return G
+
+
+def compute_route(G, origin, dest, weight):
+    o = ox.distance.nearest_nodes(G, origin[1], origin[0])
+    d = ox.distance.nearest_nodes(G, dest[1],   dest[0])
+    try:
+        path = nx.shortest_path(G, o, d, weight=weight)
+        cost = nx.shortest_path_length(G, o, d, weight=weight)
+        return path, cost
+    except nx.NetworkXNoPath:
+        return None, None
+
+
+def path_to_coords(G, path):
+    return [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in path]
+
+
+# -------------------------------------------------------------------------
 # MAP BUILDER
 # -------------------------------------------------------------------------
 
-def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.Map:
+def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
+              route_coords=None, route_color="#4CAF50") -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
 
     # --- 1. THE 600m BAZAAR STREET STRETCH ---
@@ -86,8 +168,8 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color=F_COLORS.get(bazaar_f, F_COLORS[5]),
         weight=6, 
         opacity=0.85,
-        tooltip="Bazaar St: Click for Data", # TOOLTIP (Hover)
-        popup=folium.Popup(b_popup_html, max_width=250)           # POPUP (Click)
+        tooltip="Bazaar St: Click for Data",
+        popup=folium.Popup(b_popup_html, max_width=250)
     ).add_to(m)
 
     # --- 2. THE DISCRETE NODES (300m) ---
@@ -100,7 +182,6 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
         color = F_COLORS[1] if is_fixed else F_COLORS.get(f, F_COLORS[5])
         status = "REMEDIATED" if is_fixed else F_SHORT.get(f)
         
-        # RICH POPUP BOX
         n_popup_html = f"""
             <div style="font-family: sans-serif; font-size: 12px; width: 200px;">
                 <b style="color: {color}; font-size: 13px;">Node ID: {int(row['id'])}</b><br>
@@ -120,8 +201,28 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> folium.M
             fill=True, 
             fill_color=color, 
             fill_opacity=0.95,
-            tooltip=f"Node {int(row['id'])} · f={f}", # TOOLTIP (Hover)
-            popup=folium.Popup(n_popup_html, max_width=300) # POPUP (Click)
+            tooltip=f"Node {int(row['id'])} · f={f}",
+            popup=folium.Popup(n_popup_html, max_width=300)
+        ).add_to(m)
+
+    # --- 3. LAYER 1: FRICTION-OPTIMAL ROUTE (if computed) ---
+    if route_coords:
+        folium.PolyLine(
+            route_coords,
+            color=route_color,
+            weight=4,
+            opacity=0.9,
+            tooltip="Friction-optimal route (OSM graph)"
+        ).add_to(m)
+        folium.Marker(
+            STATION_EXIT,
+            tooltip="Yeshwantpur Railway Station exit",
+            icon=folium.Icon(color="green", icon="train", prefix="fa")
+        ).add_to(m)
+        folium.Marker(
+            CONSTITUTION_CL,
+            tooltip="Constitution Circle / Metro entry",
+            icon=folium.Icon(color="blue", icon="subway", prefix="fa")
         ).add_to(m)
 
     return m
@@ -293,6 +394,12 @@ def app():
         st.latex(r"L_{\text{eff}}^{Total} = 1187.5\text{m} + 3000\text{m} = 4187.5\text{m}")
         st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
 
+        if HAVE_OSM:
+            st.markdown("#### Layer 1: Friction-Weighted Network Routing")
+            st.markdown("Each OSM edge is assigned a traversal cost equal to its physical length scaled by the cost multiplier of the nearest audit node's f-value:")
+            st.latex(r"\text{cost}(e) = \text{length}(e) \times C(f_e), \quad C(f) \in \{1.0,\ 1.2,\ 1.8,\ 3.0,\ 5.0\}")
+            st.markdown("Dijkstra on this weighted graph yields the path minimising total perceived effort. Where it diverges from the geometric shortest path, the infrastructure is forcing a sub-optimal detour.")
+
     try:
         df = load_audit_data()
     except Exception as e:
@@ -317,6 +424,26 @@ def app():
                                        help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
+    # Layer 1 sidebar controls (only shown when OSMnx is installed)
+    show_route   = False
+    route_coords = None
+    route_color  = "#4CAF50"
+    if HAVE_OSM:
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### Network Routing (Layer 1)")
+        show_route = st.sidebar.checkbox(
+            "Show friction-optimal route",
+            value=False,
+            help="Downloads the real OSM pedestrian graph and overlays the friction-weighted shortest path. Requires internet connection."
+        )
+        if show_route:
+            route_persona = st.sidebar.selectbox(
+                "Route colour — persona:",
+                options=list(PERSONA_LABELS.keys()),
+                format_func=lambda k: PERSONA_LABELS[k]
+            )
+            route_color = PERSONA_COLORS[route_persona]
+
     # --- COMPUTATION ---
     f_300 = df["f_value"].values.astype(float)
     f_fixed = f_300.copy()
@@ -326,6 +453,20 @@ def app():
     L_eff_now = (12.5 * f_fixed.sum()) + (600 * bazaar_f)
     L_eff_base = L_eff_300_base + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
+
+    # Layer 1: compute route if requested
+    if show_route and HAVE_OSM:
+        try:
+            with st.spinner("Building friction-weighted street graph…"):
+                G_raw = load_osm_graph()
+                G     = build_friction_graph(G_raw, df, bazaar_f)
+                path, _ = compute_route(G, STATION_EXIT, CONSTITUTION_CL, weight="friction_cost")
+                if path:
+                    route_coords = path_to_coords(G, path)
+                else:
+                    st.warning("No routable path found in the OSM graph for this corridor.")
+        except Exception as e:
+            st.warning(f"Could not load OSM graph: {e}. Check your internet connection.")
 
     # --- HEADLINE METRICS ---
     st.markdown("---")
@@ -341,8 +482,15 @@ def app():
     col4.metric("Difficulty Multiplier", f"{f_bar_now:.2f}x",
                help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
 
+    if show_route and route_coords:
+        st.info(
+            "The coloured line shows the **friction-optimal route** on the real OSM pedestrian graph — "
+            "the path minimising total effort given the surveyed f-values. Where it diverges from the "
+            "Bazaar Street polyline, the infrastructure is forcing a longer but lower-friction detour."
+        )
+
     # --- MAP & GRADIENT ---
-    st_folium(build_map(df, n_fixes, bazaar_f), width=None, height=520, returned_objects=[])
+    st_folium(build_map(df, n_fixes, bazaar_f, route_coords, route_color), width=None, height=520, returned_objects=[])
     st.markdown("#### Friction Gradient: Full 900m Route")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
     st.markdown("---")
@@ -364,6 +512,8 @@ def app():
     st.write("* **Standardized Severity Coding:** The color-coded logic is directly aligned with the Active Mobility Bill and DULT rubrics. By assigning a Friction Value $f$, the mapper provides an objective diagnostic of segment compliance.")
     st.write("* **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("* **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
+    if HAVE_OSM:
+        st.write("* **Friction-Optimal Routing (Layer 1):** Overlays the real OSM pedestrian graph and computes the path minimising total friction cost — making visible exactly where infrastructure forces sub-optimal detours.")
 
 if __name__ == "__main__":
     app()
