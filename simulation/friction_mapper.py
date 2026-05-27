@@ -8,6 +8,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
+import copy
+import yaml
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -486,9 +488,8 @@ def app():
     if show_route and HAVE_OSM:
         try:
             with st.spinner("Building friction-weighted street graph…"):
-                G_raw = load_osm_graph()
-                import yaml as _yaml, os as _os, copy as _copy
-                _personas = _yaml.safe_load(open(_os.path.join("data", "personas.yaml")))
+                G_raw     = load_osm_graph()
+                _personas = yaml.safe_load(open(os.path.join("data", "personas.yaml")))
                 _p        = _personas.get(route_persona, list(_personas.values())[0])
                 # build_friction_graph deepcopies G_raw internally — safe to call per render
                 G_tagged  = build_friction_graph(G_raw, df, bazaar_f)
@@ -496,7 +497,7 @@ def app():
                 G_costed  = persona_edge_cost(G_tagged, _p, bazaar_f)
                 path, _ = compute_route(G_costed, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
                 if path:
-                    route_coords = path_to_coords(G, path)
+                    route_coords = path_to_coords(G_costed, path)
                 else:
                     st.warning("No routable path found in the OSM graph for this corridor.")
         except Exception as e:
