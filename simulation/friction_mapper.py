@@ -46,8 +46,7 @@ F_SHORT = {
     5: "Systemic Failure",
 }
 
-# Friction → edge traversal cost multiplier (Layer 1)
-F_COST = {1: 1.0, 2: 1.2, 3: 1.8, 4: 3.0, 5: 5.0}
+
 
 ROUTE_600M = [
     [13.02007, 77.55546], [13.0201,  77.55547], [13.02011, 77.55546],
@@ -105,6 +104,8 @@ def load_osm_graph():
 
 @st.cache_data(show_spinner="Snapping audit nodes to street network…")
 def build_friction_graph(_G, audit_df: pd.DataFrame, bazaar_f: int):
+    """Tags every OSM edge with its nearest f_value only.
+    Cost is computed per-persona at routing time via persona_edge_cost()."""
     G         = _G
     audit_pts = audit_df[["lat", "lon", "f_value"]].values
 
@@ -122,10 +123,36 @@ def build_friction_graph(_G, audit_df: pd.DataFrame, bazaar_f: int):
         nu, nv  = G.nodes[u], G.nodes[v]
         mid_lat = (nu["y"] + nv["y"]) / 2
         mid_lon = (nu["x"] + nv["x"]) / 2
-        length  = data.get("length", 10.0)
         f       = nearest_f(mid_lat, mid_lon)
-        G[u][v][k]["f_value"]       = f
-        G[u][v][k]["friction_cost"] = length * F_COST.get(f, F_COST[bazaar_f])
+        G[u][v][k]["f_value"] = f
+    return G
+
+
+def persona_edge_cost(G, persona: dict, bazaar_f: int):
+    """
+    Writes persona_cost on every edge using the same power-law model
+    as agent_sim.run_simulation():
+
+        traversal:  cost = length * f^k / v0              (f <= f_max)
+        detour:     cost = (length + delta) * alpha / v0  (f >  f_max)
+
+    Edges with no audit node nearby inherit bazaar_f as their f-value.
+    Does NOT mutate f_value — safe to call repeatedly for different personas.
+    """
+    v0    = persona["v0"]
+    k     = persona["k"]
+    f_max = persona["f_max"]
+    alpha = persona["alpha"]
+    delta = persona["delta"]
+
+    for u, v, kk, data in G.edges(keys=True, data=True):
+        length = data.get("length", 10.0)
+        f      = data.get("f_value", bazaar_f)
+        if f > f_max:
+            cost = ((length + delta) * alpha) / v0
+        else:
+            cost = length * (f ** k) / v0
+        G[u][v][kk]["persona_cost"] = cost
     return G
 
 
@@ -460,7 +487,11 @@ def app():
             with st.spinner("Building friction-weighted street graph…"):
                 G_raw = load_osm_graph()
                 G     = build_friction_graph(G_raw, df, bazaar_f)
-                path, _ = compute_route(G, STATION_EXIT, CONSTITUTION_CL, weight="friction_cost")
+                import yaml, os as _os
+                _personas = yaml.safe_load(open(_os.path.join("data", "personas.yaml")))
+                _p        = _personas.get(route_persona, list(_personas.values())[0])
+                G         = persona_edge_cost(G, _p, bazaar_f)
+                path, _ = compute_route(G, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
                 if path:
                     route_coords = path_to_coords(G, path)
                 else:
