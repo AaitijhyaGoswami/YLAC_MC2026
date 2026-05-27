@@ -192,7 +192,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             <b>Type:</b> Systemic Failure Area<br>
             <b>Modelled f:</b> {bazaar_f}<br>
             <hr style="margin: 5px 0; border-color: #333;">
-            <span style="font-size: 10px; color: #777;">Footway fully colonised — pedestrians enter vehicular ROW.</span>
+            <span style="font-size: 10px; color: #777;">Footway fully colonised. Pedestrians enter vehicular ROW.</span>
         </div>
     """
     
@@ -375,7 +375,7 @@ def app():
             "Minor cracks, unlevelled slabs, low-hanging cables",
             "Broken slabs, rubble, utility excavation",
             "Missing drain cover, high kerb, partial blockage",
-            "Footpath ends — transformer, encroachment, construction",
+            "Footpath ends: transformer, encroachment, construction",
         ],
         "Wheelchair Access": [
             "Full",
@@ -437,7 +437,7 @@ def app():
             st.markdown("#### Layer 1: Friction-Weighted Network Routing")
             st.markdown("""
 Each OSM edge is tagged with the f-value of the nearest audit node.
-The traversal cost on each edge uses the same **power-law model** as the Time Tax Simulator,
+The traversal cost on each edge uses the same power-law model as the Time Tax Simulator,
 so routing costs are directly comparable to the per-segment times shown in the Agent Simulation.
             """)
             st.markdown("**Edge traversal time (seconds):**")
@@ -466,9 +466,9 @@ f_{\max}(\phi) &: \text{Impassability threshold — above this, ROW detour is tr
 Dijkstra minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
 The Yeshwantpur–Bazaar Street corridor has no bypass street shorter than the
 break-even threshold below, so the optimal path is topologically identical for
-all personas — only the **cost** of traversing it differs.
+all personas; only the cost of traversing it differs.
             """)
-            st.markdown("**Bypass break-even threshold** — a bypass at $f=2$ only beats the main corridor at $f=5$ if:")
+            st.markdown("**Bypass break-even threshold**: a bypass at $f=2$ only beats the main corridor at $f=5$ if:")
             st.latex(r"\text{length}_{\text{bypass}} < \frac{v_0(\phi) \cdot \tau_{\text{main}}}{2^{k(\phi)}}")
             st.markdown("Per persona, for a 120 m main-corridor segment:")
 
