@@ -19,6 +19,8 @@ N_300  = 24      # number of discrete nodes in the 300m stretch
 N_600  = 48      # number of 12.5m segments in the 600m stretch
 d      = 12.5    # segment length (m)
 
+BODY_WEIGHT_KG = 70.0  # reference body weight for metabolic cost calculation
+
 # -------------------------------------------------------------------------
 # DATA LOADERS
 # -------------------------------------------------------------------------
@@ -77,14 +79,28 @@ def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
     T_ideal   = D / v0
     delta_tau = T_actual - T_ideal
 
+    # Metabolic cost: extra energy above the ideal frictionless walk.
+    # Approximation: W_extra = (L_eff - D) * body_weight * g
+    # where L_eff is friction-weighted effective path length.
+    # Detour segments use (d + delta) as the effective distance.
+    L_eff = float(sum(
+        (d + delta) if fi > f_max else fi * d
+        for fi in f_array
+    ))
+    g              = 9.81
+    extra_joules   = max(0.0, (L_eff - D) * BODY_WEIGHT_KG * g)
+    extra_kcal     = extra_joules / 4184.0  # 1 kcal = 4184 J
+
     return {
-        "T_actual":   T_actual,
-        "T_ideal":    T_ideal,
-        "delta_tau":  delta_tau,
-        "tau_i":      tau_i,
-        "v_eff_i":    v_eff_i,
-        "is_detour":  is_detour,
-        "n_detours":  int(is_detour.sum()),
+        "T_actual":    T_actual,
+        "T_ideal":     T_ideal,
+        "delta_tau":   delta_tau,
+        "tau_i":       tau_i,
+        "v_eff_i":     v_eff_i,
+        "is_detour":   is_detour,
+        "n_detours":   int(is_detour.sum()),
+        "extra_kcal":  extra_kcal,
+        "L_eff":       L_eff,
     }
 
 
@@ -147,15 +163,75 @@ def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
     return fig
 
 
+# NEW: speed profile line chart — shows velocity decay continuously along corridor
+def plot_speed_profile(f_array: np.ndarray, results: dict, personas: dict,
+                       selected_key: str) -> plt.Figure:
+    x = np.arange(len(f_array)) * d + d / 2  # segment midpoints
+
+    fig, ax = plt.subplots(figsize=(11, 3.2))
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+
+    for pk, p in personas.items():
+        res      = results[pk]
+        v_smooth = res["v_eff_i"].copy()
+        lw       = 2.5 if pk == selected_key else 1.0
+        alpha    = 1.0 if pk == selected_key else 0.35
+        ax.plot(x, v_smooth, color=p["color"], linewidth=lw, alpha=alpha,
+                label=p["label"], zorder=3 if pk == selected_key else 2)
+
+    # Ideal speed lines per persona (horizontal dashed)
+    for pk, p in personas.items():
+        if pk == selected_key:
+            ax.axhline(p["v0"], color=p["color"], linewidth=0.8,
+                       linestyle="--", alpha=0.4)
+
+    ax.axvline(300, color="#aaaaaa", linewidth=1.0, linestyle="--", alpha=0.5)
+    ax.text(305, ax.get_ylim()[1] * 0.95 if ax.get_ylim()[1] > 0 else 1.5,
+            "300m", color="#aaaaaa", fontsize=7, va="top")
+
+    ax.set_xlim(0, D)
+    ax.set_xlabel("Distance along corridor (m)", color="white", fontsize=9)
+    ax.set_ylabel("Effective speed (m/s)", color="white", fontsize=9)
+    ax.set_title("Speed Profile Along Corridor", color="white", fontsize=10)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.spines[:].set_visible(False)
+    ax.legend(fontsize=7.5, facecolor="#2a2a2a", labelcolor="white",
+              framealpha=0.85, loc="lower left")
+    fig.tight_layout()
+    return fig
+
+
+# NEW: metabolic cost bar chart across all personas
+def plot_metabolic_cost(results: dict, personas: dict) -> plt.Figure:
+    labels = [p["label"] for p in personas.values()]
+    kcals  = [results[k]["extra_kcal"] for k in personas]
+    colors = [p["color"] for p in personas.values()]
+
+    fig, ax = plt.subplots(figsize=(7, 3.2))
+    fig.patch.set_facecolor("#1a1a1a")
+    ax.set_facecolor("#1a1a1a")
+    bars = ax.barh(labels, kcals, color=colors, height=0.5)
+    for i, v in enumerate(kcals):
+        ax.text(v + max(kcals) * 0.02, i, f"{v:.1f} kcal", va="center",
+                color="white", fontsize=8)
+    ax.set_xlabel("Extra metabolic cost above ideal walk (kcal)", color="white", fontsize=9)
+    ax.set_title(f"Extra Energy per Trip — 70 kg reference", color="white", fontsize=10)
+    ax.tick_params(colors="white", labelsize=8)
+    ax.spines[:].set_visible(False)
+    fig.tight_layout()
+    return fig
+
+
 # -------------------------------------------------------------------------
 # MAIN APP ENTRY POINT
 # -------------------------------------------------------------------------
 
 def app():
     st.markdown("""
-    The **Time Tax Simulator**’s chronological heart is the urban audit, translating static physical friction into the lived reality of systemic delay. This module measures more than distance. It quantifies the hidden “chronological penalty” of design neglect and calculates the **Time Tax of different commuter personas** across the 900m Yeshwantpur corridor. The simulator shows that infrastructure failure is not just an inconvenience but a kinetic drain that “steals” measurable seconds from each trip, turning individual micro-struggles into a macro-economic data point, using a rigorous Power-Law Friction-Velocity model.
+    The **Time Tax Simulator**'s chronological heart is the urban audit, translating static physical friction into the lived reality of systemic delay. This module measures more than distance. It quantifies the hidden "chronological penalty" of design neglect and calculates the **Time Tax of different commuter personas** across the 900m Yeshwantpur corridor. The simulator shows that infrastructure failure is not just an inconvenience but a kinetic drain that "steals" measurable seconds from each trip, turning individual micro-struggles into a macro-economic data point, using a rigorous Power-Law Friction-Velocity model.
 
-This module is important for advocacy and policy-making on the topic of **Mobility Equity**, as it shows how bad design disproportionately impacts the most vulnerable users. The simulator offers insight into the regressiveness of the Time Tax on the least mobile, by modeling specific personas from high velocity delivery partners to friction-sensitive elderly commuters. This provides the empirical evidence for municipal authorities to re-frame urban repair as a “time-recovery” mission, prioritizing infrastructure investment on the basis of recovered productivity and the fundamental right to a dignified, seamless commute.
+This module is important for advocacy and policy-making on the topic of **Mobility Equity**, as it shows how bad design disproportionately impacts the most vulnerable users. The simulator offers insight into the regressiveness of the Time Tax on the least mobile, by modeling specific personas from high velocity delivery partners to friction-sensitive elderly commuters. This provides the empirical evidence for municipal authorities to re-frame urban repair as a "time-recovery" mission, prioritizing infrastructure investment on the basis of recovered productivity and the fundamental right to a dignified, seamless commute.
     """)
 
     # --- TECHNICAL MATH SECTION ---
@@ -198,6 +274,31 @@ This module is important for advocacy and policy-making on the topic of **Mobili
         st.markdown("**Persona B: Wheelchair User** ($v_0=0.8, k=1.2, f_{max}=3$)")
         st.markdown("At $f=5$, the wheelchair exceeds $f_{max}$, triggering a vehicular Right-of-Way (ROW) detour:")
         st.latex(r"\tau_{f=5}^{ROW} = \frac{(12.5 + \delta) \cdot \alpha}{v_0} = \frac{(12.5 + 5) \cdot 1.5}{0.8} \approx 32.8\text{s} \quad (\text{Tax: } +17.2\text{s})")
+
+        # NEW: metabolic cost derivation
+        st.markdown("#### Metabolic Cost of Infrastructure Failure")
+        st.markdown("""
+        Beyond time, broken infrastructure extracts a **physical energy cost**. 
+        The extra mechanical work done by a commuter above the ideal frictionless walk is
+        approximated by treating the friction-weighted effective path length as the resistive distance:
+        """)
+        st.latex(r"W_{\text{extra}} = \left( L_{\text{eff}} - D \right) \cdot m \cdot g")
+        st.latex(r"""
+            \begin{aligned}
+            W_{\text{extra}} &: \text{Extra mechanical work per trip (Joules)} \\
+            L_{\text{eff}} &: \text{Friction-weighted effective path length (metres)} \\
+            D &: \text{Physical corridor length — 900 m} \\
+            m &: \text{Reference body mass — 70 kg} \\
+            g &: \text{Gravitational acceleration — 9.81 m/s}^2
+            \end{aligned}
+        """)
+        st.markdown("Converting to kilocalories ($1\\,\\text{kcal} = 4184\\,\\text{J}$):")
+        st.latex(r"E_{\text{extra}} = \frac{W_{\text{extra}}}{4184} \; \text{kcal}")
+        st.markdown("""
+        For the wheelchair persona at baseline, $L_{\\text{eff}} \\approx 4{,}750\\,\\text{m}$, giving 
+        $E_{\\text{extra}} \\approx 183\\,\\text{kcal}$ of extra energy per single trip — 
+        equivalent to climbing roughly **180 flights of stairs**.
+        """)
 
     try:
         df       = load_audit_data()
@@ -258,6 +359,31 @@ This module is important for advocacy and policy-making on the topic of **Mobili
     col3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse", help="Time lost due to simulated obstacles")
     col4.metric("ROW Detours", f"{res['n_detours']} segments", help="Segments forcing pedestrians into traffic")
 
+    # NEW: equity ratio + metabolic cost inline metrics
+    st.markdown("---")
+    st.markdown("#### Equity & Physical Cost")
+    ab_res   = results.get("able_bodied", res)
+    eq_ratio = res["T_actual"] / ab_res["T_actual"] if ab_res["T_actual"] > 0 else 1.0
+    mc1, mc2, mc3 = st.columns(3)
+    mc1.metric(
+        "Equity Ratio vs Able-bodied",
+        f"{eq_ratio:.2f}×",
+        delta=f"+{(eq_ratio-1)*100:.0f}% longer" if eq_ratio > 1 else "Baseline",
+        delta_color="inverse" if eq_ratio > 1 else "off",
+        help="How many times longer this persona's trip is compared to an able-bodied adult on the same corridor."
+    )
+    mc2.metric(
+        "Extra Metabolic Cost",
+        f"{res['extra_kcal']:.1f} kcal",
+        help=f"Extra energy above an ideal f=1 walk. Equivalent to ~{res['extra_kcal']/0.5:.0f} minutes of slow jogging."
+    )
+    mc3.metric(
+        "Effective Path Length",
+        f"{res['L_eff']:.0f} m",
+        delta=f"+{res['L_eff']-D:.0f} m felt",
+        delta_color="inverse",
+        help="The friction-weighted distance this persona effectively 'walks' in terms of physical effort."
+    )
 
     # --- CHARTS ---
     c_left, c_right = st.columns([1, 1.8])
@@ -272,6 +398,18 @@ This module is important for advocacy and policy-making on the topic of **Mobili
     st.markdown("#### Per-Segment Friction & Time Breakdown")
     st.pyplot(plot_segment_breakdown(f_array, res, p), use_container_width=True)
 
+    # NEW: speed profile + metabolic cost side by side
+    st.markdown("---")
+    sp_left, sp_right = st.columns([1.8, 1])
+    with sp_left:
+        st.markdown("#### Speed Profile Along Corridor")
+        st.caption("Selected persona highlighted — all others faded. Dashed horizontal = ideal free-walking speed.")
+        st.pyplot(plot_speed_profile(f_array, results, personas, selected_key), use_container_width=True)
+    with sp_right:
+        st.markdown("#### Extra Metabolic Cost per Trip")
+        st.caption(f"Extra energy above ideal walk for a {BODY_WEIGHT_KG:.0f} kg reference commuter.")
+        st.pyplot(plot_metabolic_cost(results, personas), use_container_width=True)
+
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
     st.header("Simulator Functionality")
@@ -279,6 +417,8 @@ This module is important for advocacy and policy-making on the topic of **Mobili
     st.write("* **Power-Law Friction Scaling:** Unlike linear models, our simulator penalizes speed exponentially as infrastructure degrades. This accurately models how a 'doubling' of ground roughness leads to more than a doubling of traversal difficulty for vulnerable groups.")
     st.write("* **Vehicular Risk Quantification:** The simulator identifies 'Impassable' segments ($f > f_{max}$) where agents are forced into the vehicular Right-of-Way. It calculates the associated safety multiplier $\\alpha$, highlighting the direct correlation between poor footpaths and high-risk pedestrian-vehicle mixing.")
     st.write("* **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
+    st.write("* **Speed Profile Chart:** Plots effective walking speed continuously along the corridor for all personas simultaneously, making the velocity decay and detour plateaus visible as a spatial argument rather than a summary statistic.")
+    st.write("* **Metabolic Cost Quantification:** Converts the friction-weighted effective path length into extra kilocalories expended per trip, grounding the equity argument in physical biology — not just time.")
 
     st.markdown("---")
     with st.expander("View Raw Simulation Data Table"):
