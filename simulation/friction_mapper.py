@@ -491,7 +491,6 @@ all personas — only the **cost** of traversing it differs.
                 _rows.append({"Persona": _name, "Main cost at f=5 (s)": round(_main, 1),
                                "Bypass wins if shorter than (m)": round(_breakeven, 1)})
             st.dataframe(_pd.DataFrame(_rows), hide_index=True, width='stretch')
-            st.caption("Real Bazaar Street bypass streets exceed these thresholds — hence identical paths, different costs.")
 
     try:
         df = load_audit_data()
@@ -635,11 +634,6 @@ all personas — only the **cost** of traversing it differs.
 
     if show_route and route_coords:
         st.markdown("#### Per-Persona Route Cost")
-        st.caption(
-            "All personas follow the same geometric path — no shorter bypass exists in the real street network. "
-            "The equity gap is in the **cost** of traversal: friction sensitivity k and impassability threshold f\u2098\u2090\u2093 "
-            "make the same corridor significantly more expensive for vulnerable users. Click the route on the map for the full breakdown."
-        )
         if show_route and HAVE_OSM:
             try:
                 _personas_disp = yaml.safe_load(open(os.path.join("data", "personas.yaml")))
