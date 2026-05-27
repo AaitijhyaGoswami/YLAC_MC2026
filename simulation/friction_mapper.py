@@ -102,11 +102,12 @@ def load_osm_graph():
     return ox.graph_from_point(centre, dist=650, network_type="walk", retain_all=True)
 
 
-@st.cache_data(show_spinner="Snapping audit nodes to street network…")
-def build_friction_graph(_G, audit_df: pd.DataFrame, bazaar_f: int):
+def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
     """Tags every OSM edge with its nearest f_value only.
-    Cost is computed per-persona at routing time via persona_edge_cost()."""
-    G         = _G
+    Cost is computed per-persona at routing time via persona_edge_cost().
+    Not cached — must run fresh per call so mutations don't bleed between personas."""
+    import copy
+    G         = copy.deepcopy(G)   # work on a copy so the cached raw graph stays clean
     audit_pts = audit_df[["lat", "lon", "f_value"]].values
 
     def nearest_f(mid_lat, mid_lon):
@@ -486,12 +487,14 @@ def app():
         try:
             with st.spinner("Building friction-weighted street graph…"):
                 G_raw = load_osm_graph()
-                G     = build_friction_graph(G_raw, df, bazaar_f)
-                import yaml, os as _os
-                _personas = yaml.safe_load(open(_os.path.join("data", "personas.yaml")))
+                import yaml as _yaml, os as _os, copy as _copy
+                _personas = _yaml.safe_load(open(_os.path.join("data", "personas.yaml")))
                 _p        = _personas.get(route_persona, list(_personas.values())[0])
-                G         = persona_edge_cost(G, _p, bazaar_f)
-                path, _ = compute_route(G, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
+                # build_friction_graph deepcopies G_raw internally — safe to call per render
+                G_tagged  = build_friction_graph(G_raw, df, bazaar_f)
+                # persona_edge_cost writes persona_cost onto G_tagged (already a fresh copy)
+                G_costed  = persona_edge_cost(G_tagged, _p, bazaar_f)
+                path, _ = compute_route(G_costed, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
                 if path:
                     route_coords = path_to_coords(G, path)
                 else:
