@@ -105,9 +105,6 @@ def load_osm_graph():
 
 
 def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
-    """Tags every OSM edge with its nearest f_value only.
-    Cost is computed per-persona at routing time via persona_edge_cost().
-    Not cached — must run fresh per call so mutations don't bleed between personas."""
     import copy
     G         = copy.deepcopy(G)   # work on a copy so the cached raw graph stays clean
     audit_pts = audit_df[["lat", "lon", "f_value"]].values
@@ -132,16 +129,6 @@ def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
 
 
 def persona_edge_cost(G, persona: dict, bazaar_f: int):
-    """
-    Writes persona_cost on every edge using the same power-law model
-    as agent_sim.run_simulation():
-
-        traversal:  cost = length * f^k / v0              (f <= f_max)
-        detour:     cost = (length + delta) * alpha / v0  (f >  f_max)
-
-    Edges with no audit node nearby inherit bazaar_f as their f-value.
-    Does NOT mutate f_value — safe to call repeatedly for different personas.
-    """
     v0    = persona["v0"]
     k     = persona["k"]
     f_max = persona["f_max"]
@@ -174,16 +161,12 @@ def path_to_coords(G, path):
     return [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in path]
 
 
-# -------------------------------------------------------------------------
 # MAP BUILDER
-# -------------------------------------------------------------------------
-
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
               route_coords=None, route_color="#4CAF50",
               route_popup_html: str = "") -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
 
-    # --- 1. THE 600m BAZAAR STREET STRETCH ---
     b_popup_html = f"""
         <div style="font-family: sans-serif; font-size: 12px; width: 200px; background: #111; color: #eee; border-radius: 4px; padding: 8px;">
             <b style="color: #F44336; font-size: 13px;">Bazaar Street Zone</b><br>
@@ -205,7 +188,6 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
         popup=folium.Popup(b_popup_html, max_width=250)
     ).add_to(m)
 
-    # --- 2. THE DISCRETE NODES (300m) ---
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
 
@@ -240,7 +222,6 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             popup=folium.Popup(n_popup_html, max_width=300)
         ).add_to(m)
 
-    # --- 3. LAYER 1: FRICTION-OPTIMAL ROUTE (if computed) ---
     if route_coords:
         _route_popup = folium.Popup(route_popup_html, max_width=300) if route_popup_html else None
         _pl = folium.PolyLine(
@@ -248,7 +229,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             color=route_color,
             weight=4,
             opacity=0.9,
-            tooltip="OSM route · click for persona breakdown"
+            tooltip="OSM Route: Click for Persona Breakdown"
         )
         if _route_popup:
             _pl.add_child(_route_popup)
@@ -521,8 +502,7 @@ all personas; only the cost of traversing it differs.
     route_coords = None
     route_color  = "#4CAF50"
     if HAVE_OSM:
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### Network Routing (Layer 1)")
+        st.sidebar.markdown("### Network Routing")
         show_route = st.sidebar.checkbox(
             "Show friction-optimal route",
             value=False,
