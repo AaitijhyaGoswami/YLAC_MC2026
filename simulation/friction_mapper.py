@@ -179,7 +179,8 @@ def path_to_coords(G, path):
 # -------------------------------------------------------------------------
 
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
-              route_coords=None, route_color="#4CAF50") -> folium.Map:
+              route_coords=None, route_color="#4CAF50",
+              route_popup_html: str = "") -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
 
     # --- 1. THE 600m BAZAAR STREET STRETCH ---
@@ -237,13 +238,17 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
 
     # --- 3. LAYER 1: FRICTION-OPTIMAL ROUTE (if computed) ---
     if route_coords:
-        folium.PolyLine(
+        _route_popup = folium.Popup(route_popup_html, max_width=300) if route_popup_html else None
+        _pl = folium.PolyLine(
             route_coords,
             color=route_color,
             weight=4,
             opacity=0.9,
-            tooltip="Friction-optimal route (OSM graph)"
-        ).add_to(m)
+            tooltip="OSM route · click for persona breakdown"
+        )
+        if _route_popup:
+            _pl.add_child(_route_popup)
+        _pl.add_to(m)
         folium.Marker(
             STATION_EXIT,
             tooltip="Yeshwantpur Railway Station exit",
@@ -383,7 +388,7 @@ def app():
             "❌ No",
         ],
     })
-    st.dataframe(rubric, hide_index=True, use_container_width=True)
+    st.dataframe(rubric, hide_index=True, width='stretch')
 
     # --- TECHNICAL MATH SECTION ---
     with st.expander("View Technical Methodology and Mathematical Definitions"):
@@ -426,9 +431,63 @@ def app():
 
         if HAVE_OSM:
             st.markdown("#### Layer 1: Friction-Weighted Network Routing")
-            st.markdown("Each OSM edge is assigned a traversal cost equal to its physical length scaled by the cost multiplier of the nearest audit node's f-value:")
-            st.latex(r"\text{cost}(e) = \text{length}(e) \times C(f_e), \quad C(f) \in \{1.0,\ 1.2,\ 1.8,\ 3.0,\ 5.0\}")
-            st.markdown("Dijkstra on this weighted graph yields the path minimising total perceived effort. Where it diverges from the geometric shortest path, the infrastructure is forcing a sub-optimal detour.")
+            st.markdown("""
+Each OSM edge is tagged with the f-value of the nearest audit node.
+The traversal cost on each edge uses the same **power-law model** as the Time Tax Simulator,
+so routing costs are directly comparable to the per-segment times shown in the Agent Simulation.
+            """)
+            st.markdown("**Edge traversal time (seconds):**")
+            st.latex(r"""
+\tau_e(\phi) =
+\begin{cases}
+\dfrac{\text{length}(e) \cdot f_e^{\,k(\phi)}}{v_0(\phi)} & f_e \leq f_{\max}(\phi) \\[10pt]
+\dfrac{\bigl(\text{length}(e) + \delta(\phi)\bigr) \cdot \alpha}{v_0(\phi)} & f_e > f_{\max}(\phi)
+\end{cases}
+            """)
+            st.latex(r"""
+\begin{aligned}
+\text{length}(e) &: \text{Physical length of OSM edge } e \text{ (metres)} \\
+f_e &: \text{f-value of nearest audit node to edge midpoint} \\
+k(\phi) &: \text{Friction sensitivity exponent for persona } \phi \\
+v_0(\phi) &: \text{Free-walking speed of persona } \phi \text{ (m/s)} \\
+f_{\max}(\phi) &: \text{Impassability threshold — above this, ROW detour is triggered} \\
+\delta(\phi) &: \text{Detour distance penalty for persona } \phi \text{ (metres)} \\
+\alpha &: \text{Safety speed penalty multiplier in vehicular ROW} = 1.5
+\end{aligned}
+            """)
+            st.markdown("**Total route cost for persona** $\\phi$:")
+            st.latex(r"T_{\text{route}}(\phi) = \sum_{e \in \text{path}} \tau_e(\phi)")
+            st.markdown("**Why all personas follow the same geometric path:**")
+            st.markdown("""
+Dijkstra minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
+The Yeshwantpur–Bazaar Street corridor has no bypass street shorter than the
+break-even threshold below, so the optimal path is topologically identical for
+all personas — only the **cost** of traversing it differs.
+            """)
+            st.markdown("**Bypass break-even threshold** — a bypass at $f=2$ only beats the main corridor at $f=5$ if:")
+            st.latex(r"\text{length}_{\text{bypass}} < \frac{v_0(\phi) \cdot \tau_{\text{main}}}{2^{k(\phi)}}")
+            st.markdown("Per persona, for a 120 m main-corridor segment:")
+
+            _bp_data = {
+                "Able-bodied": (1.4, 0.60, 4, 8.0),
+                "Elderly":     (0.9, 0.90, 3, 10.0),
+                "Wheelchair":  (0.8, 1.20, 3, 15.0),
+                "Delivery":    (1.2, 0.75, 4, 8.0),
+            }
+            import pandas as _pd, numpy as _np
+            _rows = []
+            for _name, (_v0, _k, _fmax, _delta) in _bp_data.items():
+                _alpha = 1.5
+                _length = 120.0
+                if 5 > _fmax:
+                    _main = ((_length + _delta) * _alpha) / _v0
+                else:
+                    _main = _length * (5 ** _k) / _v0
+                _breakeven = _main * _v0 / (2 ** _k)
+                _rows.append({"Persona": _name, "Main cost at f=5 (s)": round(_main, 1),
+                               "Bypass wins if shorter than (m)": round(_breakeven, 1)})
+            st.dataframe(_pd.DataFrame(_rows), hide_index=True, width='stretch')
+            st.caption("Real Bazaar Street bypass streets exceed these thresholds — hence identical paths, different costs.")
 
     try:
         df = load_audit_data()
@@ -484,20 +543,74 @@ def app():
     L_eff_base = L_eff_300_base + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
-    # Layer 1: compute route if requested
+    # Layer 1: compute route + per-persona popup if requested
+    route_popup_html = ""
     if show_route and HAVE_OSM:
         try:
             with st.spinner("Building friction-weighted street graph…"):
                 G_raw     = load_osm_graph()
                 _personas = yaml.safe_load(open(os.path.join("data", "personas.yaml")))
                 _p        = _personas.get(route_persona, list(_personas.values())[0])
-                # build_friction_graph deepcopies G_raw internally — safe to call per render
                 G_tagged  = build_friction_graph(G_raw, df, bazaar_f)
-                # persona_edge_cost writes persona_cost onto G_tagged (already a fresh copy)
+
+                # Route on selected persona
                 G_costed  = persona_edge_cost(G_tagged, _p, bazaar_f)
-                path, _ = compute_route(G_costed, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
+                path, _   = compute_route(G_costed, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
                 if path:
                     route_coords = path_to_coords(G_costed, path)
+
+                    # Compute cost for ALL personas so popup shows full comparison
+                    _rows = ""
+                    for _pk, _pp in _personas.items():
+                        _Gc = persona_edge_cost(copy.deepcopy(G_tagged), _pp, bazaar_f)
+                        _, _cost_s = compute_route(_Gc, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
+                        _cost_s = _cost_s if _cost_s else 0
+                        _ideal_s = sum(
+                            d.get("length", 10.0) / _pp["v0"]
+                            for _, _, d in _Gc.edges(data=True)
+                            if d.get("f_value", 3) == 1
+                        )
+                        # ideal = straight corridor at f=1
+                        _ideal_s = 900.0 / _pp["v0"]
+                        _cost_s  = _cost_s if _cost_s is not None else _ideal_s
+                        _tax_s   = max(0.0, _cost_s - _ideal_s)
+                        # Count impassable edges along the routed path
+                        _path_p, _ = compute_route(_Gc, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
+                        _detours = sum(
+                            1 for u, v in zip((_path_p or []), (_path_p or [])[1:])
+                            if _Gc[u][v][0].get("f_value", 3) > _pp["f_max"]
+                        )
+                        _is_sel  = _pk == route_persona
+                        _bold    = "font-weight:bold; background:#1a1a2e;" if _is_sel else ""
+                        _rows += (
+                            f'<tr style="{_bold}">' +
+                            f'<td style="padding:3px 8px; color:{PERSONA_COLORS.get(_pk,"#fff")}">{_pp["label"]}</td>' +
+                            f'<td style="padding:3px 8px; text-align:right">{_cost_s/60:.1f} min</td>' +
+                            f'<td style="padding:3px 8px; text-align:right; color:#F44336">+{_tax_s/60:.1f} min</td>' +
+                            f'<td style="padding:3px 8px; text-align:right; color:#FF9800">{_detours}</td>' +
+                            "</tr>"
+                        )
+
+                    route_popup_html = (
+                        '<div style="font-family:sans-serif;font-size:12px;width:320px;' +
+                        'background:#111;color:#eee;border-radius:4px;padding:8px">' +
+                        '<b style="color:#4CAF50;font-size:13px;">OSM Pedestrian Route</b><br>' +
+                        '<span style="color:#aaa;font-size:10px">Station Exit → Constitution Circle · 900m corridor</span>' +
+                        '<hr style="margin:6px 0;border-color:#333">' +
+                        '<b style="font-size:11px;color:#aaa">Per-Persona Traversal Cost</b>' +
+                        '<table style="width:100%;border-collapse:collapse;margin-top:4px">' +
+                        '<tr style="color:#777;font-size:10px">' +
+                        '<th style="text-align:left;padding:2px 8px">Persona</th>' +
+                        '<th style="text-align:right;padding:2px 8px">Time</th>' +
+                        '<th style="text-align:right;padding:2px 8px">Time Tax</th>' +
+                        '<th style="text-align:right;padding:2px 8px">Detours</th>' +
+                        '</tr>' +
+                        _rows +
+                        '</table>' +
+                        '<hr style="margin:6px 0;border-color:#333">' +
+                        '<span style="font-size:9px;color:#777">Highlighted = selected persona · Detours = ROW segments forced by impassable nodes</span>' +
+                        '</div>'
+                    )
                 else:
                     st.warning("No routable path found in the OSM graph for this corridor.")
         except Exception as e:
@@ -518,27 +631,46 @@ def app():
                help=f"The corridor makes a 900m walk feel like {f_bar_now:.2f}× that distance.")
 
     if show_route and route_coords:
-        st.info(
-            "The coloured line shows the **friction-optimal route** on the real OSM pedestrian graph — "
-            "the path minimising total effort given the surveyed f-values. Where it diverges from the "
-            "Bazaar Street polyline, the infrastructure is forcing a longer but lower-friction detour."
+        st.markdown("#### Per-Persona Route Cost")
+        st.caption(
+            "All personas follow the same geometric path — no shorter bypass exists in the real street network. "
+            "The equity gap is in the **cost** of traversal: friction sensitivity k and impassability threshold f\u2098\u2090\u2093 "
+            "make the same corridor significantly more expensive for vulnerable users. Click the route on the map for the full breakdown."
         )
+        if show_route and HAVE_OSM:
+            try:
+                _personas_disp = yaml.safe_load(open(os.path.join("data", "personas.yaml")))
+                _Gbase = build_friction_graph(load_osm_graph(), df, bazaar_f)
+                _pcols = st.columns(len(_personas_disp))
+                for _col, (_pk, _pp) in zip(_pcols, _personas_disp.items()):
+                    _Gc2  = persona_edge_cost(copy.deepcopy(_Gbase), _pp, bazaar_f)
+                    _, _c = compute_route(_Gc2, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
+                    _ideal = 900.0 / _pp["v0"]
+                    _tax   = max(0.0, (_c or 0) - _ideal)
+                    _col.metric(
+                        _pp["label"],
+                        f"{(_c or 0)/60:.1f} min",
+                        delta=f"+{_tax/60:.1f} min tax",
+                        delta_color="inverse"
+                    )
+            except Exception:
+                pass
 
     # --- MAP & GRADIENT ---
-    st_folium(build_map(df, n_fixes, bazaar_f, route_coords, route_color), width=None, height=520, returned_objects=[])
+    st_folium(build_map(df, n_fixes, bazaar_f, route_coords, route_color, route_popup_html), width=None, height=520, returned_objects=[])
     st.markdown("#### Friction Gradient: Full 900m Route")
-    st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), use_container_width=True)
+    st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), width='stretch')
     st.markdown("---")
 
     # --- CORRIDOR ANALYSIS ---
     st.markdown("#### Corridor Analysis")
     col_left, col_right = st.columns(2)
     with col_left:
-        st.pyplot(plot_severity_pie(df, n_fixes), use_container_width=True)
+        st.pyplot(plot_severity_pie(df, n_fixes), width='stretch')
     with col_right:
         st.caption("S.U.R.E. Compliance Gauge")
-        st.pyplot(plot_sure_compliance_bar(f_bar_now), use_container_width=True)
-        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), use_container_width=True)
+        st.pyplot(plot_sure_compliance_bar(f_bar_now), width='stretch')
+        st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), width='stretch')
 
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
