@@ -491,7 +491,6 @@ all personas; only the cost of traversing it differs.
                                        help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
-    # Layer 1 sidebar controls (only shown when OSMnx is installed)
     show_route   = False
     route_coords = None
     route_color  = "#4CAF50"
@@ -504,7 +503,7 @@ all personas; only the cost of traversing it differs.
         )
         if show_route:
             route_persona = st.sidebar.selectbox(
-                "Route colour — persona:",
+                "Traversing Persona:",
                 options=list(PERSONA_LABELS.keys()),
                 format_func=lambda k: PERSONA_LABELS[k]
             )
