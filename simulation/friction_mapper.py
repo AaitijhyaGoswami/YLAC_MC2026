@@ -438,7 +438,7 @@ def app():
             st.markdown("""
 Each OSM edge is tagged with the f-value of the nearest audit node.
 The traversal cost on each edge uses the same power-law model as the Time Tax Simulator,
-so routing costs are directly comparable to the per-segment times shown in the Agent Simulation.
+so routing costs are directly comparable to the per-segment times shown in the agent-based simulation.
             """)
             st.markdown("**Edge traversal time (seconds):**")
             st.latex(r"""
@@ -454,7 +454,7 @@ so routing costs are directly comparable to the per-segment times shown in the A
 f_e &: \text{f-value of nearest audit node to edge midpoint} \\
 k(\phi) &: \text{Friction sensitivity exponent for persona } \phi \\
 v_0(\phi) &: \text{Free-walking speed of persona } \phi \text{ (m/s)} \\
-f_{\max}(\phi) &: \text{Impassability threshold — above this, ROW detour is triggered} \\
+f_{\max}(\phi) &: \text{Impassability threshold (above this, ROW detour is triggered)} \\
 \delta(\phi) &: \text{Detour distance penalty for persona } \phi \text{ (metres)} \\
 \alpha &: \text{Safety speed penalty multiplier in vehicular ROW} = 1.5
 \end{aligned}
