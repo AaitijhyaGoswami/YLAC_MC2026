@@ -104,6 +104,25 @@ def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
     }
 
 
+def reachable_distance(f_array: np.ndarray, persona: dict, budget_s: float) -> float:
+    """
+    How far along the corridor can this persona travel in budget_s seconds?
+    Walks segment by segment; returns the fractional distance reached when
+    time runs out. Used to compute 1D corridor isochrones.
+    """
+    elapsed = 0.0
+    for i, fi in enumerate(f_array):
+        if fi > persona["f_max"]:
+            seg_time = (d + persona["delta"]) * persona["alpha"] / persona["v0"]
+        else:
+            seg_time = d * (fi ** persona["k"]) / persona["v0"]
+        if elapsed + seg_time > budget_s:
+            frac = (budget_s - elapsed) / seg_time
+            return i * d + frac * d
+        elapsed += seg_time
+    return D  # reached the far end within budget
+
+
 # -------------------------------------------------------------------------
 # PLOT HELPERS
 # -------------------------------------------------------------------------
@@ -223,6 +242,68 @@ def plot_metabolic_cost(results: dict, personas: dict) -> plt.Figure:
     return fig
 
 
+def plot_isochrone_bars(f_array: np.ndarray, personas: dict,
+                        budgets_s: dict, selected_key: str) -> plt.Figure:
+    """
+    Grouped horizontal bar chart: for each time budget, shows actual vs ideal
+    reachable distance per persona. The gap between ideal and actual is the
+    spatial expression of the Time Tax.
+    """
+    f_ideal = np.ones(len(f_array))
+    budget_labels = list(budgets_s.keys())
+    n_budgets = len(budget_labels)
+    n_personas = len(personas)
+    bar_h = 0.18
+    gap   = 0.08
+
+    fig, axes = plt.subplots(1, n_budgets, figsize=(11, 3.2), sharey=True)
+    fig.patch.set_facecolor("#1a1a1a")
+    if n_budgets == 1:
+        axes = [axes]
+
+    for ax, (blabel, bs) in zip(axes, budgets_s.items()):
+        ax.set_facecolor("#1a1a1a")
+        ax.set_title(blabel, color="white", fontsize=9)
+
+        for j, (pk, p) in enumerate(personas.items()):
+            y        = j * (n_budgets * bar_h + gap)
+            actual   = reachable_distance(f_array,  p, bs)
+            ideal    = reachable_distance(f_ideal,   p, bs)
+            is_sel   = pk == selected_key
+            lw       = 1.5 if is_sel else 0.0
+            a_alpha  = 0.95 if is_sel else 0.55
+
+            # Ideal bar (faint background)
+            ax.barh(y + bar_h, ideal,  height=bar_h, color=p["color"],
+                    alpha=0.22, linewidth=0, align="edge")
+            # Actual bar
+            ax.barh(y,         actual, height=bar_h, color=p["color"],
+                    alpha=a_alpha, linewidth=lw,
+                    edgecolor="white" if is_sel else "none", align="edge")
+            ax.text(actual + 8, y + bar_h * 0.5,
+                    f"{actual:.0f}m", va="center", fontsize=7,
+                    color=p["color"] if is_sel else "#aaaaaa")
+
+        ax.set_xlim(0, D * 1.05)
+        ax.set_xlabel("Reachable distance (m)", color="white", fontsize=8)
+        ax.tick_params(colors="white", labelsize=7)
+        ax.spines[:].set_visible(False)
+        ax.axvline(D, color="#444", linewidth=0.6, linestyle=":")
+
+    # Y-axis labels on leftmost plot only
+    yticks = [(j * (n_budgets * bar_h + gap) + bar_h * 0.5)
+              for j in range(n_personas)]
+    axes[0].set_yticks(yticks)
+    axes[0].set_yticklabels(
+        [p["label"] for p in personas.values()],
+        color="white", fontsize=8
+    )
+    fig.suptitle("Corridor Accessibility Isochrones — Actual vs Ideal Catchment",
+                 color="white", fontsize=10, y=1.01)
+    fig.tight_layout()
+    return fig
+
+
 # -------------------------------------------------------------------------
 # MAIN APP ENTRY POINT
 # -------------------------------------------------------------------------
@@ -298,6 +379,33 @@ This module is important for advocacy and policy-making on the topic of **Mobili
         For the wheelchair persona at baseline, $L_{\\text{eff}} \\approx 4{,}750\\,\\text{m}$, giving 
         $E_{\\text{extra}} \\approx 183\\,\\text{kcal}$ of extra energy per single trip — 
         equivalent to climbing roughly **180 flights of stairs**.
+        """)
+
+        st.markdown("#### Corridor Isochrone — Reachable Distance")
+        st.markdown("""
+        The isochrone answers: *given a fixed time budget $T$, how far along the corridor
+        can this persona travel?* It is the spatial inverse of the Time Tax — instead of
+        asking how much time a fixed distance costs, it asks how much distance a fixed time buys.
+        """)
+        st.latex(r"""
+            x^*(T, \phi) = \max \left\{ x \;\Big|\; \sum_{i=0}^{\lfloor x/d 
+floor} 	au_i(\phi) \leq T 
+ight\}
+        """)
+        st.latex(r"""
+            egin{aligned}
+            x^*(T, \phi) &: 	ext{Reachable distance along the corridor in time budget } T \
+            T &: 	ext{Time budget (seconds) — e.g. 300 s for a 5-minute window} \
+            	au_i(\phi) &: 	ext{Traversal time of segment } i 	ext{ for persona } \phi \
+            d &: 	ext{Segment length (12.5 m)}
+            \end{aligned}
+        """)
+        st.markdown("""
+        The **ideal isochrone** $x^*_{\text{ideal}}$ uses $f_i = 1$ throughout.
+        The gap $x^*_{\text{ideal}} - x^*_{\text{actual}}$ is the **catchment loss** —
+        the corridor distance this persona is denied within the same time window due to friction.
+        For a wheelchair user on a 5-minute budget, this loss is approximately **167 m**,
+        or 58% of their potential catchment.
         """)
 
     try:
@@ -410,6 +518,37 @@ This module is important for advocacy and policy-making on the topic of **Mobili
         st.caption(f"Extra energy above ideal walk for a {BODY_WEIGHT_KG:.0f} kg reference commuter.")
         st.pyplot(plot_metabolic_cost(results, personas), use_container_width=True)
 
+    # --- ISOCHRONE SECTION ---
+    st.markdown("---")
+    st.markdown("#### Corridor Accessibility Isochrones")
+    st.caption(
+        "How far can each persona travel from the station exit within a fixed time budget? "
+        "Solid bars = actual reachable distance given current friction. "
+        "Faint bars = ideal reachable distance if the corridor were fully S.U.R.E.-compliant (f=1 throughout). "
+        "The gap is the catchment stolen by infrastructure failure."
+    )
+    TIME_BUDGETS = {"5 min": 5*60, "10 min": 10*60, "15 min": 15*60}
+    st.pyplot(
+        plot_isochrone_bars(f_array, personas, TIME_BUDGETS, selected_key),
+        use_container_width=True
+    )
+
+    # Equity summary table below the chart
+    iso_rows = []
+    f_ideal_arr = np.ones(len(f_array))
+    for pk, pp in personas.items():
+        row = {"Persona": pp["label"]}
+        for blabel, bs in TIME_BUDGETS.items():
+            actual  = reachable_distance(f_array,     pp, bs)
+            ideal   = reachable_distance(f_ideal_arr, pp, bs)
+            lost    = ideal - actual
+            row[f"{blabel} actual (m)"]  = f"{actual:.0f}"
+            row[f"{blabel} ideal (m)"]   = f"{ideal:.0f}"
+            row[f"{blabel} lost (m)"]    = f"{lost:.0f} ({lost/ideal*100:.0f}%)"
+        iso_rows.append(row)
+    with st.expander("View isochrone data table"):
+        st.dataframe(pd.DataFrame(iso_rows), hide_index=True, use_container_width=True)
+
     # --- POINTWISE DESCRIPTION ---
     st.markdown("---")
     st.header("Simulator Functionality")
@@ -419,6 +558,7 @@ This module is important for advocacy and policy-making on the topic of **Mobili
     st.write("* **Equity Gap Visualization:** By disaggregating the Time Tax across personas, the tool provides the quantitative evidence needed to argue for **Universal Design**. It demonstrates that infrastructure failure acts as a 'regressive tax' that is paid most heavily by those with limited mobility.")
     st.write("* **Speed Profile Chart:** Plots effective walking speed continuously along the corridor for all personas simultaneously, making the velocity decay and detour plateaus visible as a spatial argument rather than a summary statistic.")
     st.write("* **Metabolic Cost Quantification:** Converts the friction-weighted effective path length into extra kilocalories expended per trip, grounding the equity argument in physical biology — not just time.")
+    st.write("* **Corridor Accessibility Isochrones:** Computes how far each persona can travel within 5, 10, and 15-minute budgets under current vs ideal conditions. The gap between actual and ideal catchment is the spatial representation of the Time Tax — making the equity deficit visible as lost territory rather than lost time.")
 
     st.markdown("---")
     with st.expander("View Raw Simulation Data Table"):
