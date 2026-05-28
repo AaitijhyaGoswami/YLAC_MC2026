@@ -20,8 +20,10 @@ try:
 except ImportError:
     HAVE_OSM = False
 
-
+# -------------------------------------------------------------------------
 # CONSTANTS
+# -------------------------------------------------------------------------
+
 F_COLORS = {
     1: "#9E9E9E",
     2: "#4CAF50",
@@ -76,8 +78,10 @@ PERSONA_LABELS = {
     "delivery":    "Delivery Partner",
 }
 
-
+# -------------------------------------------------------------------------
 # DATA LOADER
+# -------------------------------------------------------------------------
+
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
@@ -87,8 +91,10 @@ def load_audit_data() -> pd.DataFrame:
     return df
 
 
+# -------------------------------------------------------------------------
+# LAYER 1: OSMnx NETWORK ROUTING
+# -------------------------------------------------------------------------
 
-# OSMnx NETWORK ROUTING
 @st.cache_data(show_spinner="Downloading pedestrian street graph…")
 def load_osm_graph():
     centre = (
@@ -99,6 +105,9 @@ def load_osm_graph():
 
 
 def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
+    """Tags every OSM edge with its nearest f_value only.
+    Cost is computed per-persona at routing time via persona_edge_cost().
+    Not cached; must run fresh per call so mutations don't bleed between personas."""
     import copy
     G         = copy.deepcopy(G)   # work on a copy so the cached raw graph stays clean
     audit_pts = audit_df[["lat", "lon", "f_value"]].values
@@ -123,6 +132,16 @@ def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
 
 
 def persona_edge_cost(G, persona: dict, bazaar_f: int):
+    """
+    Writes persona_cost on every edge using the same power-law model
+    as agent_sim.run_simulation():
+
+        traversal:  cost = length * f^k / v0              (f <= f_max)
+        detour:     cost = (length + delta) * alpha / v0  (f >  f_max)
+
+    Edges with no audit node nearby inherit bazaar_f as their f-value.
+    Does NOT mutate f_value; safe to call repeatedly for different personas.
+    """
     v0    = persona["v0"]
     k     = persona["k"]
     f_max = persona["f_max"]
@@ -155,12 +174,16 @@ def path_to_coords(G, path):
     return [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in path]
 
 
+# -------------------------------------------------------------------------
 # MAP BUILDER
+# -------------------------------------------------------------------------
+
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
               route_coords=None, route_color="#4CAF50",
               route_popup_html: str = "") -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
 
+    # --- 1. THE 600m BAZAAR STREET STRETCH ---
     b_popup_html = f"""
         <div style="font-family: sans-serif; font-size: 12px; width: 200px; background: #111; color: #eee; border-radius: 4px; padding: 8px;">
             <b style="color: #F44336; font-size: 13px;">Bazaar Street Zone</b><br>
@@ -182,6 +205,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
         popup=folium.Popup(b_popup_html, max_width=250)
     ).add_to(m)
 
+    # --- 2. THE DISCRETE NODES (300m) ---
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
 
@@ -216,6 +240,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             popup=folium.Popup(n_popup_html, max_width=300)
         ).add_to(m)
 
+    # --- 3. LAYER 1: FRICTION-OPTIMAL ROUTE (if computed) ---
     if route_coords:
         _route_popup = folium.Popup(route_popup_html, max_width=300) if route_popup_html else None
         _pl = folium.PolyLine(
@@ -223,7 +248,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             color=route_color,
             weight=4,
             opacity=0.9,
-            tooltip="OSM Route: Click for Persona Breakdown"
+            tooltip="OSM route · click for persona breakdown"
         )
         if _route_popup:
             _pl.add_child(_route_popup)
@@ -350,17 +375,17 @@ def app():
             "Minor cracks, unlevelled slabs, low-hanging cables",
             "Broken slabs, rubble, utility excavation",
             "Missing drain cover, high kerb, partial blockage",
-            "Footpath ends: transformer, encroachment, construction",
+            "Footpath ends: transformer, encroachment, or construction",
         ],
         "Wheelchair Access": [
             "Full",
-            "Partial — discomfort",
+            "Partial, with discomfort",
             "Severely restricted",
             "Effectively impassable",
             "Fully impassable",
         ],
         "S.U.R.E. compliant?": [
-            "✅ Yes — reference standard",
+            "Yes, reference standard",
             "⚠️ Marginal",
             "❌ No",
             "❌ No",
@@ -412,8 +437,8 @@ def app():
             st.markdown("#### Layer 1: Friction-Weighted Network Routing")
             st.markdown("""
 Each OSM edge is tagged with the f-value of the nearest audit node.
-The traversal cost on each edge uses the same power-law model as the Time Tax Simulator,
-so routing costs are directly comparable to the per-segment times shown in the agent-based simulation.
+The traversal cost on each edge uses the same **power-law model** as the Time Tax Simulator,
+so routing costs are directly comparable to the per-segment times shown in the Agent Simulation.
             """)
             st.markdown("**Edge traversal time (seconds):**")
             st.latex(r"""
@@ -429,7 +454,7 @@ so routing costs are directly comparable to the per-segment times shown in the a
 f_e &: \text{f-value of nearest audit node to edge midpoint} \\
 k(\phi) &: \text{Friction sensitivity exponent for persona } \phi \\
 v_0(\phi) &: \text{Free-walking speed of persona } \phi \text{ (m/s)} \\
-f_{\max}(\phi) &: \text{Impassability threshold (above this, ROW detour is triggered)} \\
+f_{\max}(\phi) &: \text{Impassability threshold — above this, ROW detour is triggered} \\
 \delta(\phi) &: \text{Detour distance penalty for persona } \phi \text{ (metres)} \\
 \alpha &: \text{Safety speed penalty multiplier in vehicular ROW} = 1.5
 \end{aligned}
@@ -438,10 +463,10 @@ f_{\max}(\phi) &: \text{Impassability threshold (above this, ROW detour is trigg
             st.latex(r"T_{\text{route}}(\phi) = \sum_{e \in \text{path}} \tau_e(\phi)")
             st.markdown("**Why all personas follow the same geometric path:**")
             st.markdown("""
-Dijkstra's algorithm minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
+Dijkstra minimises $T_{\\text{route}}(\\phi)$ over the real OSM graph.
 The Yeshwantpur–Bazaar Street corridor has no bypass street shorter than the
 break-even threshold below, so the optimal path is topologically identical for
-all personas; only the cost of traversing it differs.
+all personas; only the **cost** of traversing it differs.
             """)
             st.markdown("**Bypass break-even threshold**: a bypass at $f=2$ only beats the main corridor at $f=5$ if:")
             st.latex(r"\text{length}_{\text{bypass}} < \frac{v_0(\phi) \cdot \tau_{\text{main}}}{2^{k(\phi)}}")
@@ -466,6 +491,7 @@ all personas; only the cost of traversing it differs.
                 _rows.append({"Persona": _name, "Main cost at f=5 (s)": round(_main, 1),
                                "Bypass wins if shorter than (m)": round(_breakeven, 1)})
             st.dataframe(_pd.DataFrame(_rows), hide_index=True, width='stretch')
+            st.caption("Real Bazaar Street bypass streets exceed these thresholds, hence identical paths but different costs.")
 
     try:
         df = load_audit_data()
@@ -481,21 +507,23 @@ all personas; only the cost of traversing it differs.
     
     st.sidebar.markdown("**600m Bazaar Street stretch**")
     sure_standards = {
-        "Current — f=5 (Systemic Failure)": 5,
-        "Serious barrier — f=4 (Physical Barrier)": 4,
-        "Moderate repair — f=3 (Obstacle Course)": 3,
-        "Minor repair — f=2 (Distracted Walk)": 2,
-        "Full S.U.R.E. compliance — f=1": 1,
+        "Current: f=5 (Systemic Failure)": 5,
+        "Serious barrier: f=4 (Physical Barrier)": 4,
+        "Moderate repair: f=3 (Obstacle Course)": 3,
+        "Minor repair: f=2 (Distracted Walk)": 2,
+        "Full S.U.R.E. compliance: f=1": 1,
     }
     bazaar_label = st.sidebar.selectbox("Model Bazaar Street as:", list(sure_standards.keys()),
                                        help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
+    # Layer 1 sidebar controls (only shown when OSMnx is installed)
     show_route   = False
     route_coords = None
     route_color  = "#4CAF50"
     if HAVE_OSM:
-        st.sidebar.markdown("### Network Routing")
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### Network Routing (Layer 1)")
         show_route = st.sidebar.checkbox(
             "Show friction-optimal route",
             value=False,
@@ -503,7 +531,7 @@ all personas; only the cost of traversing it differs.
         )
         if show_route:
             route_persona = st.sidebar.selectbox(
-                "Traversing Persona:",
+                "Route colour (persona):",
                 options=list(PERSONA_LABELS.keys()),
                 format_func=lambda k: PERSONA_LABELS[k]
             )
@@ -607,6 +635,11 @@ all personas; only the cost of traversing it differs.
 
     if show_route and route_coords:
         st.markdown("#### Per-Persona Route Cost")
+        st.caption(
+            "All personas follow the same geometric path. No shorter bypass exists in the real street network. "
+            "The equity gap is in the **cost** of traversal: friction sensitivity k and impassability threshold f\u2098\u2090\u2093 "
+            "make the same corridor significantly more expensive for vulnerable users. Click the route on the map for the full breakdown."
+        )
         if show_route and HAVE_OSM:
             try:
                 _personas_disp = yaml.safe_load(open(os.path.join("data", "personas.yaml")))
@@ -629,6 +662,7 @@ all personas; only the cost of traversing it differs.
     # --- MAP & GRADIENT ---
     st_folium(build_map(df, n_fixes, bazaar_f, route_coords, route_color, route_popup_html), width=None, height=520, returned_objects=[])
     st.markdown("#### Friction Gradient: Full 900m Route")
+    st.caption("Each bar is one 12.5 m segment. Colour maps to the friction rubric: grey = f=1 (Gold Standard), green = f=2, blue = f=3, orange = f=4, red = f=5 (Systemic Failure). Dashed vertical = 300 m zone boundary.")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), width='stretch')
     st.markdown("---")
 
@@ -636,10 +670,12 @@ all personas; only the cost of traversing it differs.
     st.markdown("#### Corridor Analysis")
     col_left, col_right = st.columns(2)
     with col_left:
+        st.caption("Distribution of the 24 discrete audit nodes across friction severity levels.")
         st.pyplot(plot_severity_pie(df, n_fixes), width='stretch')
     with col_right:
         st.caption("S.U.R.E. Compliance Gauge")
         st.pyplot(plot_sure_compliance_bar(f_bar_now), width='stretch')
+        st.caption("Green portion = physical 900 m corridor. Red extension = extra effort above that. S.U.R.E. Target bar shows what a fully compliant corridor looks like.")
         st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), width='stretch')
 
     # --- POINTWISE DESCRIPTION ---
@@ -650,7 +686,7 @@ all personas; only the cost of traversing it differs.
     st.write("* **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("* **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
     if HAVE_OSM:
-        st.write("* **Friction-Optimal Routing (Layer 1):** Overlays the real OSM pedestrian graph and computes the path minimising total friction cost — making visible exactly where infrastructure forces sub-optimal detours.")
+        st.write("* **Friction-Optimal Routing (Layer 1):** Overlays the real OSM pedestrian graph and computes the path minimising total friction cost, making visible exactly where infrastructure forces sub-optimal detours.")
 
 if __name__ == "__main__":
     app()
