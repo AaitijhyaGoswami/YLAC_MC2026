@@ -105,11 +105,8 @@ def load_osm_graph():
 
 
 def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
-    """Tags every OSM edge with its nearest f_value only.
-    Cost is computed per-persona at routing time via persona_edge_cost().
-    Not cached; must run fresh per call so mutations don't bleed between personas."""
     import copy
-    G         = copy.deepcopy(G)   # work on a copy so the cached raw graph stays clean
+    G         = copy.deepcopy(G)  
     audit_pts = audit_df[["lat", "lon", "f_value"]].values
 
     def nearest_f(mid_lat, mid_lon):
@@ -132,16 +129,6 @@ def build_friction_graph(G, audit_df: pd.DataFrame, bazaar_f: int):
 
 
 def persona_edge_cost(G, persona: dict, bazaar_f: int):
-    """
-    Writes persona_cost on every edge using the same power-law model
-    as agent_sim.run_simulation():
-
-        traversal:  cost = length * f^k / v0              (f <= f_max)
-        detour:     cost = (length + delta) * alpha / v0  (f >  f_max)
-
-    Edges with no audit node nearby inherit bazaar_f as their f-value.
-    Does NOT mutate f_value; safe to call repeatedly for different personas.
-    """
     v0    = persona["v0"]
     k     = persona["k"]
     f_max = persona["f_max"]
@@ -434,7 +421,7 @@ def app():
         st.latex(r"\bar{f} = \frac{4187.5}{900} \approx 4.653")
 
         if HAVE_OSM:
-            st.markdown("#### Layer 1: Friction-Weighted Network Routing")
+            st.markdown("#### Friction-Weighted Network Routing")
             st.markdown("""
 Each OSM edge is tagged with the f-value of the nearest audit node.
 The traversal cost on each edge uses the same **power-law model** as the Time Tax Simulator,
@@ -522,8 +509,7 @@ all personas; only the **cost** of traversing it differs.
     route_coords = None
     route_color  = "#4CAF50"
     if HAVE_OSM:
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### Network Routing (Layer 1)")
+        st.sidebar.markdown("### Network Routing")
         show_route = st.sidebar.checkbox(
             "Show friction-optimal route",
             value=False,
@@ -686,7 +672,7 @@ all personas; only the **cost** of traversing it differs.
     st.write("* **Dynamic Remediation Simulation:** The interface acts as a predictive tool. By adjusting the sidebar controls, users can simulate the 'repair' of specific hotspots to observe the real-time drop in the Mean Friction Index.")
     st.write("* **Strategic Policy Framework:** This module provides the high-fidelity technical baseline required for government project approval. It serves as the primary data used to justify the fiscal investment for Lighthouse Pilot repairs.")
     if HAVE_OSM:
-        st.write("* **Friction-Optimal Routing (Layer 1):** Overlays the real OSM pedestrian graph and computes the path minimising total friction cost, making visible exactly where infrastructure forces sub-optimal detours.")
+        st.write("* **Friction-Optimal Routing:** Overlays the real OSM pedestrian graph and computes the path minimising total friction cost, making visible exactly where infrastructure forces sub-optimal detours.")
 
 if __name__ == "__main__":
     app()
