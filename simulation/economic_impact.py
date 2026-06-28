@@ -7,10 +7,7 @@ import pandas as pd
 import yaml
 import streamlit as st
 
-# -------------------------------------------------------------------------
 # CONSTANTS
-# -------------------------------------------------------------------------
-
 D      = 900.0
 d      = 12.5
 N_300 = 24
@@ -18,15 +15,13 @@ N_600 = 48
 
 M    = 100_000   # daily commuters at Yeshwantpur hub
 W    = 250       # working days per year
-WAGE = 50 / 60  # RBI informal wage rate — Rs50/hr -> Rs/min
+WAGE = 50 / 60  # RBI informal wage rate
 
 FIX_COST_LOW_LAKH  = 8
 FIX_COST_HIGH_LAKH = 12
 
-# -------------------------------------------------------------------------
-# DATA LOADERS
-# -------------------------------------------------------------------------
 
+# DATA LOADERS
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
     df = pd.read_csv(path)
@@ -38,10 +33,7 @@ def load_personas() -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
-# -------------------------------------------------------------------------
 # SIMULATION CORE
-# -------------------------------------------------------------------------
-
 def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int = 5) -> np.ndarray:
     f_300 = df["f_value"].values.astype(float)
     if n_fixes > 0:
@@ -96,10 +88,8 @@ def compute_economics(df: pd.DataFrame, personas: dict, n_fixes: int, bazaar_f: 
         "persona_losses": persona_losses, "n_fixes": n_fixes, "bazaar_f": bazaar_f
     }
 
-# -------------------------------------------------------------------------
-# VISUALIZATION HELPERS (Identical Aesthetics)
-# -------------------------------------------------------------------------
 
+# VISUALIZATION 
 def plot_time_tax_bars(res_b: dict, res_s: dict, personas: dict) -> plt.Figure:
     labels = [p["label"] for p in personas.values()]
     taxes_b = [res_b[k]["delta_tau"] / 60 for k in personas]
@@ -149,10 +139,8 @@ def plot_bcr_curve(df: pd.DataFrame, personas: dict, bazaar_f: int, n_range: int
     ax.tick_params(colors="white", labelsize=8); ax.spines[:].set_visible(False)
     fig.tight_layout(); return fig
 
-# -------------------------------------------------------------------------
-# MAIN APP ENTRY POINT
-# -------------------------------------------------------------------------
 
+# MAIN APP ENTRY POINT
 def app():
     st.markdown("""
     The **Fiscal Impact Engine** is the definitive economic audit of the Yeshwantpur corridor, providing the link between urban friction and regional GDP for Bangalore. Aggregating persona-weighted Time Tax for 100,000 daily commuters in a high-intensity hub volume, this module enables the calculation of **Productivity Loss** resulting from the individual transit resistance of those commuters. It establishes the correlation between fiscal loss and infrastructural neglect to demonstrate that total longitudinal delay imposed on the city's workforce results in an annual multi-crore deficit of total economic output.
@@ -160,10 +148,7 @@ def app():
 Municipal stakeholder and policy makers will be able to look at urban infrastructure repairs as a pro-active high yielding strategic investment rather than as a cost to be thrown money at when it breaks. The Benefit-Cost Ratio (BCR) established by this module provides the necessary mathematical evidence to validate immediate capital expenditure (CAPEX) for the repair of the corridors. By providing a data driven method for determining the progress of a city’s move towards a transit-oriented metropolis, the return of mobility is viewed not only as a social need, but also as a key aspect of recovering lost economic value and making the city a worldwide competitor.
     """)
 
-    # --- TECHNICAL MATH SECTION ---
-    # --- TECHNICAL MATH SECTION (Enhanced with all variable definitions) ---
-    # --- TECHNICAL MATH SECTION (Standardized to LaTeX Block Style) ---
-    # --- TECHNICAL MATH SECTION (Standardized Block Style with Worked Example) ---
+    # TECHNICAL MATH SECTION 
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### Fundamental Equations")
         st.markdown("The model scales individual pedestrian physics into city-wide economic figures through a four-stage aggregation.")
@@ -245,7 +230,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     except Exception as e:
         st.error(f"Error loading data: {e}"); return
 
-    # --- SIDEBAR CONTROLS (Restored to Exact Original) ---
+    # SIDEBAR CONTROLS
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Economic Impact Controls")
     n_fixes = st.sidebar.slider(
@@ -272,11 +257,11 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     )
     bazaar_f = sure_standards[bazaar_label]
 
-    # --- COMPUTATION ---
+    # COMPUTATION 
     econ = compute_economics(df, personas, n_fixes, bazaar_f)
     improved = econ["pct_recovered"] >= 0
 
-    # --- HEADLINE METRICS (Exact Original Style) ---
+    # HEADLINE METRICS 
     st.markdown("---")
     st.markdown("#### Baseline: Surveyed Conditions")
     c1, c2, c3 = st.columns(3)
@@ -294,7 +279,7 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
     c6.metric("Benefit-Cost Ratio", f"{econ['bcr_low']:.1f}–{econ['bcr_high']:.1f} : 1" if n_fixes > 0 else "N/A", help="Calculated considering the expenses for each fix to be approximately ₹5 - 10 lakhs")
 
 
-    # --- CHARTS (Exact Original Style) ---
+    # CHARTS
     col_l, col_r = st.columns(2)
     with col_l:
         st.markdown("#### Time Tax Comparison")
@@ -303,14 +288,14 @@ Municipal stakeholder and policy makers will be able to look at urban infrastruc
         st.markdown("#### Annual Loss Delta")
         st.pyplot(plot_loss_waterfall(econ, personas), use_container_width=True)
 
-    # --- BCR CURVE ---
+    # BCR CURVE 
     if n_fixes > 0:
         st.markdown("---")
         st.markdown("#### Benefit-Cost Ratio Curve")
         st.caption("Investment efficiency across increasing remediation nodes. Green line indicates 10:1 return threshold.")
         st.pyplot(plot_bcr_curve(df, personas, bazaar_f), use_container_width=True)
 
-    # --- POINTWISE DESCRIPTION (Numbered Style) ---
+    # POINTWISE DESCRIPTION 
     st.markdown("---")
     st.header("Model Functionality")
     st.write("* **Macro-Economic Aggregation:** This module converts abstract 'pedestrian struggle' into a high-fidelity fiscal baseline. By scaling persona-weighted time loss against a hub volume of 100,000 daily commuters, it anchors policy arguments in a Crore-value productivity loss figure that represents the literal economic cost of systemic infrastructure neglect.")
