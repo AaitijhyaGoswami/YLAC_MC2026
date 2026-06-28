@@ -29,9 +29,7 @@ try:
 except ImportError:
     pass
 
-# Inside your main app.py
 try:
-    # We now point Python to look inside the static folder
     from cad_viewer import viewer 
     modules["What-If: Lighthouse Prototype"] = viewer
 except ImportError:
@@ -81,7 +79,6 @@ if page == "Home":
     
     st.markdown("---")
 
-    # --- UPFRONT: SCALE, IMPACT, SOLUTION ---
     col1, col2 = st.columns(2)
     
     with col1:
@@ -101,7 +98,6 @@ if page == "Home":
 
     cola, colb, colc = st.columns(3)
 
-# 3. Add images to columns
     with cola:
       st.image("data/survey1.jpg", use_container_width=True)
       st.caption("A carpentry shop encroaching on the area meant for pedestrian commute. The obstacle may make it difficult for individuals in wheelchairs or visually impaired individuals to commute.")
@@ -121,7 +117,6 @@ if page == "Home":
 
     st.markdown("---")
 
-    # --- MOTIVATION PARAGRAPH ---
     st.header("Why We Planned to Do")
     st.markdown("""
     When we complain about bad footpaths, it is often dismissed as a minor inconvenience. However, for a 
@@ -134,7 +129,7 @@ if page == "Home":
     exhaustion and turns it into hard data that the government can use to justify repairs.
     """)
 
-    # --- THE MATHEMATICAL FRAMEWORK ---
+    # MATHEMATICAL FRAMEWORK
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### The Effective Path Length: Measuring the 'Felt' Distance")
         st.markdown("""
@@ -196,7 +191,7 @@ if page == "Home":
 
     st.markdown("---")
 
-    # --- MODULE OVERVIEW (Numbered List) ---
+    # MODULE OVERVIEW 
     st.header("Audit Modules")
     st.markdown("The app contains the following modules for users to visualise the current state of the route and simulate how it would approximately look after fixes:")
 
