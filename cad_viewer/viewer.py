@@ -46,12 +46,11 @@ def app():
 
     st.header("What We Propose")
 
-    # --- 1. SPATIAL VISUALIZATION ---
+    # SPATIAL VISUALIZATION 
     col_current, col_fixed = st.columns(2)
 
     with col_current:
         st.subheader("Current Condition")
-        # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=5.jpeg")
         st.image(f"cad_viewer/f=5.png", use_container_width=True)
         
@@ -64,7 +63,6 @@ def app():
 
     with col_fixed:
         st.subheader("After Proposed Changes")
-        # Path kept exactly as requested
         st.image(f"cad_viewer/top_f=1.jpeg")
         st.caption("The 3D CAD reconstruction has been made in accordance with the urban street design guidelines of the Directorate of Urban Land Transport (DULT), the Indian Roads Congress (IRC), the Tender S.U.R.E. Standards and the National Institute of Urban Affairs (NIUA)") 
         st.image(f"cad_viewer/f=1.png", use_container_width=True)
@@ -78,8 +76,7 @@ def app():
 
     st.markdown("---")
 
-    # --- 2. POLICY & ADVOCACY POINTERS ---
-    # --- 2. DETAILED BRIEFING FUNCTIONALITY ---
+
     st.header("Prototype Functionality")
     
     st.markdown(r"""
@@ -94,7 +91,7 @@ def app():
 
     st.markdown("---")
 
-    # --- 3. SPATIAL ALLOCATION TABLE ---
+    # SPATIAL ALLOCATION TABLE 
     st.header("Spatial Allocation Comparison")
     st.write("Below are the granular component dimensions required to reconstruct the Bazaar Street section under S.U.R.E. guidelines.")
     
@@ -138,7 +135,6 @@ def app():
     }
     
     st.table(pd.DataFrame(reconstruction_data))
-    # --- 4. MATHEMATICAL JUSTIFICATION ---
     with st.expander("View Mathematical Logic & Variable Definitions"):
         st.markdown("#### The Physics of Spatial Resistance")
         st.latex(r"W_{\text{eff}} = W_{\text{total}} - W_{\text{obstacles}} - W_{\text{buffer}}")
