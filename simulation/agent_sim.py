@@ -8,10 +8,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# -------------------------------------------------------------------------
-# CONSTANTS
-# -------------------------------------------------------------------------
 
+# CONSTANTS
 D      = 900.0   # total corridor length (m)
 D_300  = 300.0   # discrete-node stretch (m)
 D_600  = 600.0   # continuous f=5 stretch (m)
@@ -21,10 +19,8 @@ d      = 12.5    # segment length (m)
 
 BODY_WEIGHT_KG = 70.0  # reference body weight for metabolic cost calculation
 
-# -------------------------------------------------------------------------
-# DATA LOADERS
-# -------------------------------------------------------------------------
 
+# DATA LOADERS
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
@@ -40,10 +36,7 @@ def load_personas() -> dict:
         return yaml.safe_load(f)
 
 
-# -------------------------------------------------------------------------
 # SIMULATION CORE
-# -------------------------------------------------------------------------
-
 def build_f_array(df: pd.DataFrame, n_fixes: int, bazaar_f: int) -> np.ndarray:
     f_300 = df["f_value"].values.astype(float)
     if n_fixes > 0:
@@ -79,10 +72,6 @@ def run_simulation(f_array: np.ndarray, persona: dict) -> dict:
     T_ideal   = D / v0
     delta_tau = T_actual - T_ideal
 
-    # Metabolic cost: extra energy above the ideal frictionless walk.
-    # Approximation: W_extra = (L_eff - D) * body_weight * g
-    # where L_eff is friction-weighted effective path length.
-    # Detour segments use (d + delta) as the effective distance.
     L_eff = float(sum(
         (d + delta) if fi > f_max else fi * d
         for fi in f_array
@@ -120,13 +109,11 @@ def reachable_distance(f_array: np.ndarray, persona: dict, budget_s: float) -> f
             frac = (budget_s - elapsed) / seg_time
             return i * d + frac * d
         elapsed += seg_time
-    return D  # reached the far end within budget
+    return D  
 
 
-# -------------------------------------------------------------------------
+
 # PLOT HELPERS
-# -------------------------------------------------------------------------
-
 def plot_traversal_comparison(results: dict, personas: dict, selected_key: str) -> plt.Figure:
     p   = personas[selected_key]
     res = results[selected_key]
@@ -182,10 +169,9 @@ def plot_all_personas(results: dict, personas: dict) -> plt.Figure:
     return fig
 
 
-# NEW: speed profile line chart - shows velocity decay continuously along corridor
 def plot_speed_profile(f_array: np.ndarray, results: dict, personas: dict,
                        selected_key: str) -> plt.Figure:
-    x = np.arange(len(f_array)) * d + d / 2  # segment midpoints
+    x = np.arange(len(f_array)) * d + d / 2 
 
     fig, ax = plt.subplots(figsize=(11, 3.2))
     fig.patch.set_facecolor("#1a1a1a")
@@ -199,7 +185,6 @@ def plot_speed_profile(f_array: np.ndarray, results: dict, personas: dict,
         ax.plot(x, v_smooth, color=p["color"], linewidth=lw, alpha=alpha,
                 label=p["label"], zorder=3 if pk == selected_key else 2)
 
-    # Ideal speed lines per persona (horizontal dashed)
     for pk, p in personas.items():
         if pk == selected_key:
             ax.axhline(p["v0"], color=p["color"], linewidth=0.8,
@@ -221,7 +206,7 @@ def plot_speed_profile(f_array: np.ndarray, results: dict, personas: dict,
     return fig
 
 
-# NEW: metabolic cost bar chart across all personas
+
 def plot_metabolic_cost(results: dict, personas: dict) -> plt.Figure:
     labels = [p["label"] for p in personas.values()]
     kcals  = [results[k]["extra_kcal"] for k in personas]
@@ -290,7 +275,6 @@ def plot_isochrone_bars(f_array: np.ndarray, personas: dict,
         ax.spines[:].set_visible(False)
         ax.axvline(D, color="#444", linewidth=0.6, linestyle=":")
 
-    # Y-axis labels on leftmost plot only
     yticks = [(j * (n_budgets * bar_h + gap) + bar_h * 0.5)
               for j in range(n_personas)]
     axes[0].set_yticks(yticks)
@@ -304,10 +288,8 @@ def plot_isochrone_bars(f_array: np.ndarray, personas: dict,
     return fig
 
 
-# -------------------------------------------------------------------------
-# MAIN APP ENTRY POINT
-# -------------------------------------------------------------------------
 
+# MAIN APP ENTRY POINT
 def app():
     st.markdown("""
     The **Time Tax Simulator**'s chronological heart is the urban audit, translating static physical friction into the lived reality of systemic delay. This module measures more than distance. It quantifies the hidden "chronological penalty" of design neglect and calculates the **Time Tax of different commuter personas** across the 900m Yeshwantpur corridor. The simulator shows that infrastructure failure is not just an inconvenience but a kinetic drain that "steals" measurable seconds from each trip, turning individual micro-struggles into a macro-economic data point, using a rigorous Power-Law Friction-Velocity model.
@@ -315,7 +297,7 @@ def app():
 This module is important for advocacy and policy-making on the topic of **Mobility Equity**, as it shows how bad design disproportionately impacts the most vulnerable users. The simulator offers insight into the regressiveness of the Time Tax on the least mobile, by modeling specific personas from high velocity delivery partners to friction-sensitive elderly commuters. This provides the empirical evidence for municipal authorities to re-frame urban repair as a "time-recovery" mission, prioritizing infrastructure investment on the basis of recovered productivity and the fundamental right to a dignified, seamless commute.
     """)
 
-    # --- TECHNICAL MATH SECTION ---
+    # TECHNICAL MATH SECTION 
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### Fundamental Equations")
         st.markdown("We model effective velocity ($v_{\\text{eff}}$) as a non-linear decay function of infrastructure friction.")
@@ -356,7 +338,6 @@ This module is important for advocacy and policy-making on the topic of **Mobili
         st.markdown("At $f=5$, the wheelchair exceeds $f_{max}$, triggering a vehicular Right-of-Way (ROW) detour:")
         st.latex(r"\tau_{f=5}^{ROW} = \frac{(12.5 + \delta) \cdot \alpha}{v_0} = \frac{(12.5 + 5) \cdot 1.5}{0.8} \approx 32.8\text{s} \quad (\text{Tax: } +17.2\text{s})")
 
-        # NEW: metabolic cost derivation
         st.markdown("#### Metabolic Cost of Infrastructure Failure")
         st.markdown("""
         Beyond time, broken infrastructure extracts a **physical energy cost**. 
@@ -415,7 +396,7 @@ ight\}
         st.error(f"Error loading data: {e}")
         return
 
-    # --- SIDEBAR CONTROLS ---
+    # SIDEBAR CONTROLS 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Time Tax Simulator Controls")
     
@@ -452,14 +433,14 @@ ight\}
                                         help="Simulates gradual remediation of the continuous failure zone")
     bazaar_f = sure_standards[bazaar_label]
 
-    # --- SIMULATION EXECUTION ---
+    # SIMULATION CORE
     f_array = build_f_array(df, n_fixes, bazaar_f)
     results = {k: run_simulation(f_array, v) for k, v in personas.items()}
     res     = results[selected_key]
 
     st.markdown("---")
 
-    # --- HEADLINE METRICS ---
+    # HEADLINE METRICS 
     st.markdown(f"#### {p['label']}: Traversal Summary")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Ideal Time", f"{res['T_ideal'] / 60:.1f} min", help="Time taken if f=1 throughout")
@@ -467,7 +448,6 @@ ight\}
     col3.metric("Time Tax Δτ", f"{res['delta_tau']:.0f} s", delta=f"+{res['delta_tau'] / res['T_ideal'] * 100:.0f}%", delta_color="inverse", help="Time lost due to simulated obstacles")
     col4.metric("ROW Detours", f"{res['n_detours']} segments", help="Segments forcing pedestrians into traffic")
 
-    # NEW: equity ratio + metabolic cost inline metrics
     st.markdown("---")
     st.markdown("#### Equity & Physical Cost")
     ab_res   = results.get("able_bodied", res)
@@ -493,7 +473,7 @@ ight\}
         help="The friction-weighted distance this persona effectively 'walks' in terms of physical effort."
     )
 
-    # --- CHARTS ---
+    # CHARTS 
     c_left, c_right = st.columns([1, 1.8])
     with c_left:
         st.markdown("#### Traversal Comparison")
@@ -509,7 +489,6 @@ ight\}
     st.caption(f"Top: friction value per 12.5 m segment (colour = severity). Bottom: traversal time per segment for {p['label']}. Dashed vertical = 300 m zone boundary.")
     st.pyplot(plot_segment_breakdown(f_array, res, p), use_container_width=True)
 
-    # NEW: speed profile + metabolic cost side by side
     st.markdown("---")
     sp_left, sp_right = st.columns([1.8, 1])
     with sp_left:
@@ -521,7 +500,7 @@ ight\}
         st.caption(f"Extra energy above ideal walk for a {BODY_WEIGHT_KG:.0f} kg reference commuter.")
         st.pyplot(plot_metabolic_cost(results, personas), use_container_width=True)
 
-    # --- ISOCHRONE SECTION ---
+    # ISOCHRONE SECTION 
     st.markdown("---")
     st.markdown("#### Corridor Accessibility Isochrones")
     st.caption(
@@ -536,7 +515,7 @@ ight\}
         use_container_width=True
     )
 
-    # Equity summary table below the chart
+    
     iso_rows = []
     f_ideal_arr = np.ones(len(f_array))
     for pk, pp in personas.items():
@@ -552,7 +531,7 @@ ight\}
     with st.expander("View isochrone data table"):
         st.dataframe(pd.DataFrame(iso_rows), hide_index=True, use_container_width=True)
 
-    # --- POINTWISE DESCRIPTION ---
+    # POINTWISE DESCRIPTION 
     st.markdown("---")
     st.header("Simulator Functionality")
     st.write("* **Agent-Based Path Simulation:** This module uses individual persona parameters (base speed $v_0$ and sensitivity $k$) to simulate how different citizens experience the same physical corridor. This moves beyond 'average' walking speeds to capture the reality of diverse commuters.")
