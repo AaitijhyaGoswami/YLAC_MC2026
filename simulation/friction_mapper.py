@@ -20,10 +20,8 @@ try:
 except ImportError:
     HAVE_OSM = False
 
-# -------------------------------------------------------------------------
-# CONSTANTS
-# -------------------------------------------------------------------------
 
+# CONSTANTS
 F_COLORS = {
     1: "#9E9E9E",
     2: "#4CAF50",
@@ -78,10 +76,8 @@ PERSONA_LABELS = {
     "delivery":    "Delivery Partner",
 }
 
-# -------------------------------------------------------------------------
-# DATA LOADER
-# -------------------------------------------------------------------------
 
+# DATA LOADER
 @st.cache_data
 def load_audit_data() -> pd.DataFrame:
     path = os.path.join("data", "audit_log.csv")
@@ -91,10 +87,8 @@ def load_audit_data() -> pd.DataFrame:
     return df
 
 
-# -------------------------------------------------------------------------
-# LAYER 1: OSMnx NETWORK ROUTING
-# -------------------------------------------------------------------------
 
+# OSMnx NETWORK ROUTING
 @st.cache_data(show_spinner="Downloading pedestrian street graph…")
 def load_osm_graph():
     centre = (
@@ -161,16 +155,14 @@ def path_to_coords(G, path):
     return [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in path]
 
 
-# -------------------------------------------------------------------------
-# MAP BUILDER
-# -------------------------------------------------------------------------
 
+# MAP BUILDER
 def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
               route_coords=None, route_color="#4CAF50",
               route_popup_html: str = "") -> folium.Map:
     m = folium.Map(location=MAP_CENTRE, zoom_start=15, tiles="CartoDB dark_matter")
 
-    # --- 1. THE 600m BAZAAR STREET STRETCH ---
+    # 600m BAZAAR STREET STRETCH 
     b_popup_html = f"""
         <div style="font-family: sans-serif; font-size: 12px; width: 200px; background: #111; color: #eee; border-radius: 4px; padding: 8px;">
             <b style="color: #F44336; font-size: 13px;">Bazaar Street Zone</b><br>
@@ -192,7 +184,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
         popup=folium.Popup(b_popup_html, max_width=250)
     ).add_to(m)
 
-    # --- 2. THE DISCRETE NODES (300m) ---
+    # DISCRETE NODES (300m) 
     f_values = df["f_value"].values.astype(float)
     fix_indices = set(df.index[np.argsort(f_values)[::-1][:n_fixes]]) if n_fixes > 0 else set()
 
@@ -227,7 +219,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
             popup=folium.Popup(n_popup_html, max_width=300)
         ).add_to(m)
 
-    # --- 3. LAYER 1: FRICTION-OPTIMAL ROUTE (if computed) ---
+    # FRICTION-OPTIMAL ROUTE 
     if route_coords:
         _route_popup = folium.Popup(route_popup_html, max_width=300) if route_popup_html else None
         _pl = folium.PolyLine(
@@ -254,10 +246,7 @@ def build_map(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5,
     return m
 
 
-# -------------------------------------------------------------------------
-# VISUALIZATION FUNCTIONS
-# -------------------------------------------------------------------------
-
+# VISUALIZATION FUNCTION
 def plot_friction_bar(df: pd.DataFrame, n_fixes: int = 0, bazaar_f: int = 5) -> plt.Figure:
     f_300 = df["f_value"].values.astype(float)
     if n_fixes > 0:
@@ -341,10 +330,8 @@ def plot_sure_compliance_bar(f_bar_now: float) -> plt.Figure:
     return fig
 
 
-# -------------------------------------------------------------------------
-# MAIN APP ENTRY POINT
-# -------------------------------------------------------------------------
 
+# MAIN APP ENTRY POINT
 def app():
     st.markdown("""
     The **Friction Mapper** module represents a paradigm shift in urban auditing, from subjective complaints to a rigorous physics-based diagnostic of the 900m Yeshwantpur corridor. This module systematically geotags and measures infrastructure failures, from broken pavements and open drains to systemic encroachments, to provide a discrete **Friction Index (f)** for the urban environment. The pedestrian journey is considered as a traversal through a resistive field, enabling accurate modeling of the **Time Tax** and physical energy expenditure imposed on commuters due to design neglect.
@@ -381,7 +368,7 @@ def app():
     })
     st.dataframe(rubric, hide_index=True, width='stretch')
 
-    # --- TECHNICAL MATH SECTION ---
+    # TECHNICAL MATH SECTION 
     with st.expander("View Technical Methodology and Mathematical Definitions"):
         st.markdown("#### Fundamental Equations")
         st.markdown("Corridor quality is defined by the **Mean Friction Index**, representing the average struggle factor across the total surveyed distance.")
@@ -486,7 +473,7 @@ all personas; only the **cost** of traversing it differs.
         st.error(f"Error loading data: {e}")
         return
 
-    # --- SIDEBAR CONTROLS ---
+    # SIDEBAR CONTROLS 
     st.sidebar.markdown("---")
     st.sidebar.markdown("### Friction Mapper Controls")
     n_fixes = st.sidebar.slider("Nodes brought to Tender S.U.R.E. standard (f=1):", 0, len(df), 0,
@@ -504,7 +491,7 @@ all personas; only the **cost** of traversing it differs.
                                        help="Simulates gradual fixing of the Bazaar Street stretch by authorities")
     bazaar_f = sure_standards[bazaar_label]
 
-    # Layer 1 sidebar controls (only shown when OSMnx is installed)
+    
     show_route   = False
     route_coords = None
     route_color  = "#4CAF50"
@@ -523,7 +510,7 @@ all personas; only the **cost** of traversing it differs.
             )
             route_color = PERSONA_COLORS[route_persona]
 
-    # --- COMPUTATION ---
+    # COMPUTATION 
     f_300 = df["f_value"].values.astype(float)
     f_fixed = f_300.copy()
     if n_fixes > 0: f_fixed[np.argsort(f_fixed)[::-1][:n_fixes]] = 1.0
@@ -533,7 +520,7 @@ all personas; only the **cost** of traversing it differs.
     L_eff_base = L_eff_300_base + (600 * 5)
     f_bar_base, f_bar_now = L_eff_base / 900, L_eff_now / 900
 
-    # Layer 1: compute route + per-persona popup if requested
+    
     route_popup_html = ""
     if show_route and HAVE_OSM:
         try:
@@ -549,7 +536,7 @@ all personas; only the **cost** of traversing it differs.
                 if path:
                     route_coords = path_to_coords(G_costed, path)
 
-                    # Compute cost for ALL personas so popup shows full comparison
+                    
                     _rows = ""
                     for _pk, _pp in _personas.items():
                         _Gc = persona_edge_cost(copy.deepcopy(G_tagged), _pp, bazaar_f)
@@ -560,11 +547,9 @@ all personas; only the **cost** of traversing it differs.
                             for _, _, d in _Gc.edges(data=True)
                             if d.get("f_value", 3) == 1
                         )
-                        # ideal = straight corridor at f=1
                         _ideal_s = 900.0 / _pp["v0"]
                         _cost_s  = _cost_s if _cost_s is not None else _ideal_s
                         _tax_s   = max(0.0, _cost_s - _ideal_s)
-                        # Count impassable edges along the routed path
                         _path_p, _ = compute_route(_Gc, STATION_EXIT, CONSTITUTION_CL, weight="persona_cost")
                         _detours = sum(
                             1 for u, v in zip((_path_p or []), (_path_p or [])[1:])
@@ -605,7 +590,7 @@ all personas; only the **cost** of traversing it differs.
         except Exception as e:
             st.warning(f"Could not load OSM graph: {e}. Check your internet connection.")
 
-    # --- HEADLINE METRICS ---
+    # HEADLINE METRICS
     st.markdown("---")
     
     st.markdown("#### The State of the Corridor")
@@ -645,14 +630,14 @@ all personas; only the **cost** of traversing it differs.
             except Exception:
                 pass
 
-    # --- MAP & GRADIENT ---
+    # MAP & GRADIENT 
     st_folium(build_map(df, n_fixes, bazaar_f, route_coords, route_color, route_popup_html), width=None, height=520, returned_objects=[])
     st.markdown("#### Friction Gradient: Full 900m Route")
     st.caption("Each bar is one 12.5 m segment. Colour maps to the friction rubric: grey = f=1 (Gold Standard), green = f=2, blue = f=3, orange = f=4, red = f=5 (Systemic Failure). Dashed vertical = 300 m zone boundary.")
     st.pyplot(plot_friction_bar(df, n_fixes, bazaar_f), width='stretch')
     st.markdown("---")
 
-    # --- CORRIDOR ANALYSIS ---
+    # CORRIDOR ANALYSIS 
     st.markdown("#### Corridor Analysis")
     col_left, col_right = st.columns(2)
     with col_left:
@@ -664,7 +649,7 @@ all personas; only the **cost** of traversing it differs.
         st.caption("Green portion = physical 900 m corridor. Red extension = extra effort above that. S.U.R.E. Target bar shows what a fully compliant corridor looks like.")
         st.pyplot(plot_leff_comparison(L_eff_base, L_eff_now, f_bar_base, f_bar_now, n_fixes, bazaar_f), width='stretch')
 
-    # --- POINTWISE DESCRIPTION ---
+    # POINTWISE DESCRIPTION 
     st.markdown("---")
     st.header("Mapper Functionality")
     st.write("* **Spatial Evidence Mapping:** Every marker on the interactive map corresponds to a physical infrastructure failure recorded and geotagged during the field audit. This converts anecdotal walking frustrations into a precise, coordinate-based database.")
