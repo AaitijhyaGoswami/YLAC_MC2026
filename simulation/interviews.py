@@ -9,10 +9,9 @@ def render_interview(filename, title):
     
     with st.expander(f"View {title}"):
         if os.path.exists(full_path):
-            # The library handles binary reading and base64 internally
             pdf_viewer(input=full_path, width=700)
             
-            # Providing a native download button for accessibility
+            
             with open(full_path, "rb") as f:
                 st.download_button(
                     label=f"Download {filename}",
